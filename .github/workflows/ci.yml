@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Example: Set up Node.js; replace with Python, Java, etc. as needed.
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json found. Skipping install."
+          fi
+
+      - name: Run Tests
+        run: |
+          if [ -f package.json ]; then
+            npm test
+          else
+            echo "No tests defined. Skipping."
+          fi
+
+      - name: Lint Code
+        run: |
+          if [ -f package.json ]; then
+            npm run lint || echo "No lint script defined."
+          else
+            echo "No lint script defined."
+          fi
+
+      - name: Build Application
+        run: |
+          # Placeholder build step.  Replace with your build command.
+          echo "Build step placeholder"
+
+      - name: Notify
+        if: failure()
+        run: |
+          echo "CI failed; please check the logs."
