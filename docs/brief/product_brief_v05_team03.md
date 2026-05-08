@@ -55,10 +55,13 @@ First MVP will be focusing on making a web-based food ordering system.
 * **Academics Deliverables:** Product specific documentation (Product Brief, design documents, handover materials) are required alongside the actual code.
 
 ## Risks
-* **Scope Creep:** It is incredibly easy for food-ordering projects to balloon out of control. Our team risks failing the timeline if we try to add features like cart abandonment, loyalty points, or complex discounting.
-* **Poor Staff Adoption:** If the staff dashboard is slower or more complicated to use than their current manual chat-and-paper method, they will abandon the system the moment the shop gets busy.
-* **Data Synchronization Failures:** Inconsistent menu availability is the core problem. If our system does not update order statuses or “sold out” items quickly across all user screens, it will simply digitize the exact confusion they are already experiencing.
-* **Over-engineering:** Choosing an overly complex tech stack (e.g. heavy microservices for a single local shop) could slow down the development speed and make the final handover difficult.
+| Risk | Why it matters  | Possible mitigation strategies |
+| :--- | :--- | :--- |
+| Scope Creep | Adding non-essential features risks missing the project deadline. | Strictly build the MVP and defer extras to a backlog.
+| Poor Staff Adoption | Staff will abandon complex systems during busy store rushes. | Build a simple, low-click interface tested with the staff.
+| Data Synchronization Failures | Slow status updates will digitize their current menu confusion. | Use real-time syncing and add instant "sold out" toggles. |
+| Over-engineering | Complex architectures slow down development and make handovers difficult. | Use a simple, proven tech stack to ensure easy maintenance.
+| Unfamiliar Technologies | Learning new tools mid-project causes major delays and bugs. | Choose familiar frameworks or allocate early time for learning. |
 
 ## Success Criteria / What Makes the MVP Valuable
 These are the outcomes that prove the project was a success. The MVP is the smallest thing that solves the problem.
