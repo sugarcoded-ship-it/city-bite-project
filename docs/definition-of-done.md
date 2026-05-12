@@ -11,6 +11,7 @@ A backlog item can be moved to Done only if:
 7. Documentation is updated if behavior, setup, or usage changed.
 8. Any new environment variables or local setup steps are added to the README.md file.
 9. UI/Frontend changes have been manually reviewed and approved by a teammate before merging.
+10. Functionality is carefully tested in a local environment before merging, especially for critical features or bug fixes.
 
 ---
 
