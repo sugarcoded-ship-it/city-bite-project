@@ -9,6 +9,7 @@
 - Chawinthorn Kittivacharaphong 6681402
 - Suppapoo Ekpipattana 6681437
 - Pakawun Jindawat 6681453
+- Matteo Ramdani 6480996
 
 ---
 
@@ -135,3 +136,4 @@ We agree to follow this charter and adjust it if needed.
 | Chawinthorn Kittivacharaphong | Chawinthorn Kittivacharaphong |
 | Suppapoo Ekpipattana | Suppapoo Ekpipattana |
 | Pakawun Jindawat | Pakawun Jindawat
+| Matteo Ramdani | Matteo Salah Ramdani Jury
