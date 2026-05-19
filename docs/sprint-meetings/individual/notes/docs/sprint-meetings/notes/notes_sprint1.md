@@ -1,19 +1,33 @@
-# Sprint Meeting Notes — Week [X]
+# Sprint Meeting Notes — Week 1
 
-Team:
-Date:
-Attendees:
+Team: 3
+Date: 5/19/2026
+Attendees: Nattapas
+Chawinthorn
+Suppapoo
+Natthakul
+Pakawun
+Matteo
+
 
 ## 1. Opening Check-in
-- Member 1:
-- Member 2:
-- Member 3:
-- Member 4:
+- Member 1: Suppapoo 6681437
+- Member 2: Natthakul 6680972
+- Member 3: Pakawun 6681453
+- Member 4: Chawinthorn 6681402
+- Member 5: Matteo 6480996
+- Member 6: Nattapas 6681399
 
 ## 2. Previous Work Review
-Completed:
-- Backlog item No# 
-- ...
+Completed: 
+- Backlog #
+-15
+-14
+-13
+-16
+-17
+-18
+-19
 
 Not completed:
 - Backlog item No# 
