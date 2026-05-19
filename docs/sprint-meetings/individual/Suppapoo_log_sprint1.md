@@ -11,7 +11,7 @@ Week / Date Range: 4, 1-3
 - I contributed by helping with writing tasks, supporting the merge of pull request #21, and assisting with the Definition of Done (DoD) through team collaboration
 
 ## 3. Blockers / Problems
-- This is my first time doing the big software project, so I usually struggle with technology decision I will use in this project. However, I tried to research and ask the people who have experience the development.
+- This is my first time working on a large software project, so I struggled with making technology decisions for the project. However, I researched the options and asked people with experience for advice.
 
 ## 4. Short Reflection
 - This week, I learned more about the overall structure of a software project and saw the bigger picture of what a baseline industry standard looks like. It helped me understand how important planning, clear technical decisions, and team coordination are before implementation starts. I also realized that even early design decisions, such as database structure and data flow, can affect the whole project later. This gave me a better understanding of how professional software projects are organized.
