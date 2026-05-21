@@ -23,3 +23,7 @@ List any third‑party services, libraries or APIs used.  Note how they affect y
 ## Decisions and Trade‑offs
 
 Briefly mention where to find associated ADRs and summarise major design trade‑offs.
+
+## C4 Diagrams
+
+![C4 Diagram](image.png)
