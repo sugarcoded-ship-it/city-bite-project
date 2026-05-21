@@ -8,8 +8,6 @@ services:
       - .env # Passes the secrets into Spring Boot
     deploy:
       replicas: 3
-    depends_on:
-      - db
     develop:
       watch:
         - action: sync
@@ -53,6 +51,6 @@ volumes:
   pgdata:
 
 networks:
-restaurant-network:
-  external: true
-  name: my_app_network
+  restaurant-network:
+    external: true
+    name: my_app_network
