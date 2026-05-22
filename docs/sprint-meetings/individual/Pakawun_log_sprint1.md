@@ -1,7 +1,7 @@
-# Individual Contribution Log — Week [X]
+# Individual Contribution Log — Week 4
 
-Name: Pakawun Jindawat
-Team: 3
+Name: Pakawun Jindawat \
+Team: 3 \
 Week / Date Range: 4, 1-3
 
 ## 1. What I planned to do this week

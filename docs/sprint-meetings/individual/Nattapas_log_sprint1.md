@@ -1,8 +1,8 @@
-# Individual Contribution Log — Week [4]
+# Individual Contribution Log — Week 4
 
-Name: Nattapas Nunthameteesuk
-Team: 3
-Week / Date Range: 4 / 11 May 2026 - 17 May 2026
+Name: Nattapas Nunthameteesuk \
+Team: 3 \
+Week / Date Range: 4 / 11 May 2026 - 17 May 2026  
 
 ## 1. What I planned to do this week
 - Design C4 Diagrams
