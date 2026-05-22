@@ -1,7 +1,7 @@
 # Individual Contribution Log — Week 4
 
-Name: Chawinthorn Kittivacharaphong
-Team: 3
+Name: Chawinthorn Kittivacharaphong \
+Team: 3 \
 Week / Date Range: 4 / 5/11/2026 - 5/17/2026
 
 ## 1. What I planned to do this week
