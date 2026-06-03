@@ -12,5 +12,11 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     host: true,
+    hmr: {
+      clientPort: 80, // Routes browser WebSocket traffic through Nginx
+    },
+    watch: {
+      usePolling: true, // Forces Vite to notice the files Docker just synced
+    }
   }
 })
