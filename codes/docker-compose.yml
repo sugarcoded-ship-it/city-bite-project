@@ -8,6 +8,9 @@ services:
       - .env # Passes the secrets into Spring Boot
     deploy:
       replicas: 3
+    environment:
+      - KEYCLOAK_ADMIN_USER=${KEYCLOAK_ADMIN_USER}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
     develop:
       watch:
         - action: sync
@@ -26,13 +29,43 @@ services:
       - .env # Passes the secrets into Vite
     depends_on:
       - backend
+    environment:
+      - VITE_KEYCLOAK_URL=http://localhost/auth
+      - VITE_CLIENT_ID=restaurant-app
+      - VITE_REALM=restaurant-realm
     develop:
       watch:
-        - action: sync
-          path: ./frontend/restaurant/src
-          target: /app/src
-        - action: rebuild
-          path: ./frontend/restaurant/package.json
+       - action: sync
+         path: ./frontend/restaurant/src
+         target: /app/src
+       - action: sync
+         path: ./frontend/restaurant/public
+         target: /app/public
+       - action: sync
+         path: ./frontend/restaurant/index.html
+         target: /app/index.html
+       - action: rebuild
+         path: ./frontend/restaurant/package.json
+       - action: rebuild
+         path: ./frontend/restaurant/vite.config.ts
+    networks:
+      - restaurant-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    command: start-dev --proxy-headers xforwarded # IMPORTANT (running Keycloak behind Nginx)
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME_URL: http://localhost/auth/ 
+      KC_HTTP_RELATIVE_PATH: /auth 
+      # Sets memory cost to 65536 KB (64 MB) protecting against brute-force attacks (GPU attacks in particular)
+      KC_SPI_PASSWORD_HASHING__ARGON2__MEMORY: 65536
+      # Sets parallelism threads to 2
+      KC_SPI_PASSWORD_HASHING__ARGON2__PARALLELISM: 2
+    volumes: # Persist Keycloak data to avoid losing it when the container restarts
+      - keycloak_data:/opt/keycloak/data/
+      # - ./realm-config.json:/opt/keycloak/data/import/realm.json:ro # Import realm config on startup this is example change it to your actual realm config file
     networks:
       - restaurant-network
 
@@ -48,11 +81,11 @@ services:
     networks:
       - restaurant-network
 
-
-volumes:
-  pgdata:
-
 networks:
   restaurant-network:
     external: true
     name: my_app_network
+
+volumes:
+  keycloak_data:
+  pgdata:
