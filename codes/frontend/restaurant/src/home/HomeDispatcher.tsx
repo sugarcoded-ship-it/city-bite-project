@@ -18,7 +18,7 @@ const HomeDispatcher: React.FC = () => {
         return <StaffHome />;
     }
 
-    // 2. Fallback if a authenticated user somehow has none of the required business roles
+    // 2. Fallback if authenticated user somehow has none of the required roles
     return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
             <h2>Access Denied</h2>
