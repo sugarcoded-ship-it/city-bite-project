@@ -25,6 +25,8 @@ services:
     build: 
       context: ./frontend/restaurant
       dockerfile: Dockerfile
+    env_file:
+      - .env # Passes the secrets into Vite
     depends_on:
       - backend
     environment:
