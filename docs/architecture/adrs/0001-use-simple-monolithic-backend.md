@@ -1,30 +1,31 @@
-# ADR 001: Adoption of Monolithic Architecture
+# ADR 001: Adoption of a Monorepo Strategy
 
 ## Status
-Proposed
+Accepted
 
 ## Context
-Our team is developing a new project from scratch with a limited timeline and a small team. We need to determine the best architectural approach to deliver a functional MVP (Minimum Viable Product) quickly.
+Our team is developing the CityBite Bangkok digital food ordering system from scratch with a limited timeline. We need to determine the best source-control and structural approach to deliver a functional MVP (Minimum Viable Product) quickly.
 
 ## Decision
-We have decided to adopt a monolithic architecture for our MVP, keeping the frontend and backend layers unified within a single codebase.
+We have decided to adopt a **Monorepo** strategy for our MVP, housing our decoupled React frontend and Spring Boot backend layers within a single Git codebase.
 
 ## Alternatives Considered
-* **Separated Frontend/Backend**: We considered decoupling the frontend and backend to allow for independent scaling. However, this would introduce additional complexity in API management and infrastructure that our small team cannot support within the current project timeline.
+* **Polyrepo (Multiple Repositories):** We considered splitting the frontend and backend into two entirely separate Git repositories to allow for independent versioning. However, this would introduce additional complexity in tracking cross-stack features, managing local environments, and orchestrating PRs that our small team cannot support within the current project timeline.
 
 ## Reasoning
-Given our need for speed and our small team size, a monolith allows us to maintain a single codebase, simplify deployment, and focus our energy on building features rather than managing complex inter-service communication.
+Given our need for speed and our small team size, a Monorepo allows us to maintain a single source of truth, simplify local Docker orchestration, and focus our energy on building features rather than managing cross-repository dependencies and communication. A developer can implement a full-stack feature in a single Pull Request.
 
 ## Consequences
 ### Positive
-* Faster initial development cycle and simplified deployment.
-* Reduced architectural complexity regarding data flow and storage.
+* Faster initial development cycle and simplified onboarding.
+* Synchronized full-stack Pull Requests.
+* Zero local CORS configuration required due to unified Nginx proxying.
 
 ### Negative / Tradeoffs
-* If the project grows significantly in the future, scaling specific components independently will be more difficult than in a separated architecture.
-* A bug in one area of the code could potentially affect the entire system.
+* If the project grows significantly in the future, the repository size will grow.
+* CI/CD pipelines will require more complex configuration to only trigger builds for the directories (frontend vs. backend) that actually changed, rather than running every test on every push.
 
 ## Related Backlog Items
 * Set up an initial project repository.
-* Configure base development environment.
+* Configure base development environment (Docker/Nginx).
 * Define core project modules and base application structure.
