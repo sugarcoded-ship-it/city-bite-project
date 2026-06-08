@@ -6,11 +6,13 @@ services:
     restart: always
     env_file:
       - .env # Passes the secrets into Spring Boot
-    # deploy:
-    #   replicas: 3
     environment:
       - KEYCLOAK_ADMIN_USER=${KEYCLOAK_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DOCKER_COMPOSE_ENABLED=false
     develop:
       watch:
         - action: sync
@@ -60,12 +62,14 @@ services:
       KC_HOSTNAME_URL: http://localhost/auth/ 
       KC_HTTP_RELATIVE_PATH: /auth 
       # Sets memory cost to 65536 KB (64 MB) protecting against brute-force attacks (GPU attacks in particular)
+      KC_HOSTNAME_STRICT_HTTPS: "false"   # Disables HTTPS requirement for admin
+      KC_HOSTNAME_STRICT: "false"
       KC_SPI_PASSWORD_HASHING__ARGON2__MEMORY: 65536
       # Sets parallelism threads to 2
       KC_SPI_PASSWORD_HASHING__ARGON2__PARALLELISM: 2
     volumes: # Persist Keycloak data to avoid losing it when the container restarts
       - keycloak_data:/opt/keycloak/data/
-      # - ./realm-config.json:/opt/keycloak/data/import/realm.json:ro # Import realm config on startup this is example change it to your actual realm config file
+      - ./realm-config.json:/opt/keycloak/data/import/realm.json:ro # Import realm config on startup this is example change it to your actual realm config file
     networks:
       - restaurant-network
 
@@ -83,7 +87,6 @@ services:
 
 networks:
   restaurant-network:
-    external: true
     name: my_app_network
 
 volumes:
