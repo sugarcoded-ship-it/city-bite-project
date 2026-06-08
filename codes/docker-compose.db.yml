@@ -3,6 +3,8 @@ services:
   db:
     image: postgres:16-alpine
     restart: always
+    ports:
+      - "${DB_PORT}:5432"
     env_file:
       - .env # Tells Docker to load Master Vault secrets
     environment:
@@ -19,5 +21,4 @@ volumes:
 
 networks:
   restaurant-network:
-    external: true
     name: my_app_network
