@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RestController
+@RestController("ownerHomeController")
 @RequestMapping("/api/owner")
 class HomeController(private val userSyncService: UserSyncService) {
 
@@ -16,7 +16,7 @@ class HomeController(private val userSyncService: UserSyncService) {
     @PreAuthorize("hasRole('ROLE_OWNER')")
     fun ownerHome(@AuthenticationPrincipal jwt: Jwt) {
         // Store userInfo to db
-        val user = userSyncService.syncFromToken(jwt)
+        userSyncService.syncFromToken(jwt)
         // TODO: Return owner Dashboard
     }
 }
