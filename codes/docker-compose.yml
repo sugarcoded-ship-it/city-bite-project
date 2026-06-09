@@ -3,7 +3,9 @@ services:
     build: 
       context: ./backend/restaurant
       dockerfile: Dockerfile
-    restart: always
+    restart: on-failure
+    ports:
+      - "${BACKEND_PORT}:8080"
     env_file:
       - .env # Passes the secrets into Spring Boot
     environment:
@@ -20,6 +22,8 @@ services:
           target: /app/src
         - action: rebuild
           path: ./backend/restaurant/build.gradle.kts
+    volumes:
+      - ./backend/restaurant:/app
     networks:
       - restaurant-network
 
@@ -27,6 +31,9 @@ services:
     build: 
       context: ./frontend/restaurant
       dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "${FRONTEND_PORT}:5173"
     env_file:
       - .env # Passes the secrets into Vite
     depends_on:
@@ -50,12 +57,15 @@ services:
          path: ./frontend/restaurant/package.json
        - action: rebuild
          path: ./frontend/restaurant/vite.config.ts
+    volumes:
+      - ./frontend/restaurant:/app
+      - /app/node_modules 
     networks:
       - restaurant-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
-    command: start-dev --proxy-headers xforwarded # IMPORTANT (running Keycloak behind Nginx)
+    command: start-dev --import-realm --proxy-headers xforwarded # IMPORTANT (running Keycloak behind Nginx)
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
