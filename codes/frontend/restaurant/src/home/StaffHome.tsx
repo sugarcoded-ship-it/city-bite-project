@@ -13,7 +13,7 @@ export const StaffHome = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        apiClient<StaffDashboardData>('/staff/home')
+        apiClient<StaffDashboardData>('/staff/')
             .then((res) => {
                 setData(res);
                 setLoading(false);
