@@ -1,9 +1,9 @@
 import Keycloak from 'keycloak-js';
 
 const keycloak = new Keycloak({
-    url: 'http://localhost/auth',
-    realm: 'restaurant-realm',
-    clientId: 'restaurant-app'
+    url: import.meta.env.VITE_KEYCLOAK_URL,
+    realm: import.meta.env.VITE_REALM,
+    clientId: import.meta.env.VITE_CLIENT_ID
 });
 
 export default keycloak;
