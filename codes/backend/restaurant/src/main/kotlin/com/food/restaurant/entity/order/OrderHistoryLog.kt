@@ -21,16 +21,16 @@ class OrderHistoryLog(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Order_ID", nullable = true)
-    var order: Order? = null,
+    @JoinColumn(name = "Order_ID", nullable = false)
+    val order: Order,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Payment_Transaction_ID", nullable = true)
-    var paymentTransaction: PaymentTransaction? = null,
+    @JoinColumn(name = "Payment_Transaction_ID", nullable = false)
+    val paymentTransaction: PaymentTransaction,
 
-    @Column(name = "purchased_at", nullable = true)
-    var purchasedAt: LocalDateTime? = null,
+    @Column(name = "purchased_at", nullable = false)
+    val purchasedAt: LocalDateTime,
 
-    @Column(name = "received_at", nullable = true)
-    var receivedAt: LocalDateTime? = null
+    @Column(name = "received_at", nullable = false)
+    val receivedAt: LocalDateTime
 )

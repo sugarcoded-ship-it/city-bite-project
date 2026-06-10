@@ -21,32 +21,32 @@ class Store (
     val id: Int = 0,
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = true)
-    var owner: User? = null,
+    @JoinColumn(name = "keycloak_uuid", nullable = false)
+    val owner: User,
 
     @Column(name = "store_name", nullable = false)
     var storeName: String,
 
-    @Column(name = "store_address", nullable = true)
-    var storeAddress: String? = null,
+    @Column(name = "store_address", nullable = false)
+    var storeAddress: String,
 
     @Column(name = "logo_url", nullable = true)
     var logoUrl: String? = null,
 
-    @Column(name = "phone", nullable = true)
-    var phone: String? = null,
+    @Column(name = "phone", nullable = false)
+    val phone: String,
 
-    @Column(name = "city", nullable = true)
-    var city: String? = null,
+    @Column(name = "city", nullable = false)
+    var city: String,
 
-    @Column(name = "postal_code", nullable = true)
-    var postalCode: String? = null,
+    @Column(name = "postal_code", nullable = false)
+    var postalCode: String,
 
-    @Column(name = "open_time", nullable = true)
-    var openTime: LocalTime? = null,
+    @Column(name = "open_time", nullable = false)
+    var openTime: LocalTime,
 
-    @Column(name = "close_time", nullable = true)
-    var closeTime: LocalTime? = null,
+    @Column(name = "close_time", nullable = false)
+    var closeTime: LocalTime,
 
     @Column(name = "is_open", nullable = false)
     var isOpen: Boolean = false

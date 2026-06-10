@@ -20,10 +20,10 @@ class OrderItemSelection(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Order_Detail_ID", nullable = true)
-    var orderDetail: OrderDetail? = null,
+    @JoinColumn(name = "Order_Detail_ID", nullable = false)
+    val orderDetail: OrderDetail,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Choice_ID", nullable = true)
-    var optionChoice: OptionChoice? = null
+    @JoinColumn(name = "Choice_ID", nullable = false)
+    val optionChoice: OptionChoice
 )

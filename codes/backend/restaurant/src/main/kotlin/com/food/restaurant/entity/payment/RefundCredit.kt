@@ -21,8 +21,8 @@ class RefundCredit(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = true)
-    var customer: User? = null,
+    @JoinColumn(name = "keycloak_uuid", nullable = false)
+    val customer: User,
 
     @Column(name = "Amount", nullable = false)
     var amount: BigDecimal = BigDecimal.ZERO
