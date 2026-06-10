@@ -20,23 +20,23 @@ class Order(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Order_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = true)
+    @JoinColumn(name = "staff_uuid", nullable = true)
     var staff: User? = null, // This should be Driver's ID. Therefore, on the preparation state this column should be nullable
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = false)
-    val customer: User,
+    @JoinColumn(name = "customer_uuid", nullable = false)
+    var customer: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Address_ID", nullable = false)
-    val address: Address,
+    var address: Address,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Order_Status_ID", nullable = false)
-    val orderStatus: OrderStatus,
+    var orderStatus: OrderStatus,
 
     @Column(name = "total_price", nullable = false)
     var totalPrice: BigDecimal,

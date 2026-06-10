@@ -19,15 +19,15 @@ class PaymentTransaction(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Payment_Transaction_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Order_ID", nullable = false)
-    val order: Order,
+    var order: Order,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Method_ID", nullable = false)
-    val paymentMethod: PaymentMethod,
+    var paymentMethod: PaymentMethod,
 
     @Column(name = "amount", nullable = false)
     val amount: BigDecimal,

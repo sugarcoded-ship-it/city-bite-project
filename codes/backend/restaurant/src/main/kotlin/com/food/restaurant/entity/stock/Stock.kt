@@ -20,11 +20,11 @@ class Stock(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Stock_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Stock_Category_ID", nullable = false)
-    val stockCategory: StockCategory,
+    var stockCategory: StockCategory,
 
     @Column(name = "name", nullable = false)
     var name: String,

@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.LocalTime
@@ -18,11 +19,11 @@ class Store (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Store_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = false)
-    val owner: User,
+    @JoinColumn(name = "keycloak_uuid", nullable = false, unique = true)
+    var owner: User,
 
     @Column(name = "store_name", nullable = false)
     var storeName: String,

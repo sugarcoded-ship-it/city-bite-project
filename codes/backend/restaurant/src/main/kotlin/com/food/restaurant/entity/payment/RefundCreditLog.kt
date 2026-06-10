@@ -18,15 +18,15 @@ class RefundCreditLog(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Refund_Log_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Payment_Transaction_ID", nullable = false)
-    val paymentTransaction: PaymentTransaction,
+    var paymentTransaction: PaymentTransaction,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Customer_User_ID", nullable = false)
-    val customer: User,
+    @JoinColumn(name = "keycloak_uuid", nullable = false)
+    var customer: User,
 
     @Column(name = "Amount", nullable = false)
     val amount: BigDecimal

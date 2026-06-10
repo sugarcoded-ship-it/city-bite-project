@@ -17,11 +17,11 @@ class OptionChoice(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Choice_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Group_ID", nullable = false)
-    val optionGroup: OptionGroup,
+    var optionGroup: OptionGroup,
 
     @Column(name = "Choice_Name", nullable = false)
     var choiceName: String,

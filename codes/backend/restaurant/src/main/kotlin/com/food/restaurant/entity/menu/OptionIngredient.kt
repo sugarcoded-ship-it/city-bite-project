@@ -21,15 +21,15 @@ class OptionIngredient(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Option_Recipe_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Choice_ID", nullable = false)
-    val optionChoice: OptionChoice,
+    var optionChoice: OptionChoice,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Stock_ID", nullable = false)
-    val stock: Stock,
+    var stock: Stock,
 
     @Column(name = "amount", nullable = false)
     var amount: BigDecimal = BigDecimal.ZERO,

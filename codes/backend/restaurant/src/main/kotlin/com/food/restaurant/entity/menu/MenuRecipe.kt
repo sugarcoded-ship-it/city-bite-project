@@ -21,15 +21,15 @@ class MenuRecipe(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Recipe_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Menu_ID", nullable = false)
-    val menuItem: MenuItem,
+    var menuItem: MenuItem,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Stock_ID", nullable = false)
-    val stock: Stock,
+    var stock: Stock,
 
     @Column(name = "amount", nullable = false)
     var amount: BigDecimal,
