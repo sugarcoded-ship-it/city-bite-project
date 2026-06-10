@@ -6,24 +6,23 @@ import keycloak from './security/keycloak.ts';
 
 keycloak.onTokenExpired = () => {
     console.log('Token expired. Attempting to refresh...');
-
     // Refresh token if it expires in the next 30 seconds.
     keycloak.updateToken(30).then((refreshed) => {
         if (refreshed) {
             console.log('Token successfully refreshed');
-            // Update the local storage with the new fresh token
-            localStorage.setItem('access_token', keycloak.token ?? '');
+            // keycloak silently hold token in memory
         }
     }).catch(() => {
         console.error('Session completely expired. Redirecting to login...');
-        // Force redirect to login
+        // Force redirect to log in
         keycloak.login();
     });
 };
 
 keycloak.init({
     onLoad: 'login-required', // Forces browser redirect to Keycloak before React mounts
-    checkLoginIframe: false
+    checkLoginIframe: false,
+    pkceMethod: 'S256' // Prevent Interception attack when the provider (Google, facebook, etc.) sent an authorization code back to the app via a redirect url
 }).then((authenticated) => {
     if (authenticated) {
         // Store token for your backend API calls
