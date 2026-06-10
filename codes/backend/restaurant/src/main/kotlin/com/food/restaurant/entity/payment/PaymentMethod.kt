@@ -13,7 +13,7 @@ class PaymentMethod(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Method_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @Column(name = "method_name", nullable = false)
     var methodName: String

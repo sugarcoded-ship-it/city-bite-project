@@ -18,18 +18,18 @@ class OrderDetail(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Order_Detail_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Order_ID", nullable = true)
-    var order: Order? = null,
+    @JoinColumn(name = "Order_ID", nullable = false)
+    var order: Order,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Menu_ID", nullable = true)
-    var menuItem: MenuItem? = null,
+    @JoinColumn(name = "Menu_ID", nullable = false)
+    var menuItem: MenuItem,
 
     @Column(name = "amount", nullable = false)
-    var amount: Int = 1,
+    var amount: Int,
 
     @Column(name = "special_request", nullable = true)
     var specialRequest: String? = null,

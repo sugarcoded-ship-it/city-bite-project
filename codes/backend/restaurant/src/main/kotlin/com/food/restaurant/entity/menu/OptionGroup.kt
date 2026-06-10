@@ -16,11 +16,11 @@ class OptionGroup(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Group_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Menu_ID", nullable = true)
-    var menuItem: MenuItem? = null,
+    @JoinColumn(name = "Menu_ID", nullable = false)
+    var menuItem: MenuItem,
 
     @Column(name = "Group_Name", nullable = false)
     var groupName: String,

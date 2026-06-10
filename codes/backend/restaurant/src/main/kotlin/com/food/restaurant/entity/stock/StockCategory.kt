@@ -13,7 +13,7 @@ class StockCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Stock_Category_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @Column(name = "name", nullable = false)
     var name: String

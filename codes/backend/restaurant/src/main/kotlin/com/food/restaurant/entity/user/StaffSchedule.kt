@@ -18,21 +18,21 @@ class StaffSchedule(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Schedule_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = true)
-    var staff: User? = null,
+    @JoinColumn(name = "keycloak_uuid", nullable = false)
+    var staff: User,
 
     @Column(name = "Date", nullable = false)
     var date: LocalDate,
 
-    @Column(name = "start_time", nullable = true)
-    var startTime: LocalTime? = null,
+    @Column(name = "start_time", nullable = false)
+    var startTime: LocalTime,
 
-    @Column(name = "end_time", nullable = true)
-    var endTime: LocalTime? = null,
+    @Column(name = "end_time", nullable = false)
+    var endTime: LocalTime,
 
-    @Column(name = "status", nullable = true)
-    var status: String? = null
+    @Column(name = "status", nullable = false)
+    var status: String
 )

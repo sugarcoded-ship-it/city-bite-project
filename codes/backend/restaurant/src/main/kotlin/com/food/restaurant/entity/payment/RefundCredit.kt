@@ -18,11 +18,11 @@ class RefundCredit(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Credit_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = true)
-    var customer: User? = null,
+    @JoinColumn(name = "keycloak_uuid", nullable = false)
+    var customer: User,
 
     @Column(name = "Amount", nullable = false)
     var amount: BigDecimal = BigDecimal.ZERO
