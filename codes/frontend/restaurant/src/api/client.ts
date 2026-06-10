@@ -5,35 +5,33 @@ export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
 });
 
-// The Interceptor: Automatically runs before EVERY request
+// The Interceptor: Automatically runs before EVERY request and be the one who carry token to backend
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+    async (config) => {
+        try {
+            // Refresh if the token expires within 30s; resolves immediately otherwise.
+            await keycloak.updateToken(30);
+        } catch {
+            // Refresh token is also expired/invalid -> re-login.
+            keycloak.login();
+            return Promise.reject(new Error('Session expired'));
+        }
+        if (keycloak.token) {
+            config.headers.Authorization = `Bearer ${keycloak.token}`;
         }
         return config;
     },
-    (error) => {
-        // Handle request configuration errors here
-        return Promise.reject(error);
-});
+    (error) => Promise.reject(error)
+);
 
 // Catches 401 errors coming back from Spring Boot
 api.interceptors.response.use(
-    (response) => {
-        return response; //Success
-    },
+    (response) => response,
     (error) => {
-        // Check if the server returned a 401 Unauthorized status code
-        if (error.response && error.response.status === 401) {
+        if (error.response?.status === 401) {
             console.error("Session expired or invalid token. Redirecting to Keycloak...");
-            // Clean up the local storage
-            localStorage.removeItem('access_token');
-            // Redirect back to the login screen
-            keycloak.login();
+            keycloak.login(); // Redirect back to the login screen
         }
-
         return Promise.reject(error);
     }
 );
