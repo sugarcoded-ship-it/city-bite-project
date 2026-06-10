@@ -20,8 +20,8 @@ class OptionChoice(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Group_ID", nullable = true)
-    var optionGroup: OptionGroup? = null,
+    @JoinColumn(name = "Group_ID", nullable = false)
+    val optionGroup: OptionGroup,
 
     @Column(name = "Choice_Name", nullable = false)
     var choiceName: String,

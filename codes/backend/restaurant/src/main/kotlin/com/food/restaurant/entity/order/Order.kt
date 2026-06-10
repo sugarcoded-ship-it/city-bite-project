@@ -24,19 +24,19 @@ class Order(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "keycloak_uuid", nullable = true)
-    var staff: User? = null,
+    var staff: User? = null, // This should be Driver's ID. Therefore, on the preparation state this column should be nullable
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keycloak_uuid", nullable = true)
-    var customer: User? = null,
+    @JoinColumn(name = "keycloak_uuid", nullable = false)
+    val customer: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Address_ID", nullable = true)
-    var address: Address? = null,
+    @JoinColumn(name = "Address_ID", nullable = false)
+    val address: Address,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Order_Status_ID", nullable = true)
-    var orderStatus: OrderStatus? = null,
+    @JoinColumn(name = "Order_Status_ID", nullable = false)
+    val orderStatus: OrderStatus,
 
     @Column(name = "total_price", nullable = false)
     var totalPrice: BigDecimal,

@@ -21,8 +21,8 @@ class FinancialRecord(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Store_ID", nullable = true)
-    var store: Store? = null,
+    @JoinColumn(name = "Store_ID", nullable = false)
+    val store: Store,
 
     @Column(name = "Update_At", nullable = false)
     var updateAt: LocalDateTime = LocalDateTime.now()

@@ -21,13 +21,13 @@ class RefundCreditLog(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Payment_Transaction_ID", nullable = true)
-    var paymentTransaction: PaymentTransaction? = null,
+    @JoinColumn(name = "Payment_Transaction_ID", nullable = false)
+    val paymentTransaction: PaymentTransaction,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Customer_User_ID", nullable = true)
-    var customer: User? = null,
+    @JoinColumn(name = "Customer_User_ID", nullable = false)
+    val customer: User,
 
     @Column(name = "Amount", nullable = false)
-    var amount: BigDecimal
+    val amount: BigDecimal
 )

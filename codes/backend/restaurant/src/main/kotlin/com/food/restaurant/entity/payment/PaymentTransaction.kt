@@ -22,24 +22,24 @@ class PaymentTransaction(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Order_ID", nullable = true)
-    var order: Order? = null,
+    @JoinColumn(name = "Order_ID", nullable = false)
+    val order: Order,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Method_ID", nullable = true)
-    var paymentMethod: PaymentMethod? = null,
+    @JoinColumn(name = "Method_ID", nullable = false)
+    val paymentMethod: PaymentMethod,
 
     @Column(name = "amount", nullable = false)
-    var amount: BigDecimal,
+    val amount: BigDecimal,
 
     @Column(name = "currency", nullable = false)
-    var currency: String = "USD",
+    val currency: String = "THB",
 
-    @Column(name = "reference_id", nullable = true)
-    var referenceId: String? = null,
+    @Column(name = "reference_id", nullable = false)
+    val referenceId: String,
 
-    @Column(name = "description", nullable = true)
-    var description: String? = null,
+    @Column(name = "description", nullable = false)
+    val description: String,
 
     @Column(name = "created_at", nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()

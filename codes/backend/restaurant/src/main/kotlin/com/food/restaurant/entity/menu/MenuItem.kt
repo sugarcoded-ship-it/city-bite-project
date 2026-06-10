@@ -20,12 +20,12 @@ class MenuItem(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Category_ID", nullable = true)
-    var category: MenuCategory? = null,
+    @JoinColumn(name = "Category_ID", nullable = false)
+    val category: MenuCategory,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Status_ID", nullable = true)
-    var status: MenuStatus? = null,
+    @JoinColumn(name = "Status_ID", nullable = false)
+    val status: MenuStatus,
 
     @Column(name = "name", nullable = false)
     var name: String,

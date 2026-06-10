@@ -19,8 +19,8 @@ class OptionGroup(
     val id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Menu_ID", nullable = true)
-    var menuItem: MenuItem? = null,
+    @JoinColumn(name = "Menu_ID", nullable = false)
+    val menuItem: MenuItem,
 
     @Column(name = "Group_Name", nullable = false)
     var groupName: String,
