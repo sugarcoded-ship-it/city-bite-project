@@ -1,0 +1,13 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 1. Check what files changed during the git pull
+changed_files="$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)"
+
+# 2. If the frontend package file changed, run install automatically
+if echo "$changed_files" | grep --quiet "codes/frontend/restaurant/package.json"; then
+  echo "========================================================"
+  echo "Frontend packages changed! Running npm install..."
+  echo "========================================================"
+  cd codes/frontend/restaurant && npm install
+fi
