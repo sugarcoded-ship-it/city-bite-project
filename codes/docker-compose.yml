@@ -11,6 +11,10 @@ services:
     environment:
       - KEYCLOAK_ADMIN_USER=${KEYCLOAK_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KEYCLOAK_INTERNAL_URL=${KEYCLOAK_INTERNAL_URL}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
@@ -39,9 +43,9 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_KEYCLOAK_URL=http://localhost/auth
-      - VITE_CLIENT_ID=restaurant-app
-      - VITE_REALM=restaurant-realm
+      - VITE_KEYCLOAK_URL=${KEYCLOAK_URL}
+      - VITE_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - VITE_REALM=${KEYCLOAK_REALM}
     develop:
       watch:
        - action: sync
@@ -69,7 +73,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_HOSTNAME_URL: http://localhost/auth/ 
+      KC_HOSTNAME_URL: ${KEYCLOAK_URL}
       KC_HTTP_RELATIVE_PATH: /auth 
       # Sets memory cost to 65536 KB (64 MB) protecting against brute-force attacks (GPU attacks in particular)
       KC_HOSTNAME_STRICT_HTTPS: "false"   # Disables HTTPS requirement for admin
@@ -92,6 +96,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - keycloak
     networks:
       - restaurant-network
 
