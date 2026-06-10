@@ -18,15 +18,15 @@ class OrderHistoryLog(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Order_History_Log_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Order_ID", nullable = false)
-    val order: Order,
+    var order: Order,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Payment_Transaction_ID", nullable = false)
-    val paymentTransaction: PaymentTransaction,
+    var paymentTransaction: PaymentTransaction,
 
     @Column(name = "purchased_at", nullable = false)
     val purchasedAt: LocalDateTime,

@@ -17,13 +17,13 @@ class OrderItemSelection(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Selection_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Order_Detail_ID", nullable = false)
-    val orderDetail: OrderDetail,
+    var orderDetail: OrderDetail,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Choice_ID", nullable = false)
-    val optionChoice: OptionChoice
+    var optionChoice: OptionChoice
 )

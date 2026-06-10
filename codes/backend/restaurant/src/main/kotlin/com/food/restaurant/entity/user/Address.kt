@@ -16,11 +16,11 @@ class Address(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Address_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "keycloak_uuid", nullable = false)
-    val customer: User,
+    var customer: User,
 
     @Column(name = "address_info", nullable = true)
     var addressInfo: String? = null,

@@ -13,7 +13,7 @@ class MenuStatus(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Status_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @Column(name = "name", nullable = false)
     var name: String

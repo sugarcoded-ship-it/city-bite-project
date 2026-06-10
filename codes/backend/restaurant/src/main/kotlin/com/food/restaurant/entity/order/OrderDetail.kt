@@ -18,15 +18,15 @@ class OrderDetail(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Order_Detail_ID")
-    val id: Int = 0,
+    var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Order_ID", nullable = false)
-    val order: Order,
+    var order: Order,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Menu_ID", nullable = false)
-    val menuItem: MenuItem,
+    var menuItem: MenuItem,
 
     @Column(name = "amount", nullable = false)
     var amount: Int,
