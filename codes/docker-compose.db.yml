@@ -1,0 +1,23 @@
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    env_file:
+      - .env # Tells Docker to load Master Vault secrets
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - restaurant-network
+
+volumes:
+  pgdata:
+
+networks:
+  restaurant-network:
+    external: true
+    name: my_app_network

@@ -1,0 +1,58 @@
+services:
+  backend:
+    build: 
+      context: ./backend/restaurant
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env # Passes the secrets into Spring Boot
+    deploy:
+      replicas: 3
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/restaurant/src
+          target: /app/src
+        - action: rebuild
+          path: ./backend/restaurant/build.gradle.kts
+    networks:
+      - restaurant-network
+
+  frontend:
+    build: 
+      context: ./frontend/restaurant
+      dockerfile: Dockerfile
+    env_file:
+      - .env # Passes the secrets into Vite
+    depends_on:
+      - backend
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/restaurant/src
+          target: /app/src
+        - action: rebuild
+          path: ./frontend/restaurant/package.json
+    networks:
+      - restaurant-network
+
+  proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - restaurant-network
+
+
+volumes:
+  pgdata:
+
+networks:
+  restaurant-network:
+    external: true
+    name: my_app_network
