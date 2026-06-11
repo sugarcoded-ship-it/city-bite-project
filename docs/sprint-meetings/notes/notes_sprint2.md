@@ -48,6 +48,8 @@ Complete remaining database tables and relationships
 Refine transaction-related ERD design
 Configure backend infrastructure and API integration
 Test database schema implementation
+complete middle fidelity application work flow of customer, staff, and owner
+Completely finish authentication system
 
 ## 4. Risks / Blockers (if any)
 Communication and coordination between frontend and backend development
