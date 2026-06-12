@@ -1,6 +1,6 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.entity.User
+import com.food.restaurant.entity.user.User
 import com.food.restaurant.repository.UserRepository
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
