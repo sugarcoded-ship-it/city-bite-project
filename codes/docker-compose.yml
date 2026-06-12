@@ -4,8 +4,6 @@ services:
       context: ./backend/restaurant
       dockerfile: Dockerfile
     restart: on-failure
-    ports:
-      - "${BACKEND_PORT}:8080"
     env_file:
       - .env # Passes the secrets into Spring Boot
     environment:
@@ -34,8 +32,6 @@ services:
       context: ./frontend/restaurant
       dockerfile: Dockerfile
     restart: on-failure
-    ports:
-      - "${FRONTEND_PORT}:5173"
     env_file:
       - .env # Passes the secrets into Vite
     depends_on:
