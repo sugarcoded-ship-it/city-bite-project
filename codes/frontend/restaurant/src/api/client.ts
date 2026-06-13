@@ -1,11 +1,42 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
+import axios from 'axios';
+import keycloak from '../security/keycloak.ts';
 
-export const apiClient = async <T>(endpoint: string, options: RequestInit = {}): Promise<T> => {
-  const response = await fetch(`${BASE_URL}${endpoint}`, options);
-  
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`);
-  }
-  
-  return response.json() as Promise<T>;
+export const api = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,
+});
+
+// The Interceptor: Automatically runs before EVERY request and be the one who carry token to backend
+api.interceptors.request.use(
+    async (config) => {
+        try {
+            // Refresh if the token expires within 30s; resolves immediately otherwise.
+            await keycloak.updateToken(30);
+        } catch {
+            // Refresh token is also expired/invalid -> re-login.
+            keycloak.login();
+            return Promise.reject(new Error('Session expired'));
+        }
+        if (keycloak.token) {
+            config.headers.Authorization = `Bearer ${keycloak.token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// Catches 401 errors coming back from Spring Boot
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            console.error("Session expired or invalid token. Redirecting to Keycloak...");
+            keycloak.login(); // Redirect back to the login screen
+        }
+        return Promise.reject(error);
+    }
+);
+
+export const apiClient = async <T>(endpoint: string, options = {}): Promise<T> => {
+    const response = await api.get<T>(endpoint, options);
+    return response.data;
 };
