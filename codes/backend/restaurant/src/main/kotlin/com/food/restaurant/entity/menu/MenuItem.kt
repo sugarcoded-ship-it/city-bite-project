@@ -34,5 +34,5 @@ class MenuItem(
     var price: BigDecimal,
 
     @Column(name = "menu_pic", nullable = true)
-    var menuPic: String? = null
+    var menu_pic: String? = null
 )

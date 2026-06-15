@@ -9,29 +9,29 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import java.sql.Timestamp
 import java.time.LocalDate
-import java.time.LocalTime
 
 @Entity
-@Table(name = "Staff_Schedule")
-class StaffSchedule(
+@Table(name = "Leave_Day")
+class LeaveDay(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Schedule_ID")
+    @Column(name = "Leave_Day_ID")
     var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "keycloak_uuid", nullable = false)
     var staff: User,
 
-    @Column(name = "Date", nullable = false)
-    var date: LocalDate,
+    @Column(name = "startDate", nullable = false)
+    var startDate: LocalDate,
 
-    @Column(name = "start_time", nullable = false)
-    var startTime: LocalTime,
+    @Column(name = "endDate", nullable = false)
+    var endDate: LocalDate,
 
-    @Column(name = "end_time", nullable = false)
-    var endTime: LocalTime,
+    @Column(name = "createdAt", nullable = false)
+    var date: Timestamp,
 
     @Column(name = "status", nullable = false)
     var status: String
