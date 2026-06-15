@@ -32,7 +32,4 @@ class MenuItem(
 
     @Column(name = "price", nullable = false)
     var price: BigDecimal,
-
-    @Column(name = "menu_pic", nullable = true)
-    var menuPic: String? = null
 )

@@ -31,9 +31,6 @@ class Store (
     @Column(name = "store_address", nullable = false)
     var storeAddress: String,
 
-    @Column(name = "logo_url", nullable = true)
-    var logoUrl: String? = null,
-
     @Column(name = "phone", nullable = false)
     val phone: String,
 
