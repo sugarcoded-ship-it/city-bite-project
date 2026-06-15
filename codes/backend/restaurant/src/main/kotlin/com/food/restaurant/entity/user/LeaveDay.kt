@@ -17,7 +17,7 @@ import java.time.LocalDate
 class LeaveDay(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Schedule_ID")
+    @Column(name = "Leave_Day_ID")
     var id: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
