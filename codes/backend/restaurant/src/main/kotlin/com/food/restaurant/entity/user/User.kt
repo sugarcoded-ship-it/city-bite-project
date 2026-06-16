@@ -30,6 +30,4 @@ class User(
     @Column(name = "phone_number")
     var phoneNumber: String? = null,
 
-    @Column(nullable = true)
-    var address: String? = null
 )
