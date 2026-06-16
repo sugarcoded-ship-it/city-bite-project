@@ -1,54 +1,69 @@
 name: CI
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
     branches:
       - '**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  build:
+  backend-build:
+    name: Build Spring Boot Backend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: codes/backend/restaurant
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Example: Set up Node.js; replace with Python, Java, etc. as needed.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant Execute Permissions for Gradle Wrapper
+        run: chmod +x gradlew
+      
+      - name: Compile and Test with Gradle
+        run: ./gradlew build
+
+  frontend-build:
+    name: Build React Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: codes/frontend/restaurant
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: codes/frontend/restaurant/package-lock.json
 
       - name: Install dependencies
-        run: |
-          if [ -f package.json ]; then
-            npm ci
-          else
-            echo "No package.json found. Skipping install."
-          fi
+        run: npm ci
 
-      - name: Run Tests
-        run: |
-          if [ -f package.json ]; then
-            npm test
-          else
-            echo "No tests defined. Skipping."
-          fi
+      - name: Lint
+        run: npm run lint --if-present
+        
+      - name: Test
+        run: npm run test --if-present
 
-      - name: Lint Code
-        run: |
-          if [ -f package.json ]; then
-            npm run lint || echo "No lint script defined."
-          else
-            echo "No lint script defined."
-          fi
-
-      - name: Build Application
-        run: |
-          # Placeholder build step.  Replace with your build command.
-          echo "Build step placeholder"
-
-      - name: Notify
-        if: failure()
-        run: |
-          echo "CI failed; please check the logs."
+      - name: Build React App
+        run: npm run build
