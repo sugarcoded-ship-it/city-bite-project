@@ -19,7 +19,7 @@ class OrderStatus(
     var id: Int = 0,
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("PENDING")
+    @ColumnDefault("'PENDING'")
     @Column(name = "Status_Name", nullable = false)
     var statusName: orderStatusEnum = orderStatusEnum.PENDING
 )
