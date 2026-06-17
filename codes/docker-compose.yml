@@ -75,6 +75,7 @@ services:
     volumes: # Persist Keycloak data to avoid losing it when the container restarts
       - keycloak_data:/opt/keycloak/data/
       - ./realm-config.json:/opt/keycloak/data/import/realm.json:ro # Import realm config on startup this is example change it to your actual realm config file
+      - ./keycloak-themes/restaurant-theme:/opt/keycloak/themes/restaurant-theme
     networks:
       - restaurant-network
 
