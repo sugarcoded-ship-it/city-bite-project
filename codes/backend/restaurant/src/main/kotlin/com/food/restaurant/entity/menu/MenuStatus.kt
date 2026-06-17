@@ -19,7 +19,7 @@ class MenuStatus(
     var id: Int = 0,
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("DEACTIVATED")
+    @ColumnDefault("'DEACTIVATED'")
     @Column(name = "name", nullable = false)
     var name: menuStatusEnum = menuStatusEnum.DEACTIVATED
 )
