@@ -10,10 +10,8 @@ import java.util.UUID
 
 @Repository
 interface StaffRepository : JpaRepository<Staff, UUID> {
-    fun countByStatus(status: StaffStatus): Long
-    fun countByStatus(status: String): Long
     @Query("""
-        SELECT new com.food.restaurant.dto.staff.OwnerStaffListResponse(
+        SELECT new com.food.restaurant.dto.staff.StaffListResponse(
             s.id,
             u.username,
             concat(u.firstName, ' ', u.lastName), 
@@ -23,4 +21,6 @@ interface StaffRepository : JpaRepository<Staff, UUID> {
         JOIN s.user u
     """)
     fun findAllStaffList(): List<StaffListResponse>
+
+    fun countByStatus(status: StaffStatus): Long
 }
