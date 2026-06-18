@@ -37,7 +37,7 @@ class CartService(
     }
 
     @Transactional
-    fun clearCartForUser(userUuid: String) {
-        cartRepository.deleteByUserUuid(userUuid)
+    fun clearCartForUser(userId: String) {
+        cartRepository.deleteByUserId(userId)
     }
 }
