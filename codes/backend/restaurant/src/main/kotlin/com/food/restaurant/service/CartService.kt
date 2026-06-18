@@ -35,4 +35,9 @@ class CartService(
     fun getCartItems(userId: String): List<CartItem> {
         return cartRepository.findAllByUserId(userId)
     }
+
+    @Transactional
+    fun clearCartForUser(userUuid: String) {
+        cartRepository.deleteByUserUuid(userUuid)
+    }
 }
