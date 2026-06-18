@@ -40,6 +40,20 @@ export const CustomerHome = () => {
             });
     }, [selectedCategory]);
 
+    const handleAddToCart = async (menuId: number) => {
+        try {
+            await apiClient('/customer/cart/add', {
+                method: 'POST',
+                data: { menuId }
+            });
+
+            alert('Added to cart!');
+        } catch (err) {
+            console.error('Failed to add to cart:', err);
+            alert('Could not add item to cart.');
+        }
+    };
+
     return (
         <div className={styles.container}>
             <LogoutButton />
@@ -65,8 +79,6 @@ export const CustomerHome = () => {
                 ))}
             </div>
 
-            {/* loading/error states... */}
-
             {!loading && !error && (
                 <div className={styles.menuGrid}>
                     {items.map((item) => (
@@ -77,6 +89,14 @@ export const CustomerHome = () => {
                             <div className={styles.menuInfo}>
                                 <p className={styles.menuName}>{item.name}</p>
                                 <p className={styles.menuPrice}>${item.price.toFixed(2)}</p>
+
+                                {/* The working Add to Cart Button */}
+                                <button
+                                    className={styles.addButton}
+                                    onClick={() => handleAddToCart(item.id)}
+                                >
+                                    Add to Cart
+                                </button>
                             </div>
                         </div>
                     ))}
