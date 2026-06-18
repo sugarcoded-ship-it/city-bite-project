@@ -25,6 +25,15 @@ interface OptionGroup {
     choices: OptionChoice[];
 }
 
+interface CartItem {
+    menuId: number;
+    name: string;
+    price: number;
+    quantity: number;
+    specialRequest: string | null;
+    selectedCustomizations: string[];
+}
+
 const CATEGORIES = ['Appetizer', 'Main Dish', 'Broth', 'Side Dish', 'Dessert', 'Drink', "Chef's Special"];
 
 export const CustomerHome = () => {
@@ -42,18 +51,24 @@ export const CustomerHome = () => {
 
     const [selectedChoices, setSelectedChoices] = useState<Record<number, number[]>>({});
 
+    const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
     useEffect(() => {
         apiClient('/customer/').catch((err) => console.error('Customer sync failed:', err));
     }, []);
 
-    // Load items in active cart on refresh to keep badge accurate
-    useEffect(() => {
-        apiClient<any[]>('/customer/cart')
-            .then((cartItems) => {
-                const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const updateCartCountBadge = () => {
+        apiClient<CartItem[]>('/customer/cart')
+            .then((itemsInCart) => {
+                const totalItems = itemsInCart.reduce((sum, item) => sum + item.quantity, 0);
                 setCartCount(totalItems);
             })
-            .catch((err) => console.error('Failed to pre-fetch cart size:', err));
+            .catch((err) => console.error('Failed to update cart badge metrics:', err));
+    };
+
+    useEffect(() => {
+        updateCartCountBadge();
     }, []);
 
     useEffect(() => {
@@ -100,6 +115,20 @@ export const CustomerHome = () => {
         setSelectedChoices({});
     };
 
+    const openCartModal = async () => {
+        try {
+            const itemsInCart = await apiClient<CartItem[]>('/customer/cart');
+            setCartItems(itemsInCart);
+            setIsCartOpen(true);
+        } catch (err) {
+            console.error('Could not fetch active cart info:', err);
+        }
+    };
+
+    const closeCartModal = () => {
+        setIsCartOpen(false);
+    };
+
     const handleChoiceSelection = (groupId: number, choiceId: number, maxChoices: number) => {
         setSelectedChoices((prev) => {
             const currentGroupSelections = prev[groupId] || [];
@@ -134,6 +163,10 @@ export const CustomerHome = () => {
         return selectedItem.price + extrasAmount;
     };
 
+    const calculateCartGrandTotal = () => {
+        return cartItems.reduce((grandTotal, item) => grandTotal + (item.price * item.quantity), 0);
+    };
+
     const handleConfirmAddToCart = async () => {
         if (!selectedItem) return;
 
@@ -154,7 +187,7 @@ export const CustomerHome = () => {
                 }
             });
 
-            setCartCount((prev) => prev + 1);
+            updateCartCountBadge();
             setToastMessage(`Added ${selectedItem.name} to cart!`);
             setTimeout(() => setToastMessage(null), 3000);
 
@@ -168,12 +201,11 @@ export const CustomerHome = () => {
 
     return (
         <div className={styles.container}>
-            {/* Navigation Header View */}
+            {/* Header row area */}
             <div className={styles.headerRow}>
                 <h1 className={styles.title}>Menu</h1>
                 <div className={styles.actionsArea}>
-                    <div className={styles.cartWidget}>
-                        {/* Bootstrap Icon equivalent SVG for Cart */}
+                    <div className={styles.cartWidget} onClick={openCartModal} style={{ cursor: 'pointer' }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '6px' }}>
                             <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2m7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />
                         </svg>
@@ -188,7 +220,7 @@ export const CustomerHome = () => {
 
             <hr className={styles.divider} />
 
-            {/* Category selection row navigation */}
+            {/* Category horizontal filters mapping bar row element */}
             <div className={styles.filterRow}>
                 <button
                     className={`${styles.filterButton} ${selectedCategory === null ? styles.filterButtonActive : ''}`}
@@ -217,7 +249,6 @@ export const CustomerHome = () => {
                                     <img src={item.menuPic} alt={item.name} className={styles.menuImage} />
                                 ) : (
                                     <div className={styles.menuImage} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                                        {/* Bootstrap Icon image placeholder */}
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16" style={{ marginBottom: '4px' }}>
                                             <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
                                         </svg>
@@ -241,7 +272,7 @@ export const CustomerHome = () => {
                 </div>
             )}
 
-            {/* Dynamic Customization Intermediary Processing Modal Overlay view block */}
+            {/* Customizations Modal Overlay View Container */}
             {selectedItem && (
                 <div className={styles.modalOverlay} onClick={closeModal}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -262,7 +293,6 @@ export const CustomerHome = () => {
                                 <span className={styles.modalPrice}>${selectedItem.price.toFixed(2)}</span>
                             </div>
 
-                            {/* Dynamic Real DB Option Selections Loop Rendering Block */}
                             <div style={{ maxHeight: '280px', overflowY: 'auto', marginBottom: '16px', paddingRight: '4px' }}>
                                 {optionGroups.length === 0 ? (
                                     <p style={{ color: '#9ca3af', fontSize: '0.9rem', fontStyle: 'italic' }}>No customization options available for this item.</p>
@@ -322,7 +352,6 @@ export const CustomerHome = () => {
                                 )}
                             </div>
 
-                            {/* Customer special comments field text entry */}
                             <div className={styles.modalSectionTitle}>Special Instructions</div>
                             <textarea
                                 className={styles.noteInput}
@@ -342,10 +371,97 @@ export const CustomerHome = () => {
                 </div>
             )}
 
-            {/* Sliding Feedback Toast Notification window popup banner */}
+            {/* Active Shopping Cart Modal Popup */}
+            {isCartOpen && (
+                <div className={styles.modalOverlay} onClick={closeCartModal}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+                        <div className={styles.modalBody}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
+                                <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#111827' }}>Your Cart</h2>
+                                <button onClick={closeCartModal} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#6b7280' }}>✕</button>
+                            </div>
+
+                            {cartItems.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6b7280' }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16" style={{ marginBottom: '12px', color: '#d1d5db' }}>
+                                        <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5" />
+                                    </svg>
+                                    <p style={{ margin: 0, fontWeight: 500 }}>Your cart is empty</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div style={{ maxHeight: '320px', overflowY: 'auto', marginBottom: '20px', paddingRight: '4px' }}>
+                                        {cartItems.map((item, idx) => (
+                                            <div key={idx} style={{ padding: '14px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{ fontWeight: 700, color: '#111827' }}>{item.name}</span>
+                                                        <span style={{ fontSize: '12px', background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px', color: '#4b5563', fontWeight: 600 }}>
+                                                            x{item.quantity}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Selected Customization Options Tags */}
+                                                    {item.selectedCustomizations && item.selectedCustomizations.length > 0 && (
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+                                                            {item.selectedCustomizations.map((customText, cIdx) => (
+                                                                <span
+                                                                    key={cIdx}
+                                                                    style={{
+                                                                        fontSize: '11px',
+                                                                        background: '#f0f6ff',
+                                                                        color: '#2D7FF9',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '12px',
+                                                                        border: '1px solid #d0e1fd',
+                                                                        fontWeight: 500
+                                                                    }}
+                                                                >
+                                                                    {customText}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Customer Special Notes */}
+                                                    {item.specialRequest && (
+                                                        <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#ef4444', fontStyle: 'italic', fontWeight: 500 }}>
+                                                            Note: "{item.specialRequest}"
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div style={{ textAlign: 'right', fontWeight: 600, color: '#111827' }}>
+                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div style={{ borderTop: '2px solid #e5e7eb', paddingTop: '14px', marginBottom: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, fontSize: '1.15rem' }}>
+                                            <span style={{ color: '#374151' }}>Grand Total:</span>
+                                            <span style={{ color: '#2D7FF9' }}>${calculateCartGrandTotal().toFixed(2)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <button className={styles.cancelButton} onClick={closeCartModal} style={{ flex: 1 }}>
+                                            Continue Shopping
+                                        </button>
+                                        <button className={styles.confirmButton} style={{ flex: 1 }} onClick={() => alert("Proceeding to Checkout Page...")}>
+                                            Checkout
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Sliding Feedback Toast Notification */}
             {toastMessage && (
                 <div className={styles.toast}>
-                    {/* Bootstrap check-circle equivalent SVG */}
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px', display: 'inline-block', verticalAlign: 'text-bottom' }}>
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
                     </svg>
