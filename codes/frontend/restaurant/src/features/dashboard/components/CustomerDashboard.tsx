@@ -41,13 +41,11 @@ export const CustomerHome = () => {
     }, [selectedCategory]);
 
     return (
-        <div className="staff-home-container">
-            <div style={{ marginTop: '20px' }}>
-                <LogoutButton />
-            </div>
+        <div className={styles.container}>
+            <LogoutButton />
 
-            <h1>Menu</h1>
-            <hr />
+            <h1 className={styles.title}>Menu</h1>
+            <hr className={styles.divider} />
 
             <div className={styles.filterRow}>
                 <button
@@ -67,8 +65,7 @@ export const CustomerHome = () => {
                 ))}
             </div>
 
-            {loading && <div>Loading menu...</div>}
-            {error && <div style={{ color: 'red' }}>{error}</div>}
+            {/* loading/error states... */}
 
             {!loading && !error && (
                 <div className={styles.menuGrid}>
