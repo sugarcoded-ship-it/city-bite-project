@@ -19,7 +19,7 @@ class PaymentMethod(
     var id: Int = 0,
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("CASH_ON_DELIVERY")
+    @ColumnDefault("'CASH_ON_DELIVERY'")
     @Column(name = "method_name", nullable = false)
     var methodName: paymentMethodEnum = paymentMethodEnum.CASH_ON_DELIVERY
 )

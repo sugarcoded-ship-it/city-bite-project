@@ -1,0 +1,587 @@
+/* ============================================================
+   CityBite – Custom Keycloak Login / Register Theme
+   Brand Colors:
+     White:      #FFFFFF
+     Blue:       #2D7FF9
+     Navy Blue:  #0B1F4D
+   ============================================================ */
+
+/* ---------- Reset & Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: #FFFFFF;
+  color: #0B1F4D;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: #2D7FF9;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #0B1F4D;
+}
+
+/* ---------- Hide default Keycloak chrome ---------- */
+#kc-header,
+#kc-header-wrapper {
+  display: none !important;
+}
+
+#kc-locale {
+  display: none !important;
+}
+
+/* ---------- Back Button ---------- */
+.cb-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0B1F4D;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+  text-decoration: none;
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 10;
+}
+
+.cb-back-btn:hover {
+  color: #2D7FF9;
+  transform: translateX(-3px);
+}
+
+.cb-back-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+/* ---------- Main Layout ---------- */
+.cb-login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left panel – logo & tagline (desktop only) */
+.cb-brand-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  flex-shrink: 0;
+  height: 100vh;
+  padding: 48px 80px 48px 48px;
+  background: #FFFFFF;
+}
+
+.cb-brand-logo {
+  display: block;
+  margin: 0 auto;
+  max-width: 280px;
+  width: 80%;
+  height: auto;
+  margin-bottom: 28px;
+  animation: fadeInUp 0.6s ease both;
+}
+
+.cb-brand-tagline {
+  font-size: 1.3rem;
+  font-weight: 650;
+  color: #0B1F4D;
+  text-align: center;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: fadeInUp 0.6s ease 0.15s both;
+}
+
+/* Right panel – form area */
+.cb-form-panel {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 40px 48px 40px 80px;
+  background: #FFFFFF;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* ---------- Tab Navigation ---------- */
+.cb-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 32px;
+}
+
+.cb-tab {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #9ca3af;
+  padding-bottom: 8px;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+  text-decoration: none;
+}
+
+.cb-tab:hover {
+  color: #0B1F4D;
+}
+
+.cb-tab.active {
+  color: #2D7FF9;
+  border-bottom-color: #2D7FF9;
+}
+
+/* ---------- Form Card ---------- */
+.cb-form-card {
+  width: 440px;
+  max-width: 100%;
+  animation: fadeInUp 0.5s ease both;
+  margin: auto 0;
+  padding: 24px 0;
+}
+
+.cb-form-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #0B1F4D;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.cb-form-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+/* ---------- Mobile Logo (hidden on desktop) ---------- */
+.cb-mobile-logo {
+  display: none;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.cb-mobile-logo img {
+  max-width: 180px;
+  height: auto;
+}
+
+/* ---------- Form Inputs ---------- */
+.cb-form-group {
+  margin-bottom: 18px;
+}
+
+.cb-form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0B1F4D;
+  margin-bottom: 6px;
+}
+
+.cb-form-group input[type="text"],
+.cb-form-group input[type="password"],
+.cb-form-group input[type="email"] {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  color: #0B1F4D;
+  background: #f3f4f6;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cb-form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.cb-form-group input:focus {
+  border-color: #2D7FF9;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(45, 127, 249, 0.12);
+}
+
+.cb-form-group input:hover:not(:focus) {
+  background: #e8eaed;
+}
+
+/* ---------- Primary Button ---------- */
+.cb-btn-primary {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #2D7FF9 0%, #1a5ec7 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.25s ease, background 0.3s ease;
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+.cb-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(45, 127, 249, 0.35);
+  background: linear-gradient(135deg, #3d8cfa 0%, #2D7FF9 100%);
+}
+
+.cb-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(45, 127, 249, 0.25);
+}
+
+/* ---------- Social Login Section ---------- */
+.cb-social-divider {
+  display: flex;
+  align-items: center;
+  margin: 28px 0 20px;
+  gap: 16px;
+}
+
+.cb-social-divider::before,
+.cb-social-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.cb-social-divider span {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.cb-social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cb-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.25s ease, filter 0.2s ease;
+  text-decoration: none;
+}
+
+.cb-social-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  color: #FFFFFF;
+}
+
+.cb-social-btn:active {
+  transform: translateY(0);
+}
+
+.cb-social-btn img,
+.cb-social-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Social provider colors */
+.cb-social-btn.google {
+  background: #FFFFFF;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.cb-social-btn.google:hover {
+  color: #000000;
+  background: #f3f4f6;
+}
+
+.cb-social-btn.facebook {
+  background: #0B1F4D;
+}
+
+.cb-social-btn.line {
+  background: #06C755;
+}
+
+.cb-social-btn.github {
+  background: #0B1F4D;
+}
+
+.cb-social-btn.generic {
+  background: #2D7FF9;
+}
+
+/* ---------- Alerts / Messages ---------- */
+.cb-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.3s ease both;
+}
+
+.cb-alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.cb-alert-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.cb-alert-warning {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.cb-alert-info {
+  background: #eff6ff;
+  color: #2D7FF9;
+  border: 1px solid #bfdbfe;
+}
+
+/* ---------- Helper Links ---------- */
+.cb-helper-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.cb-helper-links a {
+  font-size: 0.84rem;
+  color: #2D7FF9;
+  font-weight: 500;
+}
+
+.cb-helper-links a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Footer Link ---------- */
+.cb-footer-text {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 0.88rem;
+  color: #6b7280;
+}
+
+.cb-footer-text a {
+  font-weight: 600;
+  color: #2D7FF9;
+}
+
+.cb-footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Required field star ---------- */
+.cb-required {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+/* ---------- Password Visibility Toggle ---------- */
+.cb-password-wrapper {
+  position: relative;
+}
+
+.cb-password-wrapper input {
+  padding-right: 48px;
+}
+
+.cb-password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.cb-password-toggle:hover {
+  color: #0B1F4D;
+}
+
+/* ---------- Checkbox ---------- */
+.cb-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.cb-checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2D7FF9;
+  cursor: pointer;
+}
+
+.cb-checkbox-group label {
+  font-size: 0.88rem;
+  color: #0B1F4D;
+  cursor: pointer;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .cb-login-wrapper {
+    flex-direction: column;
+  }
+
+  .cb-brand-panel {
+    display: none;
+  }
+
+  .cb-mobile-logo {
+    display: flex;
+  }
+
+  .cb-form-panel {
+    padding: 32px 20px;
+    align-items: flex-start;
+    padding-top: 80px;
+  }
+
+  .cb-back-btn {
+    top: 16px;
+    left: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cb-form-card {
+    max-width: 100%;
+  }
+
+  .cb-tabs {
+    gap: 32px;
+  }
+
+  .cb-form-title {
+    font-size: 1.3rem;
+  }
+
+  .cb-form-group input[type="text"],
+  .cb-form-group input[type="password"],
+  .cb-form-group input[type="email"] {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+  }
+
+  .cb-btn-primary {
+    padding: 13px;
+    font-size: 0.95rem;
+  }
+}
+
+/* ---------- Override Keycloak base styles ---------- */
+#kc-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+#kc-content-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+#kc-container-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#kc-form-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.login-pf body,
+body.login-pf {
+  background: #FFFFFF !important;
+}
+
+/* Override any residual PF4 card styles */
+.pf-c-login,
+.login-pf,
+.card-pf {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
