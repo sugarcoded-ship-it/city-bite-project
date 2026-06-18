@@ -21,7 +21,7 @@ class CartService(
         var quantity: Int
     )
 
-    fun addItem(userId: String, menuId: Int, specialRequest: String?, selectedChoices: Map<Int, List<Int>>) {
+    fun addItem(userId: String, menuId: Int, specialRequest: String?, selectedChoices: Map<Int, List<Int>>, quantity: Int = 1) {
         val userCart = activeCarts.getOrPut(userId) { mutableListOf() }
 
         val existingItem = userCart.find {
@@ -31,14 +31,14 @@ class CartService(
         }
 
         if (existingItem != null) {
-            existingItem.quantity += 1
+            existingItem.quantity += quantity
         } else {
             userCart.add(
                 CartItemSession(
                     menuId = menuId,
                     specialRequest = specialRequest,
                     selectedChoices = selectedChoices,
-                    quantity = 1
+                    quantity = quantity
                 )
             )
         }
@@ -70,5 +70,28 @@ class CartService(
 
     fun clearCartForUser(userId: String) {
         activeCarts.remove(userId)
+    }
+
+    fun updateQuantityByIndex(userId: String, itemIndex: Int, change: Int) {
+        val userCart = activeCarts[userId] ?: return
+
+        if (itemIndex in userCart.indices) {
+            val targetItem = userCart[itemIndex]
+            val prospectiveQuantity = targetItem.quantity + change
+
+            if (prospectiveQuantity <= 0) {
+                userCart.removeAt(itemIndex)
+            } else {
+                targetItem.quantity = prospectiveQuantity
+            }
+        }
+    }
+
+    fun removeItemByIndex(userId: String, itemIndex: Int) {
+        val userCart = activeCarts[userId] ?: return
+
+        if (itemIndex in userCart.indices) {
+            userCart.removeAt(itemIndex)
+        }
     }
 }
