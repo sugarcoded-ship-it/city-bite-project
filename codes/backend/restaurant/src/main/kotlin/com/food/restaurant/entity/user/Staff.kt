@@ -25,7 +25,7 @@ class Staff(
     var dayOffAmount: Int = 100,
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("DEACTIVATED")
+    @ColumnDefault("'DEACTIVATED'")
     @Column(nullable = false)
     var status: StaffStatus = StaffStatus.DEACTIVATED,
 )
