@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -53,7 +54,8 @@ class HomeController(
             userId = userId,
             menuId = request.menuId,
             specialRequest = request.specialRequest,
-            selectedChoices = request.selectedChoices ?: emptyMap()
+            selectedChoices = request.selectedChoices ?: emptyMap(),
+            quantity = request.quantity
         )
     }
 
@@ -78,10 +80,34 @@ class HomeController(
         return menuService.getMenuItemCustomizations(menuId)
     }
 
+    @PatchMapping("/cart/update")
+    @PreAuthorize("isAuthenticated()")
+    fun updateCartItemQuantity(
+        @RequestParam itemIndex: Int,
+        @RequestParam change: Int,
+        @AuthenticationPrincipal jwt: Jwt
+    ): List<CartItemResponse> {
+        val userId = jwt.subject
+        cartService.updateQuantityByIndex(userId, itemIndex, change)
+        return cartService.getCartItemsForUser(userId)
+    }
+
+    @DeleteMapping("/cart/remove/{itemIndex}")
+    @PreAuthorize("isAuthenticated()")
+    fun removeItemFromCart(
+        @PathVariable itemIndex: Int,
+        @AuthenticationPrincipal jwt: Jwt
+    ): List<CartItemResponse> {
+        val userId = jwt.subject
+        cartService.removeItemByIndex(userId, itemIndex)
+        return cartService.getCartItemsForUser(userId)
+    }
+
     data class AddToCartRequest(
         val menuId: Int,
         val specialRequest: String?,
-        val selectedChoices: Map<Int, List<Int>>?
+        val selectedChoices: Map<Int, List<Int>>?,
+        val quantity: Int = 1
     )
 
     data class CartItemResponse(
