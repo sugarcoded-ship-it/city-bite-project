@@ -1,59 +1,360 @@
+/* Container Layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    position: relative;
+}
+
+/* Header & Navigation Area */
+.headerRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.title {
+    color: #0B1F4D;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.actionsArea {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.divider {
+    border: none;
+    border-top: 2px solid #f3f4f6;
+    margin: 16px 0 24px 0;
+}
+
+/* Sticky Floating Cart Button Widget */
+.cartWidget {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 10px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.cartWidget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    border-color: #2D7FF9;
+}
+
+.cartIcon {
+    font-size: 1.2rem;
+}
+
+.cartText {
+    font-weight: 600;
+    color: #374151;
+}
+
+.cartBadge {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 14px;
+    text-align: center;
+}
+
+/* Filter Row Styles */
 .filterRow {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 16px 0;
+    gap: 10px;
+    margin-bottom: 32px;
 }
 
 .filterButton {
-    padding: 8px 16px;
-    border: 1px solid #d1d5db;
+    padding: 8px 18px;
+    border: 1px solid #e5e7eb;
     border-radius: 20px;
-    background: white;
+    background: #ffffff;
+    color: #4b5563;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .filterButton:hover {
-    background: #f3f4f6;
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
 }
 
 .filterButtonActive {
     background: #111827;
-    color: white;
+    color: #ffffff;
     border-color: #111827;
+    box-shadow: 0 4px 10px rgba(17, 24, 39, 0.15);
 }
 
+/* Modernized Fluid Responsive Grid */
 .menuGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
 }
 
+/* Clean Menu Cards with Elevating Shadow Hovers */
 .menuCard {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #f1f1f1;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
-    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menuCard:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #e5e7eb;
+}
+
+.imageWrapper {
+    width: 100%;
+    height: 160px;
+    background: #f9fafb;
+    overflow: hidden;
+    position: relative;
 }
 
 .menuImage {
     width: 100%;
-    height: 140px;
+    height: 100%;
     object-fit: cover;
-    background: #f3f4f6;
+    transition: transform 0.5s ease;
+}
+
+.menuCard:hover .menuImage {
+    transform: scale(1.06);
 }
 
 .menuInfo {
-    padding: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .menuName {
-    font-weight: 600;
-    margin: 0 0 4px;
+    color: #0B1F4D;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    line-height: 1.4;
 }
 
 .menuPrice {
-    color: #4b5563;
+    color: #2D7FF9;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0 0 16px 0;
+}
+
+/* Add To Cart CTA Button */
+.addButton {
+    background-color: #2D7FF9;
+    color: #ffffff;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.addButton:hover {
+    background-color: #0B1F4D;
+    box-shadow: 0 4px 12px rgba(11, 31, 77, 0.2);
+}
+
+.addButton:active {
+    transform: scale(0.98);
+}
+
+/* Real-time Toast Custom Notification Alert */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0B1F4D;
+    color: #ffffff;
+    padding: 14px 28px;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(11, 31, 77, 0.3);
+    z-index: 1000;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+    from {
+        bottom: 0px;
+        opacity: 0;
+    }
+    to {
+        bottom: 24px;
+        opacity: 1;
+    }
+}
+
+/* --- MODAL OVERLAY & POPUP --- */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 31, 77, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modalContent {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modalHeaderImage {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    background: #f9fafb;
+}
+
+.modalBody {
+    padding: 24px;
+}
+
+.modalTitleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modalTitleRow h2 {
     margin: 0;
+    color: #0B1F4D;
+    font-size: 1.5rem;
+}
+
+.modalPrice {
+    color: #2D7FF9;
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+.modalSectionTitle {
+    font-size: 1rem;
+    color: #374151;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.noteInput {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 24px;
+    box-sizing: border-box;
+}
+
+.noteInput:focus {
+    outline: none;
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+}
+
+.modalActions {
+    display: flex;
+    gap: 12px;
+}
+
+.cancelButton {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #4b5563;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancelButton:hover {
+    background: #f3f4f6;
+}
+
+.confirmButton {
+    flex: 2;
+    padding: 12px;
+    border: none;
+    background: #2D7FF9;
+    color: #ffffff;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.confirmButton:hover {
+    background: #0B1F4D;
 }
