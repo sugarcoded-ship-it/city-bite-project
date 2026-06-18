@@ -41,16 +41,20 @@ export const CustomerHome = () => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [sortOption, setSortOption] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
     const [cartCount, setCartCount] = useState<number>(0);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+    // Custom Item Configurations Modal State
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [specialRequest, setSpecialRequest] = useState<string>('');
     const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
-
     const [selectedChoices, setSelectedChoices] = useState<Record<number, number[]>>({});
+    const [modalQuantity, setModalQuantity] = useState<number>(1); // Pre-add counter state
 
+    // Main Shopping Cart Overlay State
     const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
@@ -88,11 +92,20 @@ export const CustomerHome = () => {
             });
     }, [selectedCategory]);
 
+    const displayedItems = items
+        .filter((item) => item.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+        .sort((a, b) => {
+            if (sortOption === 'price-asc') return a.price - b.price;
+            if (sortOption === 'price-desc') return b.price - a.price;
+            return 0;
+        });
+
     const openModal = async (item: MenuItem) => {
         setSelectedItem(item);
         setSpecialRequest('');
         setOptionGroups([]);
         setSelectedChoices({});
+        setModalQuantity(1); // Reset counter defaults to 1 item unit
 
         try {
             const customizations = await apiClient<OptionGroup[]>(`/customer/menu/${item.id}/options`);
@@ -160,7 +173,7 @@ export const CustomerHome = () => {
             });
         });
 
-        return selectedItem.price + extrasAmount;
+        return (selectedItem.price + extrasAmount) * modalQuantity;
     };
 
     const calculateCartGrandTotal = () => {
@@ -178,17 +191,19 @@ export const CustomerHome = () => {
         }
 
         try {
+            // Added configuration variables supporting continuous amount updates on submit requests
             await apiClient('/customer/cart/add', {
                 method: 'POST',
                 data: {
                     menuId: selectedItem.id,
                     specialRequest: specialRequest,
-                    selectedChoices: selectedChoices
+                    selectedChoices: selectedChoices,
+                    quantity: modalQuantity
                 }
             });
 
             updateCartCountBadge();
-            setToastMessage(`Added ${selectedItem.name} to cart!`);
+            setToastMessage(`Added ${modalQuantity}x ${selectedItem.name} to cart!`);
             setTimeout(() => setToastMessage(null), 3000);
 
             closeModal();
@@ -199,14 +214,40 @@ export const CustomerHome = () => {
         }
     };
 
+    const handleUpdateQuantityInCart = async (itemIndex: number, change: number) => {
+        try {
+            const updatedItems = await apiClient<CartItem[]>(
+                `/customer/cart/update?itemIndex=${itemIndex}&change=${change}`,
+                { method: 'PATCH' }
+            );
+            setCartItems(updatedItems);
+            updateCartCountBadge();
+        } catch (err) {
+            console.error("Could not modify item count row unit:", err);
+        }
+    };
+
+    const handleRemoveItemFromCart = async (itemIndex: number) => {
+        try {
+            const updatedItems = await apiClient<CartItem[]>(
+                `/customer/cart/remove/${itemIndex}`,
+                { method: 'DELETE' }
+            );
+            setCartItems(updatedItems);
+            updateCartCountBadge();
+        } catch (err) {
+            console.error("Could not remove cart row configuration:", err);
+        }
+    };
+
     return (
         <div className={styles.container}>
             {/* Header row area */}
             <div className={styles.headerRow}>
                 <h1 className={styles.title}>Menu</h1>
                 <div className={styles.actionsArea}>
-                    <div className={styles.cartWidget} onClick={openCartModal} style={{ cursor: 'pointer' }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '6px' }}>
+                    <div className={styles.cartWidget} onClick={openCartModal}>
+                        <svg className={styles.cartIcon} xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2m7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />
                         </svg>
                         <span className={styles.cartText}>Cart</span>
@@ -214,13 +255,14 @@ export const CustomerHome = () => {
                             <span className={styles.cartBadge}>{cartCount}</span>
                         )}
                     </div>
+                    <button className={styles.orderHistoryButton}>Order History</button>
                     <LogoutButton />
                 </div>
             </div>
 
             <hr className={styles.divider} />
 
-            {/* Category horizontal filters mapping bar row element */}
+            {/* Category selection row element */}
             <div className={styles.filterRow}>
                 <button
                     className={`${styles.filterButton} ${selectedCategory === null ? styles.filterButtonActive : ''}`}
@@ -239,10 +281,33 @@ export const CustomerHome = () => {
                 ))}
             </div>
 
-            {/* Menu Items Showcase Cards Grid Layout */}
+            {/* Search & Sort Controls Row */}
+            <div className={styles.controlsRow}>
+                <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="Search menu by name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <select
+                    className={styles.sortSelect}
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value as 'default' | 'price-asc' | 'price-desc')}
+                >
+                    <option value="default">Sort: Default</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                </select>
+            </div>
+
+            {/* Product Grid - Styled via companion CSS Module file to lock 3 Columns */}
             {!loading && !error && (
                 <div className={styles.menuGrid}>
-                    {items.map((item) => (
+                    {displayedItems.length === 0 ? (
+                        <p style={{ color: '#9ca3af', fontStyle: 'italic' }}>No menu items match your search.</p>
+                    ) : (
+                        displayedItems.map((item) => (
                         <div key={item.id} className={styles.menuCard}>
                             <div className={styles.imageWrapper}>
                                 {item.menuPic ? (
@@ -258,7 +323,7 @@ export const CustomerHome = () => {
                             </div>
                             <div className={styles.menuInfo}>
                                 <p className={styles.menuName}>{item.name}</p>
-                                <p className={styles.menuPrice}>${item.price.toFixed(2)}</p>
+                                <p className={styles.menuPrice}>฿{item.price.toFixed(2)}</p>
 
                                 <button
                                     className={styles.addButton}
@@ -268,11 +333,12 @@ export const CustomerHome = () => {
                                 </button>
                             </div>
                         </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             )}
 
-            {/* Customizations Modal Overlay View Container */}
+            {/* Customizations Modal Details View Container */}
             {selectedItem && (
                 <div className={styles.modalOverlay} onClick={closeModal}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -290,10 +356,10 @@ export const CustomerHome = () => {
                         <div className={styles.modalBody}>
                             <div className={styles.modalTitleRow}>
                                 <h2>{selectedItem.name}</h2>
-                                <span className={styles.modalPrice}>${selectedItem.price.toFixed(2)}</span>
+                                <span className={styles.modalPrice}>฿{selectedItem.price.toFixed(2)}</span>
                             </div>
 
-                            <div style={{ maxHeight: '280px', overflowY: 'auto', marginBottom: '16px', paddingRight: '4px' }}>
+                            <div style={{ maxHeight: '240px', overflowY: 'auto', marginBottom: '16px', paddingRight: '4px' }}>
                                 {optionGroups.length === 0 ? (
                                     <p style={{ color: '#9ca3af', fontSize: '0.9rem', fontStyle: 'italic' }}>No customization options available for this item.</p>
                                 ) : (
@@ -340,7 +406,7 @@ export const CustomerHome = () => {
                                                             </div>
                                                             {choice.extraPrice > 0 && (
                                                                 <span style={{ color: '#2D7FF9', fontSize: '13px', fontWeight: 700 }}>
-                                                                    +${choice.extraPrice.toFixed(2)}
+                                                                    +฿{choice.extraPrice.toFixed(2)}
                                                                 </span>
                                                             )}
                                                         </label>
@@ -360,10 +426,32 @@ export const CustomerHome = () => {
                                 onChange={(e) => setSpecialRequest(e.target.value)}
                             />
 
+                            {/* PRE-ADD TO CART QUANTITY CONTROLLER */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', padding: '12px 0', borderTop: '1px solid #f3f4f6' }}>
+                                <span style={{ fontWeight: 700, color: '#374151', fontSize: '14px' }}>Select Quantity:</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setModalQuantity(q => Math.max(1, q - 1))}
+                                        style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #d1d5db', background: '#fff', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#4b5563' }}
+                                    >
+                                        -
+                                    </button>
+                                    <span style={{ fontWeight: 700, fontSize: '1.1rem', minWidth: '24px', textAlign: 'center', color: '#111827' }}>{modalQuantity}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setModalQuantity(q => q + 1)}
+                                        style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #d1d5db', background: '#fff', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#4b5563' }}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className={styles.modalActions}>
                                 <button className={styles.cancelButton} onClick={closeModal}>Cancel</button>
                                 <button className={styles.confirmButton} onClick={handleConfirmAddToCart}>
-                                    Confirm - ${calculateTotalPrice().toFixed(2)}
+                                    Confirm - ฿{calculateTotalPrice().toFixed(2)}
                                 </button>
                             </div>
                         </div>
@@ -371,13 +459,13 @@ export const CustomerHome = () => {
                 </div>
             )}
 
-            {/* Active Shopping Cart Modal Popup */}
+            {/* Shopping Cart Drawer Overlay Popup View */}
             {isCartOpen && (
                 <div className={styles.modalOverlay} onClick={closeCartModal}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
                         <div className={styles.modalBody}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px' }}>
-                                <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#111827' }}>Your Cart</h2>
+                                <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#0B1F4D', fontWeight: 800 }}>Your Cart</h2>
                                 <button onClick={closeCartModal} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#6b7280' }}>✕</button>
                             </div>
 
@@ -390,32 +478,21 @@ export const CustomerHome = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <div style={{ maxHeight: '320px', overflowY: 'auto', marginBottom: '20px', paddingRight: '4px' }}>
+                                    <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px', paddingRight: '4px' }}>
                                         {cartItems.map((item, idx) => (
                                             <div key={idx} style={{ padding: '14px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                                                 <div style={{ flex: 1 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <span style={{ fontWeight: 700, color: '#111827' }}>{item.name}</span>
-                                                        <span style={{ fontSize: '12px', background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px', color: '#4b5563', fontWeight: 600 }}>
-                                                            x{item.quantity}
-                                                        </span>
+                                                        <span style={{ fontWeight: 700, color: '#0B1F4D', fontSize: '1.05rem' }}>{item.name}</span>
                                                     </div>
 
-                                                    {/* Selected Customization Options Tags */}
+                                                    {/* Selected Customization Options Text Tags */}
                                                     {item.selectedCustomizations && item.selectedCustomizations.length > 0 && (
                                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
                                                             {item.selectedCustomizations.map((customText, cIdx) => (
                                                                 <span
                                                                     key={cIdx}
-                                                                    style={{
-                                                                        fontSize: '11px',
-                                                                        background: '#f0f6ff',
-                                                                        color: '#2D7FF9',
-                                                                        padding: '2px 8px',
-                                                                        borderRadius: '12px',
-                                                                        border: '1px solid #d0e1fd',
-                                                                        fontWeight: 500
-                                                                    }}
+                                                                    style={{ fontSize: '11px', background: '#f0f6ff', color: '#2D7FF9', padding: '2px 8px', borderRadius: '12px', border: '1px solid #d0e1fd', fontWeight: 500 }}
                                                                 >
                                                                     {customText}
                                                                 </span>
@@ -423,32 +500,55 @@ export const CustomerHome = () => {
                                                         </div>
                                                     )}
 
-                                                    {/* Customer Special Notes */}
                                                     {item.specialRequest && (
                                                         <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#ef4444', fontStyle: 'italic', fontWeight: 500 }}>
                                                             Note: "{item.specialRequest}"
                                                         </p>
                                                     )}
+
+                                                    {/* QUANTITY CONTROL & REMOVAL INSIDE CART OVERLAY */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                                                        <button
+                                                            onClick={() => handleUpdateQuantityInCart(idx, -1)}
+                                                            style={{ border: '1px solid #d1d5db', background: '#fff', width: '24px', height: '24px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#4b5563' }}
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <span style={{ fontSize: '13px', color: '#111827', fontWeight: 700, minWidth: '16px', textAlign: 'center' }}>{item.quantity}</span>
+                                                        <button
+                                                            onClick={() => handleUpdateQuantityInCart(idx, 1)}
+                                                            style={{ border: '1px solid #d1d5db', background: '#fff', width: '24px', height: '24px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#4b5563' }}
+                                                        >
+                                                            +
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => handleRemoveItemFromCart(idx)}
+                                                            style={{ marginLeft: '12px', border: 'none', background: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', padding: '4px', fontWeight: 600 }}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div style={{ textAlign: 'right', fontWeight: 600, color: '#111827' }}>
-                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                <div style={{ textAlign: 'right', fontWeight: 700, color: '#0B1F4D', fontSize: '1.05rem' }}>
+                                                    ฿{(item.price * item.quantity).toFixed(2)}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
                                     <div style={{ borderTop: '2px solid #e5e7eb', paddingTop: '14px', marginBottom: '20px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, fontSize: '1.15rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800, fontSize: '1.2rem' }}>
                                             <span style={{ color: '#374151' }}>Grand Total:</span>
-                                            <span style={{ color: '#2D7FF9' }}>${calculateCartGrandTotal().toFixed(2)}</span>
+                                            <span style={{ color: '#2D7FF9' }}>฿{calculateCartGrandTotal().toFixed(2)}</span>
                                         </div>
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '12px' }}>
                                         <button className={styles.cancelButton} onClick={closeCartModal} style={{ flex: 1 }}>
-                                            Continue Shopping
+                                            Close
                                         </button>
-                                        <button className={styles.confirmButton} style={{ flex: 1 }} onClick={() => alert("Proceeding to Checkout Page...")}>
+                                        <button className={styles.confirmButton} style={{ flex: 1 }} onClick={() => alert("Proceeding to Checkout...")}>
                                             Checkout
                                         </button>
                                     </div>
@@ -459,10 +559,10 @@ export const CustomerHome = () => {
                 </div>
             )}
 
-            {/* Sliding Feedback Toast Notification */}
+            {/* Sliding Feedback Toast Alert */}
             {toastMessage && (
                 <div className={styles.toast}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '8px', display: 'inline-block', verticalAlign: 'text-bottom' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ display: 'inline-block', verticalAlign: 'text-bottom' }}>
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
                     </svg>
                     {toastMessage}
