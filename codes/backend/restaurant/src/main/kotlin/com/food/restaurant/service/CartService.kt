@@ -1,43 +1,49 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.entity.menu.CartItem
-import com.food.restaurant.repository.CartRepository
 import com.food.restaurant.repository.MenuRepository
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import java.util.concurrent.ConcurrentHashMap
+
+data class CartItem(
+    val menuId: Int,
+    val name: String,
+    val price: Double,
+    var quantity: Int,
+    var specialRequest: String? = null
+)
 
 @Service
-class CartService(
-    private val cartRepository: CartRepository,
-    private val menuRepository: MenuRepository
-) {
+class CartService(private val menuRepository: MenuRepository) {
+    private val activeCarts = ConcurrentHashMap<String, MutableList<CartItem>>()
 
-    @Transactional
-    fun addItem(userId: String, menuId: Int, quantity: Int = 1) {
-        val existingItem = cartRepository.findByUserIdAndMenuItemId(userId, menuId)
+    fun addItem(userId: String, menuId: Int, specialRequest: String? = null, quantity: Int = 1) {
+        val userCart = activeCarts.getOrPut(userId) { mutableListOf() }
+
+        val existingItem = userCart.find { it.menuId == menuId && it.specialRequest == specialRequest }
 
         if (existingItem != null) {
             existingItem.quantity += quantity
-            cartRepository.save(existingItem)
         } else {
             val menuItem = menuRepository.findById(menuId)
                 .orElseThrow { IllegalArgumentException("Menu item not found") }
 
-            val newItem = CartItem(
-                userId = userId,
-                menuItem = menuItem,
-                quantity = quantity
+            userCart.add(
+                CartItem(
+                    menuId = menuItem.menuId,
+                    name = menuItem.name,
+                    price = menuItem.price,
+                    quantity = quantity,
+                    specialRequest = specialRequest
+                )
             )
-            cartRepository.save(newItem)
         }
     }
 
     fun getCartItems(userId: String): List<CartItem> {
-        return cartRepository.findAllByUserId(userId)
+        return activeCarts[userId] ?: emptyList()
     }
 
-    @Transactional
     fun clearCartForUser(userId: String) {
-        cartRepository.deleteByUserId(userId)
+        activeCarts.remove(userId)
     }
 }
