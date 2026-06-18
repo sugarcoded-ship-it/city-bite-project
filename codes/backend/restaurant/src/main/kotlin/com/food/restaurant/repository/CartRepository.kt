@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository
 interface CartRepository : JpaRepository<CartItem, Int> {
     fun findByUserIdAndMenuItemId(userId: String, menuId: Int): CartItem?
     fun findAllByUserId(userId: String): List<CartItem>
-    fun deleteByUserUuid(userId: String)
+    fun deleteByUserId(userId: String)
 }
