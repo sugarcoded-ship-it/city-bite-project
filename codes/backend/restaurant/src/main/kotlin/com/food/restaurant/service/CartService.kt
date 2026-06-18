@@ -2,12 +2,13 @@ package com.food.restaurant.service
 
 import com.food.restaurant.repository.MenuRepository
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
 data class CartItem(
-    val menuId: Int,
+    val id: Int,
     val name: String,
-    val price: Double,
+    val price: BigDecimal,
     var quantity: Int,
     var specialRequest: String? = null
 )
@@ -19,7 +20,7 @@ class CartService(private val menuRepository: MenuRepository) {
     fun addItem(userId: String, menuId: Int, specialRequest: String? = null, quantity: Int = 1) {
         val userCart = activeCarts.getOrPut(userId) { mutableListOf() }
 
-        val existingItem = userCart.find { it.menuId == menuId && it.specialRequest == specialRequest }
+        val existingItem = userCart.find { it.id == menuId && it.specialRequest == specialRequest }
 
         if (existingItem != null) {
             existingItem.quantity += quantity
@@ -29,7 +30,7 @@ class CartService(private val menuRepository: MenuRepository) {
 
             userCart.add(
                 CartItem(
-                    menuId = menuItem.menuId,
+                    id = menuItem.id,
                     name = menuItem.name,
                     price = menuItem.price,
                     quantity = quantity,
