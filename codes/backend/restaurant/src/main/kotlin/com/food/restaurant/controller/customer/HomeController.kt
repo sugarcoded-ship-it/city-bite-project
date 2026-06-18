@@ -1,6 +1,7 @@
 package com.food.restaurant.controller.customer
 
 import com.food.restaurant.dto.menu.MenuItemResponse
+import com.food.restaurant.dto.menu.OptionGroupResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.service.CartService
 import com.food.restaurant.service.MenuService
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 
@@ -60,6 +62,12 @@ class HomeController(
         cartService.clearCartForUser(userId)
 
         return ResponseEntity.ok(mapOf("message" to "Cart cleared successfully"))
+    }
+
+    @GetMapping("/menu/{menuId}/options")
+    @PreAuthorize("isAuthenticated()")
+    fun getMenuOptions(@PathVariable menuId: Int): List<OptionGroupResponse> {
+        return menuService.getMenuItemCustomizations(menuId)
     }
 
     data class AddToCartRequest(val menuId: Int)
