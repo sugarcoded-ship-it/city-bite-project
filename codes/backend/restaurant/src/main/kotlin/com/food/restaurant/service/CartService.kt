@@ -133,4 +133,9 @@ class CartService(
             cartItemRepository.delete(userCart[itemIndex])
         }
     }
+
+    @Transactional
+    fun clearCartForUser(userUuid: String) {
+        cartRepository.deleteByUserUuid(userUuid)
+    }
 }
