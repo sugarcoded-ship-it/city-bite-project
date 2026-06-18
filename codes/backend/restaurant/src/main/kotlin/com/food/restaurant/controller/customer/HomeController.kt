@@ -6,7 +6,7 @@ import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.service.CartService
 import com.food.restaurant.service.MenuService
 import com.food.restaurant.service.UserSyncService
-import org.springframework.security.oauth2.jwt.Jwt // CORRECT IMPORT
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,10 +32,7 @@ class HomeController(
     @GetMapping("/")
     @PreAuthorize("isAuthenticated()")
     fun customerHome(@AuthenticationPrincipal jwt: Jwt) {
-        // Store userInfo to db
-
         userSyncService.syncFromToken(jwt)
-        // TODO: Return all wa category
     }
 
     @GetMapping("/menu")
@@ -52,7 +49,19 @@ class HomeController(
     @PreAuthorize("isAuthenticated()")
     fun addToCart(@RequestBody request: AddToCartRequest, @AuthenticationPrincipal jwt: Jwt) {
         val userId = jwt.subject
-        cartService.addItem(userId, request.menuId)
+        cartService.addItem(
+            userId = userId,
+            menuId = request.menuId,
+            specialRequest = request.specialRequest,
+            selectedChoices = request.selectedChoices ?: emptyMap()
+        )
+    }
+
+    @GetMapping("/cart")
+    @PreAuthorize("isAuthenticated()")
+    fun getCart(@AuthenticationPrincipal jwt: Jwt): List<CartItemResponse> {
+        val userId = jwt.subject
+        return cartService.getCartItemsForUser(userId)
     }
 
     @DeleteMapping("/cart/clear")
@@ -60,7 +69,6 @@ class HomeController(
     fun clearCurrentCart(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<Map<String, String>> {
         val userId = jwt.subject
         cartService.clearCartForUser(userId)
-
         return ResponseEntity.ok(mapOf("message" to "Cart cleared successfully"))
     }
 
@@ -70,5 +78,18 @@ class HomeController(
         return menuService.getMenuItemCustomizations(menuId)
     }
 
-    data class AddToCartRequest(val menuId: Int)
+    data class AddToCartRequest(
+        val menuId: Int,
+        val specialRequest: String?,
+        val selectedChoices: Map<Int, List<Int>>?
+    )
+
+    data class CartItemResponse(
+        val menuId: Int,
+        val name: String,
+        val price: Double,
+        val quantity: Int,
+        val specialRequest: String?,
+        val selectedCustomizations: List<String>
+    )
 }
