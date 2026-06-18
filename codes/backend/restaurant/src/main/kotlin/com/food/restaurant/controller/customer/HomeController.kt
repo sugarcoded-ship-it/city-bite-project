@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 
@@ -49,6 +51,15 @@ class HomeController(
     fun addToCart(@RequestBody request: AddToCartRequest, @AuthenticationPrincipal jwt: Jwt) {
         val userId = jwt.subject
         cartService.addItem(userId, request.menuId)
+    }
+
+    @DeleteMapping("/cart/clear")
+    @PreAuthorize("isAuthenticated()")
+    fun clearCurrentCart(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<Map<String, String>> {
+        val userId = jwt.subject
+        cartService.clearCartForUser(userId)
+
+        return ResponseEntity.ok(mapOf("message" to "Cart cleared successfully"))
     }
 
     data class AddToCartRequest(val menuId: Int)
