@@ -1,12 +1,22 @@
 import React from 'react';
 import keycloak from '../security/keycloak';
 import styles from './LogoutButton.module.css';
+import {apiClient} from "../api/client.ts";
 
 export const LogoutButton: React.FC = () => {
-  const handleLogout = () => {
-    keycloak.logout({ 
-      redirectUri: window.location.origin // Automatically resolves to http://localhost/
-    });
+  const handleLogout = async () => {
+    try {
+      // Delete the user's cart rows from PostgreSQL
+      await apiClient('/customer/cart/clear', {
+        method: 'DELETE'
+      });
+    } catch (err) {
+      console.error('Failed to clear cart in backend database before logout:', err);
+    } finally {
+      keycloak.logout({
+        redirectUri: window.location.origin // Automatically resolves to http://localhost/
+      });
+    }
   };
 
     return (
