@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import keycloak from './security/keycloak.ts';
+import keycloak from './lib/keycloak.ts';
 
 keycloak.onTokenExpired = () => {
     console.log('Token expired. Attempting to refresh...');
