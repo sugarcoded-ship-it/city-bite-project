@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 import keycloak from './keycloak.ts';
 
 export const api = axios.create({
@@ -37,7 +38,10 @@ api.interceptors.response.use(
 );
 
 // Allow whatever pass into the function to decide how the request behaves
-export const apiClient = async <T>(endpoint: string, options: any = {}): Promise<T> => {
+export const apiClient = async <T>(
+    endpoint: string,
+    options: Partial<InternalAxiosRequestConfig> = {}
+): Promise<T> => {
     const response = await api({
         url: endpoint,
         ...options
