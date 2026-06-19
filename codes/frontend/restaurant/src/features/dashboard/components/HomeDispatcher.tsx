@@ -1,8 +1,8 @@
 import React from 'react';
-import keycloak from '../security/keycloak';
-import { CustomerHome } from './CustomerHome';
-import { OwnerHome } from './OwnerHome';
-import { StaffHome } from './StaffHome';
+import keycloak from '../../../lib/keycloak';
+import { CustomerHome } from './CustomerDashboard';
+import { OwnerHome } from './OwnerDashboard';
+import { StaffHome } from './StaffDashboard';
 
 const HomeDispatcher: React.FC = () => {
     // Check Keycloak realm roles directly

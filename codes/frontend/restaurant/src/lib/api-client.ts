@@ -1,5 +1,5 @@
 import axios from 'axios';
-import keycloak from '../security/keycloak.ts';
+import keycloak from './keycloak.ts';
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
