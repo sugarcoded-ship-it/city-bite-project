@@ -36,7 +36,11 @@ api.interceptors.response.use(
     }
 );
 
-export const apiClient = async <T>(endpoint: string, options = {}): Promise<T> => {
-    const response = await api.get<T>(endpoint, options);
+// Allow whatever pass into the function to decide how the request behaves
+export const apiClient = async <T>(endpoint: string, options: any = {}): Promise<T> => {
+    const response = await api({
+        url: endpoint,
+        ...options
+    });
     return response.data;
 };
