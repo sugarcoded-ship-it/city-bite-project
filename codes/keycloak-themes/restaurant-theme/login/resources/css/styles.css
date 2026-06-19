@@ -98,7 +98,7 @@ a:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 50%;
+  width: 55%;
   flex-shrink: 0;
   height: 100vh;
   padding: 48px 80px 48px 48px;
@@ -485,7 +485,7 @@ a:hover {
 }
 
 /* ---------- Animations ---------- */
-@keyframes fadeInUp {
+/* @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(16px);
@@ -495,7 +495,7 @@ a:hover {
     opacity: 1;
     transform: translateY(0);
   }
-}
+} */
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {

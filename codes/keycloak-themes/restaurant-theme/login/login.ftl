@@ -5,7 +5,8 @@
         <div class="cb-form-card">
             <!-- Mobile Logo -->
             <div class="cb-mobile-logo">
-                <img src="${url.resourcesPath}/img/citybitelogo2.png" alt="CityBite Logo" />
+                <img src="${url.resourcesPath}/img/citybitelogo2.png" alt="CityBite Logo"
+                     width="560" height="373" />
             </div>
 
             <!-- Tab Navigation -->
@@ -18,7 +19,7 @@
 
             <!-- Title -->
             <h1 class="cb-form-title">Log in to CityBite.</h1>
-            <p class="cb-form-subtitle">Enter your details below.</p>
+            <p class="cb-form-subtitle">Enter your Email and Password.</p>
 
             <!-- Error / Info Messages -->
             <#assign displayGlobalError = true>
