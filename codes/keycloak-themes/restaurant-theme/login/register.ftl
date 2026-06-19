@@ -5,7 +5,8 @@
         <div class="cb-form-card">
             <!-- Mobile Logo -->
             <div class="cb-mobile-logo">
-                <img src="${url.resourcesPath}/img/citybitelogo2.png" alt="CityBite Logo" />
+                <img src="${url.resourcesPath}/img/citybitelogo2.png" alt="CityBite Logo"
+                     width="560" height="373" />
             </div>
 
             <!-- Tab Navigation -->
