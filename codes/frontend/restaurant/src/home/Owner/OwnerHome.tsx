@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { apiClient } from '../../api/client.ts';
+import { apiClient } from '../../lib/api-client';
 import { OwnerTopNav } from './OwnerTopNav';
-import { LogoutButton } from '../../authentication/LogoutButton.tsx';
+import { LogoutButton } from '../../features/auth/components/LogoutButton.tsx';
 import { MenuConfiguration } from './MenuConfiguration.tsx';
 import styles from './OwnerHome.module.css';
 import {

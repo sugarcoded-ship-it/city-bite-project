@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, X, Search, UtensilsCrossed, EyeClosed, Check, AlertTriangle, Filter } from 'lucide-react';
 import { Dialog } from '../../ui/Dialog';
 import { OwnerTopNav } from './OwnerTopNav';
-import { apiClient } from '../../api/client.ts';
+import { apiClient } from '../../lib/api-client';
 import styles from './MenuConfiguration.module.css';
 
 const MENU_CATEGORIES = [

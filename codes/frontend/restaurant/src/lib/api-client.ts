@@ -37,7 +37,6 @@ api.interceptors.response.use(
     }
 );
 
-// Allow whatever pass into the function to decide how the request behaves
 export const apiClient = async <T>(
     endpoint: string,
     options: AxiosRequestConfig<unknown> = {}
