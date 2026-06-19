@@ -13,6 +13,9 @@
         </#list>
     </#if>
 
+    <!-- Preload logo to eliminate flicker between page navigations -->
+    <link rel="preload" href="${url.resourcesPath}/img/citybitelogo2.png" as="image" type="image/png">
+
     <!-- Google Fonts – Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,7 +53,9 @@
         <div class="cb-brand-panel">
             <img src="${url.resourcesPath}/img/citybitelogo2.png"
                  alt="CityBite Logo"
-                 class="cb-brand-logo" />
+                 class="cb-brand-logo"
+                 width="560" height="373"
+                 fetchpriority="high" />
             <p class="cb-brand-tagline">Make Every Bite Feeling Good</p>
         </div>
 
