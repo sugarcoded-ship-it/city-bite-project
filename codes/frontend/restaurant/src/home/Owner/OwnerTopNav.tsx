@@ -9,7 +9,7 @@ import {
     Store,
     CalendarOff
 } from 'lucide-react';
-import keycloak from '../../security/keycloak';
+import keycloak from '../../lib/keycloak';
 
 
 export function OwnerTopNav() {
