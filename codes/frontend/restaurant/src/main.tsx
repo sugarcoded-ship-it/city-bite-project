@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import keycloak from './lib/keycloak.ts';
+import './App.css'
+import keycloak from './security/keycloak.ts';
 
 keycloak.onTokenExpired = () => {
     console.log('Token expired. Attempting to refresh...');
@@ -26,7 +27,7 @@ keycloak.init({
 }).then((authenticated) => {
     if (authenticated) {
         // Store token for your backend API calls
-        localStorage.setItem('access_token', keycloak.token ?? '');
+        // localStorage.setItem('access_token', keycloak.token ?? '');
 
         ReactDOM.createRoot(document.getElementById('root')!).render(
             <React.StrictMode>
