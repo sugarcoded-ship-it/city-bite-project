@@ -694,6 +694,17 @@ export function CustomerDashboard() {
             )}
 
             <style>{`
+            @keyframes modalIn {
+          from { opacity: 0; transform: translateY(40px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+        }
+        .animate-toast { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
         </div>
     );
