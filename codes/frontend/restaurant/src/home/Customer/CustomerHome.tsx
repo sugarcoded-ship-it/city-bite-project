@@ -117,7 +117,7 @@ export function CustomerHome() {
         return items.slice(0, 3).map((item, idx) => ({
             item,
             badge: idx === 0 ? "Chef's Pick" : idx === 1 ? "Most Popular" : "Today's Special",
-            tagline: 'Savoury selected delight just for you',
+            tagline: 'City Bite selected delight just for you',
             bg: idx === 0 ? 'from-[#0B1F4D]/80 via-[#0B1F4D]/40 to-transparent' :
                 idx === 1 ? 'from-[#7c2d12]/80 via-[#7c2d12]/40 to-transparent' :
                     'from-[#14532d]/80 via-[#14532d]/40 to-transparent',
@@ -253,7 +253,26 @@ export function CustomerHome() {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#f0f2f7] text-[#2D7FF9] font-bold">Connecting to inventory server...</div>;
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0f2f7] gap-6">
+                <div className="relative w-12 h-12 flex items-center justify-center">
+                    <div className="spinner">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
     if (error) return <div className="min-h-screen flex items-center justify-center bg-[#f0f2f7] text-red-500 font-bold">{error}</div>;
 
     return (
@@ -275,7 +294,7 @@ export function CustomerHome() {
                                 {f.item.menuPic ? (
                                     <img src={f.item.menuPic} alt={f.item.name} className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full bg-gray-300 flex items-center justify-center">Savoury Premium Select</div>
+                                    <div className="w-full h-full bg-gray-300 flex items-center justify-center">City Bite Premium Select</div>
                                 )}
 
                                 <div className={`absolute inset-0 bg-gradient-to-r ${f.bg}`} />
@@ -290,12 +309,12 @@ export function CustomerHome() {
                                     </h2>
                                     <p className="text-white/75 text-sm mt-1 mb-4 hidden sm:block">{f.tagline}</p>
                                     <div className="flex items-center gap-3">
-                                        <span className="text-white font-extrabold text-xl">${f.item.price.toFixed(2)}</span>
+                                        <span className="text-white font-extrabold text-xl">฿{f.item.price.toFixed(2)}</span>
                                         <button
                                             onClick={() => openMenuModal(f.item)}
                                             className="bg-white text-[#0B1F4D] text-sm font-bold px-5 py-2 rounded-full hover:bg-[#2D7FF9] hover:text-white transition-colors"
                                         >
-                                            Customize
+                                            Order
                                         </button>
                                     </div>
                                 </div>
@@ -402,15 +421,27 @@ export function CustomerHome() {
                       </span>
                                         </div>
 
-                                        <div className="p-3.5 flex flex-col flex-1 h-full">
-                                            <p className="font-bold text-[#0B1F4D] text-sm leading-snug line-clamp-2 mb-3">
-                                                {item.name}
-                                            </p>
-                                            <div className="flex items-center justify-between mt-auto">
-                                                <span className="text-[#2D7FF9] font-extrabold text-base">${item.price.toFixed(2)}</span>
+                                        <div className="p-3.5 flex-1 flex flex-col justify-between">
+                                            <div>
+                                                {/* Item Name */}
+                                                <p className="font-bold text-[#0B1F4D] text-sm leading-snug line-clamp-2 mb-0.5">
+                                                    {item.name}
+                                                </p>
+                                            </div>
+
+                                            {/* Action Footer Bar */}
+                                            <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                                                <span className="text-[#2D7FF9] font-extrabold text-base">
+                                                    ฿{item.price.toFixed(2)}
+                                                </span>
+
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); openMenuModal(item); }}
-                                                    className="bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white rounded-xl w-8 h-8 flex items-center justify-center transition-colors shadow-sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openMenuModal(item);
+                                                    }}
+                                                    className="bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white rounded-xl w-8 h-8 flex items-center justify-center transition-colors shadow-sm transform active:scale-95 duration-150"
+                                                    title="Add to cart"
                                                 >
                                                     <Plus size={16} strokeWidth={2.5} />
                                                 </button>
@@ -480,7 +511,7 @@ export function CustomerHome() {
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                         <span className="text-[#2D7FF9] font-extrabold text-xs">
-                                            ${(entry.price * entry.quantity).toFixed(2)}
+                                            ฿{(entry.price * entry.quantity).toFixed(2)}
                                         </span>
                                                             <button onClick={() => removeCartItemBackend(idx)} className="text-gray-300 hover:text-red-400 transition-colors">
                                                                 <Trash2 size={13} />
@@ -495,11 +526,11 @@ export function CustomerHome() {
                                     <div className="px-5 py-4 bg-gray-50 border-t border-gray-100 mt-auto">
                                         <div className="flex justify-between text-sm text-gray-500 mb-1">
                                             <span>Subtotal</span>
-                                            <span>${cartTotal.toFixed(2)}</span>
+                                            <span>฿{cartTotal.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between font-extrabold text-[#0B1F4D] text-base border-t border-gray-200 pt-2 mb-4 mt-2">
                                             <span>Total</span>
-                                            <span>${cartTotal.toFixed(2)}</span>
+                                            <span>฿{cartTotal.toFixed(2)}</span>
                                         </div>
                                         <button
                                             onClick={() => navigate('/customer/payment-method')}
@@ -525,7 +556,7 @@ export function CustomerHome() {
                             {selectedItem.menuPic ? (
                                 <img src={selectedItem.menuPic} alt={selectedItem.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm font-semibold">Savoury Premium</div>
+                                <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm font-semibold">City Bite Premium</div>
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                             <button onClick={closeMenuModal} className="absolute top-4 right-4 bg-white/90 rounded-full p-1.5 text-gray-700 hover:bg-white shadow">
@@ -540,7 +571,7 @@ export function CustomerHome() {
                                         {selectedItem.name}
                                     </h2>
                                 </div>
-                                <span className="text-white font-extrabold text-xl drop-shadow-md">${selectedItem.price.toFixed(2)}</span>
+                                <span className="text-white font-extrabold text-xl drop-shadow-md">฿{selectedItem.price.toFixed(2)}</span>
                             </div>
                         </div>
 
@@ -577,7 +608,7 @@ export function CustomerHome() {
                                                         <span className="text-sm font-semibold text-gray-700">{choice.choiceName}</span>
                                                     </div>
                                                     {choice.extraPrice > 0 && (
-                                                        <span className="text-xs font-bold text-[#2D7FF9]">+${choice.extraPrice.toFixed(2)}</span>
+                                                        <span className="text-xs font-bold text-[#2D7FF9]">+฿{choice.extraPrice.toFixed(2)}</span>
                                                     )}
                                                 </label>
                                             );
@@ -614,7 +645,7 @@ export function CustomerHome() {
                             </div>
                             <button onClick={handleAddToCartConfirm} className="flex-1 bg-[#2D7FF9] hover:bg-[#1a6de0] text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-md flex justify-between px-5 items-center">
                                 <span>Add to Order</span>
-                                <span className="bg-white/20 px-2 py-0.5 rounded text-xs">${(selectedItem.price * itemQuantity).toFixed(2)}</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-xs">฿{(selectedItem.price * itemQuantity).toFixed(2)}</span>
                             </button>
                         </div>
                     </div>
@@ -634,17 +665,6 @@ export function CustomerHome() {
             )}
 
             <style>{`
-        @keyframes modalIn {
-          from { opacity: 0; transform: translateY(40px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0)    scale(1);    }
-        }
-        @keyframes toastIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
-        }
-        .animate-toast { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
         </div>
     );
