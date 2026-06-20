@@ -1,0 +1,689 @@
+/* Container Layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    padding-top: 88px; /* Safe padding clearance underneath the fixed navbar height */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    position: relative;
+}
+
+/* Header & Navigation Area */
+.headerRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.title {
+    color: #0B1F4D;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.actionsArea {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.divider {
+    border: none;
+    border-top: 2px solid #f3f4f6;
+    margin: 16px 0 24px 0;
+}
+
+/* Sticky Floating Cart Button Widget */
+.cartWidget {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 10px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+    width: fit-content;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 40;
+}
+
+.cartWidget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(45, 127, 249, 0.15);
+    border-color: #2D7FF9;
+}
+
+.cartIcon {
+    font-size: 1.25rem;
+}
+
+.cartLabel {
+    font-weight: 700;
+    color: #0B1F4D;
+    font-size: 0.95rem;
+}
+
+.cartBadgeCount {
+    background: #FF3B30;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    height: 20px;
+    min-width: 20px;
+    padding: 0 4px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* Sorting & Search Inputs Wrapper styling blocks */
+.filtersWrapper {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.searchBar {
+    flex: 1;
+    min-width: 260px;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #f9fafb;
+}
+
+.searchBar:focus {
+    border-color: #2D7FF9;
+    background: #ffffff;
+}
+
+.sortSelector {
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    outline: none;
+    background: #ffffff;
+    cursor: pointer;
+    min-width: 180px;
+}
+
+/* Categories Horizontal Navigation Component Tab List styling */
+.categoryBar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 28px;
+    scrollbar-width: none; /* Hide standard Firefox scrollbar track */
+}
+
+.categoryBar::-webkit-scrollbar {
+    display: none; /* Hide Webkit track engine layers */
+}
+
+.categoryTab {
+    white-space: nowrap;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.categoryTab:hover {
+    background: #f3f4f6;
+    color: #0B1F4D;
+}
+
+.activeTab {
+    background: #0B1F4D !important;
+    color: #ffffff !important;
+    border-color: #0B1F4D !important;
+}
+
+/* Main Display Grid Content layout container logic */
+.menuGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 28px;
+    padding-bottom: 80px;
+}
+
+.itemCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.itemCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+}
+
+.imageFrame {
+    width: 100%;
+    height: 180px;
+    background: #f9fafb;
+    position: relative;
+    overflow: hidden;
+}
+
+.foodImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholderImg, .modalPlaceholderImg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.cardMetadata {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.itemName {
+    margin: 0 0 4px 0;
+    color: #0B1F4D;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.itemCategoryLabel {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.itemPrice {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0B1F4D;
+}
+
+.addTriggerBtn {
+    background: #2D7FF9;
+    color: #ffffff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.addTriggerBtn:hover {
+    background: #1565D8;
+}
+
+/* Dialog Overlay Modals core sheets architectures layout structures definitions */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 31, 77, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+}
+
+.modalContainer {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeroBanner {
+    width: 100%;
+    height: 220px;
+    background: #f3f4f6;
+}
+
+.modalImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modalBody {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.modalTitleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modalTitleRow h2 {
+    margin: 0;
+    color: #0B1F4D;
+    font-size: 1.6rem;
+    font-weight: 800;
+}
+
+.modalPrice {
+    color: #2D7FF9;
+    font-weight: 800;
+    font-size: 1.4rem;
+}
+
+/* Modals Content Customizations inner scrolls definitions elements controls context fields layout details */
+.customizationsScroller {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+    margin-bottom: 20px;
+}
+
+.optionGroupContainer {
+    margin-bottom: 20px;
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #hidden;
+}
+
+.optionGroupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modalSectionTitle {
+    font-size: 1.05rem;
+    color: #0B1F4D;
+    margin: 0;
+    font-weight: 700;
+}
+
+.requiredLabel {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.optionalLabel {
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.choicesGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.choiceRow {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.choiceChecked {
+    border-color: #2D7FF9;
+    background: rgba(45, 127, 249, 0.03);
+}
+
+.nativeInputNode {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    accent-color: #2D7FF9;
+    cursor: pointer;
+}
+
+.choiceText {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.choiceExtraCost {
+    margin-left: auto;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #2D7FF9;
+}
+
+.noteInput {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 70px;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.noteInput:focus {
+    border-color: #2D7FF9;
+}
+
+/* Footer Control nodes items quantities steppers blocks architectures */
+.modalActionFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+    gap: 16px;
+}
+
+.quantityStepper {
+    display: flex;
+    align-items: center;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.stepBtn {
+    background: #ffffff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.quantityDisplayValue {
+    font-weight: 700;
+    font-size: 1.1rem;
+    min-width: 40px;
+    text-align: center;
+    color: #0B1F4D;
+}
+
+.buttonActionRow {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.cancelButton, .confirmButton {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+    text-align: center;
+}
+
+.cancelButton {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.cancelButton:hover {
+    background: #e5e7eb;
+}
+
+.confirmButton {
+    background: #2D7FF9;
+    color: #ffffff;
+    flex: 1;
+}
+
+.confirmButton:hover {
+    background: #1565D8;
+}
+
+/* Permanent Saved User Cart Drawer Layout structures configurations definitions sheets views templates components options modules */
+.cartModalContainer {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.cartModalHeader {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+}
+
+.cartModalHeader h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #0B1F4D;
+    font-weight: 800;
+}
+
+.closeTextBtn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #9ca3af;
+    cursor: pointer;
+}
+
+.cartModalBody {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.cartItemsScrollContainer {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.cartItemRowUnit {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 16px;
+}
+
+.cartItemMetaBlock h4 {
+    margin: 0 0 4px 0;
+    color: #0B1F4D;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.customizationsTextSummary {
+    margin: 0 0 2px 0;
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.specialRequestTextSummary {
+    margin: 0 0 6px 0;
+    font-size: 0.8rem;
+    color: #2D7FF9;
+    font-weight: 500;
+}
+
+.cartItemUnitCost {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #374151;
+}
+
+.cartItemInteractivePanel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    justify-content: center;
+}
+
+.miniStepper {
+    display: flex;
+    align-items: center;
+    background: #f3f4f6;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.miniStepBtn {
+    background: #ffffff;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.miniQuantityValue {
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-width: 26px;
+    text-align: center;
+}
+
+.trashRemovalLink {
+    background: none;
+    border: none;
+    color: #EF4444;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.trashRemovalLink:hover {
+    text-decoration: underline;
+}
+
+.emptyCartPrompt {
+    text-align: center;
+    padding: 40px 0;
+    color: #6b7280;
+}
+
+/* System Response Processing Status Loading / Errors Messages nodes definitions fallback layouts templates */
+.loadingState, .errorState {
+    text-align: center;
+    padding: 80px 24px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.loadingState { color: #2D7FF9; }
+.errorState { color: #EF4444; }
+
+/* Global Floating Notification Toast Alerts Widgets templates configurations sheets layout rules definitions styles */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0B1F4D;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 200;
+    animation: slideUpFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+    from { bottom: 12px; opacity: 0; }
+    to { bottom: 24px; opacity: 1; }
+}
