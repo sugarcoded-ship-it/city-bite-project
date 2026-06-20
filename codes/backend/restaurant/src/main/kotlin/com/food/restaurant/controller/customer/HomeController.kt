@@ -1,5 +1,7 @@
 package com.food.restaurant.controller.customer
 
+import com.food.restaurant.dto.cart.AddToCartRequest
+import com.food.restaurant.dto.cart.CartItemResponse
 import com.food.restaurant.dto.menu.MenuItemResponse
 import com.food.restaurant.dto.menu.OptionGroupResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
@@ -27,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody
 class HomeController(
     private val userSyncService: UserSyncService,
     private val menuService: MenuService,
-    private val cartService: CartService
+    private val cartService: CartService,
 ) {
 
     @GetMapping("/")
@@ -102,20 +104,4 @@ class HomeController(
         cartService.removeItemByIndex(userId, itemIndex)
         return cartService.getCartItemsForUser(userId)
     }
-
-    data class AddToCartRequest(
-        val menuId: Int,
-        val specialRequest: String?,
-        val selectedChoices: Map<Int, List<Int>>?,
-        val quantity: Int = 1
-    )
-
-    data class CartItemResponse(
-        val menuId: Int,
-        val name: String,
-        val price: Double,
-        val quantity: Int,
-        val specialRequest: String?,
-        val selectedCustomizations: List<String>
-    )
 }
