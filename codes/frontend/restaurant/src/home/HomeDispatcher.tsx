@@ -1,6 +1,6 @@
 import React from 'react';
 import keycloak from '../security/keycloak';
-import { CustomerHome } from './CustomerHome';
+import { CustomerHome } from './Customer/CustomerHome.tsx';
 import { OwnerHome } from './OwnerHome';
 import { StaffHome } from './StaffHome';
 
