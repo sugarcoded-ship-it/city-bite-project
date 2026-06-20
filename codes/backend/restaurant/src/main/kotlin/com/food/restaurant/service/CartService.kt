@@ -1,11 +1,13 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.controller.customer.HomeController.CartItemResponse
+import com.food.restaurant.dto.cart.CartItemResponse
 import com.food.restaurant.entity.cart.CartItem
 import com.food.restaurant.entity.cart.CartItemSelection
+import com.food.restaurant.entity.user.User
 import com.food.restaurant.repository.cart.CartItemRepository
 import com.food.restaurant.repository.MenuRepository
 import com.food.restaurant.repository.OptionChoiceRepository
+import com.food.restaurant.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -15,13 +17,35 @@ import java.util.UUID
 class CartService(
     private val cartItemRepository: CartItemRepository,
     private val menuRepository: MenuRepository,
-    private val optionChoiceRepository: OptionChoiceRepository
+    private val optionChoiceRepository: OptionChoiceRepository,
+    private val userRepository: UserRepository
 ) {
 
-    fun addItem(userId: String, menuId: Int, specialRequest: String?, selectedChoices: Map<Int, List<Int>>, quantity: Int = 1) {
+    fun addItem(
+        userId: String,
+        menuId: Int,
+        specialRequest: String?,
+        selectedChoices: Map<String, List<Int>>?,
+        quantity: Int = 1
+    ) {
         val userUuid = UUID.fromString(userId)
+
+        if (!userRepository.existsById(userUuid)) {
+            userRepository.saveAndFlush(
+                User(
+                    id = userUuid,
+                    username = "user_${userId.take(8)}",
+                    email = "$userId@placeholder.com",
+                    firstName = null,
+                    lastName = null
+                )
+            )
+        }
+
         val userCart = cartItemRepository.findByCustomerUuid(userUuid)
-        val incomingChoiceIds = selectedChoices.values.flatten().sorted()
+
+        val choicesMap = selectedChoices ?: emptyMap()
+        val incomingChoiceIds = choicesMap.values.flatten().sorted()
 
         val existingItem = userCart.find { item ->
             val itemChoiceIds = item.selections.map { it.choiceId }.sorted()
@@ -35,33 +59,34 @@ class CartService(
             cartItemRepository.save(existingItem)
         } else {
             val menuItem = menuRepository.findById(menuId)
-                .orElseThrow { IllegalArgumentException("Menu item not found") }
+                .orElseThrow { RuntimeException("Menu item not found") }
 
-            val newCartItem = CartItem(
+            val newItem = CartItem(
                 customerUuid = userUuid,
                 menuItem = menuItem,
                 quantity = quantity,
                 specialRequest = specialRequest
             )
 
-            incomingChoiceIds.forEach { choiceId ->
-                newCartItem.selections.add(CartItemSelection(cartItem = newCartItem, choiceId = choiceId))
-            }
+            val savedItem = cartItemRepository.save(newItem)
 
-            cartItemRepository.save(newCartItem)
+            val selections = choicesMap.values.flatten().map { choiceId ->
+                CartItemSelection(cartItem = savedItem, choiceId = choiceId)
+            }
+            savedItem.selections.addAll(selections)
+            cartItemRepository.save(savedItem)
         }
     }
 
-    @Transactional(readOnly = true)
     fun getCartItemsForUser(userId: String): List<CartItemResponse> {
         val userUuid = UUID.fromString(userId)
-        val dbItems = cartItemRepository.findByCustomerUuid(userUuid)
+        val userCart = cartItemRepository.findByCustomerUuid(userUuid)
 
-        return dbItems.map { item ->
+        return userCart.map { item ->
+            val basePrice = item.menuItem.price.toDouble()
             val choiceIds = item.selections.map { it.choiceId }
             val databaseChoices = optionChoiceRepository.findAllById(choiceIds)
 
-            val basePrice = item.menuItem.price.toDouble()
             val extraCost = databaseChoices.sumOf { it.extraPrice.toDouble() }
             val finalCalculatedPrice = basePrice + extraCost
 
