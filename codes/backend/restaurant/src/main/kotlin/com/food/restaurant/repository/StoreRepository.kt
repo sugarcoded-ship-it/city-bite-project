@@ -8,5 +8,5 @@ import java.util.Optional
 
 @Repository
 interface StoreRepository : JpaRepository<Store, Int> {
-    fun findByKeycloakUuid(keycloakUuid: UUID): Optional<Store>
+    fun findByOwner_Id(keycloakUuid: UUID): Optional<Store>
 }
