@@ -9,6 +9,7 @@ import java.util.UUID
 
 @Repository
 interface StaffRepository : JpaRepository<Staff, UUID> {
+    fun countByStatus(status: String): Long
     @Query("""
         SELECT new com.food.restaurant.dto.staff.OwnerStaffListResponse(
             s.id,
