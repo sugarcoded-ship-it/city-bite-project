@@ -8,10 +8,26 @@ import java.math.BigDecimal
 
 @Repository
 interface OrderRepository : JpaRepository<Order, Int> {
-    @Query("SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o WHERE DATE(o.createdAt) = CURRENT_DATE")
+
+    @Query(
+        value = "SELECT COALESCE(SUM(total_price), 0) FROM orders WHERE DATE(created_at) = CURRENT_DATE",
+        nativeQuery = true
+    )
     fun sumRevenueToday(): BigDecimal
-    @Query("SELECT COUNT(o) FROM Order o WHERE DATE(o.createdAt) = CURRENT_DATE")
+
+    @Query(
+        value = "SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURRENT_DATE",
+        nativeQuery = true
+    )
     fun countOrdersToday(): Long
-    @Query("SELECT COUNT(o) FROM Order o JOIN o.orderStatus os WHERE DATE(o.createdAt) = CURRENT_DATE AND os.statusName = 'Completed'")
+
+    @Query(
+        value = """
+            SELECT COUNT(*) FROM orders o 
+            JOIN order_status os ON o.order_status_id = os.order_status_id 
+            WHERE DATE(o.created_at) = CURRENT_DATE AND os.status_name = 'Completed'
+        """,
+        nativeQuery = true
+    )
     fun countCompletedOrdersToday(): Long
 }
