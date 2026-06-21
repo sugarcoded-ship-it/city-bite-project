@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { apiClient } from '../api/client';
-import { LogoutButton } from '../authentication/LogoutButton';
+import { apiClient } from '../api/client.ts';
+import { LogoutButton } from '../authentication/LogoutButton.tsx';
 
 // PlaceHolder (waiting for backend)
 interface StaffDashboardData {
