@@ -50,6 +50,10 @@ export function OwnerHome() {
             });
     }, []);
 
+    if (currentPage === 'store-status') {
+        // return <StoreStatus />;
+    }
+
     if (loading) {
         return <div className={styles.loadingContainer}>Loading dashboard...</div>;
     }
