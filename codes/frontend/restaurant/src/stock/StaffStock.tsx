@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { apiClient, api } from '../api/client';
 import { LogoutButton } from '../authentication/LogoutButton';
 import styles from './StaffStock.module.css';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 interface StockCategoryResponse {
   id: number;
@@ -18,6 +20,10 @@ interface StockResponse {
 }
 
 export const StaffStock = () => {
+
+  const navigate = useNavigate();
+  const goToDashboard = () => navigate('/');
+
   const [items, setItems] = useState<StockResponse[]>([]);
   const [categories, setCategories] = useState<StockCategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +104,9 @@ export const StaffStock = () => {
     <div className={styles.container}>
       <div className={styles.headerRow}>
         <div>
+          <button className={styles.backButton} onClick={goToDashboard}>
+            <ArrowLeft size={16} /> Back to Dashboard
+          </button>
           <h1 className={styles.title}>Stock Management</h1>
           <p className={styles.subtitle}>Monitor and adjust real-time inventory levels</p>
         </div>
