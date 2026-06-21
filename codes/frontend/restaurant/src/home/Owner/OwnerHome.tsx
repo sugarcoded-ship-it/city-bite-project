@@ -4,7 +4,6 @@ import { apiClient } from '../../api/client.ts';
 import { OwnerTopNav } from './OwnerTopNav';
 import { LogoutButton } from '../../authentication/LogoutButton.tsx';
 import styles from './OwnerHome.module.css';
-import { StoreStatus } from './StoreStatus.tsx';
 import {
     UtensilsCrossed, Users, CalendarOff, Store,
     BarChart3, User, Crown, TrendingUp, AlertCircle, ChevronRight
@@ -50,10 +49,6 @@ export function OwnerHome() {
                 setLoading(false);
             });
     }, []);
-
-    if (currentPage === 'store-status') {
-        return <StoreStatus />;
-    }
 
     if (loading) {
         return <div className={styles.loadingContainer}>Loading dashboard...</div>;
