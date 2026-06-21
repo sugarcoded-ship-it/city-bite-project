@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 import { LogoutButton } from '../authentication/LogoutButton';
+import { useNavigate } from 'react-router-dom';
 import styles from './StaffHome.module.css';
 
-// PlaceHolder (waiting for backend)
 interface StaffDashboardData {
     OrderCount: number;
 }
 
 export const StaffHome = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState<StaffDashboardData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+
+  useEffect(() => {
         apiClient<StaffDashboardData>('/staff/')
             .then((res) => {
                 setData(res);
@@ -61,6 +63,12 @@ export const StaffHome = () => {
         </button>
         <button className={styles.filterButton} onClick={() => alert("Navigate to Order Management")}>
           Active Orders
+        </button>
+        <button
+          className={styles.filterButton}
+          onClick={() => navigate('/staff/stock')}
+        >
+          Stock Management
         </button>
         <button className={styles.filterButton} onClick={() => alert("Navigate to Menu Management")}>
           Edit Menu

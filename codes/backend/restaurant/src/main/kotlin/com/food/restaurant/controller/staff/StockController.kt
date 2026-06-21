@@ -1,9 +1,9 @@
-// controller/staff/StockController.kt
 package com.food.restaurant.controller.staff
 
 import com.food.restaurant.dto.stock.AdjustStockRequest
 import com.food.restaurant.dto.stock.StockCategoryResponse
 import com.food.restaurant.dto.stock.StockResponse
+import com.food.restaurant.dto.stock.BatchAdjustRequest
 import com.food.restaurant.service.StockService
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -24,4 +24,11 @@ class StockController(
     @PatchMapping("/{id}/adjust")
     fun adjust(@PathVariable id: Int, @RequestBody body: AdjustStockRequest): StockResponse =
         stockService.adjustStock(id, body.delta)
+
+    @GetMapping("/items")
+    fun allItems() = stockService.getAllStocks()
+
+    @PatchMapping("/adjust")
+    fun batchAdjust(@RequestBody body: BatchAdjustRequest) =
+        stockService.applyAdjustments(body.adjustments)
 }

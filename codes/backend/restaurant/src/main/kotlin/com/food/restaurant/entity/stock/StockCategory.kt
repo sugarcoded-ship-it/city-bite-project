@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Convert
 
 @Entity
 @Table(name = "Stocks_Category")
@@ -17,7 +18,8 @@ class StockCategory(
     @Column(name = "Stock_Category_ID")
     var id: Int = 0,
 
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
+    @Convert(converter = StockCategoryEnumConverter::class)
     @Column(name = "name", nullable = false)
     var name: stockCategoryEnum
 )

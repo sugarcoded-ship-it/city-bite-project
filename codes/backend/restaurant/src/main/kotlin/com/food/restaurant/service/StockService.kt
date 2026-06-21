@@ -1,7 +1,9 @@
 package com.food.restaurant.service
 
+import com.food.restaurant.dto.stock.StockAdjustment
 import com.food.restaurant.dto.stock.StockCategoryResponse
 import com.food.restaurant.dto.stock.StockResponse
+import com.food.restaurant.dto.stock.BatchAdjustRequest
 import com.food.restaurant.entity.stock.Stock
 import com.food.restaurant.repository.StockCategoryRepository
 import com.food.restaurant.repository.StockRepository
@@ -16,8 +18,12 @@ class StockService(
 ) {
     fun getCategories(): List<StockCategoryResponse> =
         stockCategoryRepository.findAll().map { StockCategoryResponse(it.id, it.name) }
+
     fun getStocksByCategory(categoryId: Int): List<StockResponse> =
         stockRepository.findAllByStockCategoryId(categoryId).map { it.toResponse() }
+
+    fun getAllStocks(): List<StockResponse> =
+        stockRepository.findAll().map { it.toResponse() }
 
     @Transactional
     fun adjustStock(id: Int, delta: BigDecimal): StockResponse {
@@ -28,6 +34,16 @@ class StockService(
         stock.amount = newAmount
         return stockRepository.save(stock).toResponse()
     }
+
+    @Transactional
+    fun applyAdjustments(adjustments: List<StockAdjustment>): List<StockResponse> =
+        adjustments.map { adj ->
+            val stock = stockRepository.findById(adj.itemId)
+                .orElseThrow { NoSuchElementException("Stock ${adj.itemId} not found") }
+            require(adj.newAmount >= BigDecimal.ZERO) { "Stock amount cannot go below zero" }
+            stock.amount = adj.newAmount
+            stockRepository.save(stock).toResponse()
+        }
 
     private fun Stock.toResponse(): StockResponse = StockResponse(
         id = id,
