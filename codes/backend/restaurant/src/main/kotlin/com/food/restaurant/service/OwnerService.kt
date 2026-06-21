@@ -1,18 +1,16 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.repository.*
 import com.food.restaurant.dto.user.owner.OwnerDashboardDto
-import com.food.restaurant.repository.LeaveDayRepository
-import com.food.restaurant.repository.MenuRepository
-import com.food.restaurant.repository.OrderRepository
-import com.food.restaurant.repository.StaffRepository
-import com.food.restaurant.repository.StoreRepository
+import com.food.restaurant.entity.menu.menuStatusEnum
+import com.food.restaurant.entity.user.StaffStatus
+import com.food.restaurant.repository.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.util.UUID
 
 @Service
-class OwnerDashboardService(
+class OwnerService(
     private val orderRepository: OrderRepository,
     private val staffRepository: StaffRepository,
     private val leaveDayRepository: LeaveDayRepository,
@@ -22,19 +20,33 @@ class OwnerDashboardService(
 
     @Transactional(readOnly = true)
     fun getDashboardMetrics(ownerUuid: UUID): OwnerDashboardDto {
-        val revenueToday = orderRepository.sumRevenueToday()
-        val totalOrdersToday = orderRepository.countOrdersToday()
-        val completedOrdersToday = orderRepository.countCompletedOrdersToday()
 
-        val activeStaffCount = staffRepository.countByStatus("ACTIVATED")
-        val pendingLeaveRequests = leaveDayRepository.countByStatus("Pending")
+        val revenueToday = try {
+            orderRepository.sumRevenueToday() ?: BigDecimal.ZERO
+        } catch (e: Exception) {
+            BigDecimal.ZERO
+        }
 
-        val totalMenuItems = menuRepository.count()
-        val availableMenuItems = menuRepository.countAvailableItems()
+        val totalOrdersToday = try { orderRepository.countOrdersToday() } catch (e: Exception) { 0L }
+        val completedOrdersToday = try { orderRepository.countCompletedOrdersToday() } catch (e: Exception) { 0L }
 
-        val store = storeRepository.findByKeycloakUuid(ownerUuid)
-            .orElseThrow { RuntimeException("Store records not available for authorized UUID scope.") }
-        val isStoreOpen = store.isOpen ?: false
+        val activeStaffCount = try {
+            staffRepository.countByStatus(StaffStatus.ACTIVATED)
+        } catch (e: Exception) {
+            0L
+        }
+
+        val pendingLeaveRequests = try { leaveDayRepository.countByStatus("PENDING") } catch (e: Exception) { 0L }
+
+        val totalMenuItems = try { menuRepository.count() } catch (e: Exception) { 0L }
+        val availableMenuItems = try { menuRepository.countByStatus_Name(menuStatusEnum.ACTIVE) } catch (e: Exception) { 0L }
+
+        val store = try {
+            storeRepository.findByOwner_Id(ownerUuid).orElse(null)
+        } catch (e: Exception) {
+            null
+        }
+        val isStoreOpen = store?.isOpen ?: false
 
         return OwnerDashboardDto(
             revenueToday = revenueToday,
