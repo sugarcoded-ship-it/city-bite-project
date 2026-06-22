@@ -225,7 +225,7 @@ export const StaffStock = () => {
                       onClick={() => handleConfirm(item.id, currentAmount)}
                       disabled={isSavingThis}
                     >
-                      {isSavingThis ? 'Saving...' : `Confirm (+${addAmount} → ${newTotal})`}
+                      {isSavingThis ? 'Saving...' : 'Confirm'}
                     </button>
                   </div>
                 )}
