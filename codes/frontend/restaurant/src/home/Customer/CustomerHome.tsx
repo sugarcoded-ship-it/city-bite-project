@@ -15,6 +15,7 @@ interface MenuItem {
     category: string;
     menuPic: string | null;
     description?: string;
+    status: string;
 }
 
 interface OptionChoice {
@@ -38,6 +39,7 @@ interface CartItem {
     quantity: number;
     specialRequest: string | null;
     selectedCustomizations: string[];
+    status: string;
 }
 
 type SortOption = 'default' | 'price-asc' | 'price-desc';
@@ -54,6 +56,7 @@ export function CustomerHome() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [cartCount, setCartCount] = useState<number>(0);
     const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const hasUnavailableCartItem = cartItems.some((item) => item.status !== 'ACTIVE');
 
     // --- UI States ---
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -112,9 +115,10 @@ export function CustomerHome() {
     }, [items]);
 
     const FEATURED = useMemo(() => {
-        if (items.length === 0) return [];
-        // Select top 3 items for the carousel dynamically
-        return items.slice(0, 3).map((item, idx) => ({
+        const available = items.filter((item) => item.status === 'ACTIVE');
+        if (available.length === 0) return [];
+        // Select top 3 available items for the carousel dynamically
+        return available.slice(0, 3).map((item, idx) => ({
             item,
             badge: idx === 0 ? "Chef's Pick" : idx === 1 ? "Most Popular" : "Today's Special",
             tagline: 'City Bite selected delight just for you',
@@ -157,6 +161,7 @@ export function CustomerHome() {
 
     // --- Handlers ---
     const openMenuModal = async (item: MenuItem) => {
+        if (item.status !== 'ACTIVE') return;
         setSelectedItem(item);
         setSelectedChoices(new Map());
         setSpecialRequest('');
@@ -400,10 +405,12 @@ export function CustomerHome() {
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                {displayedItems.map((item) => (
+                                {displayedItems.map((item) => {
+                                    const isAvailable = item.status === 'ACTIVE';
+                                    return (
                                     <div
                                         key={item.id}
-                                        className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group/card cursor-pointer"
+                                        className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'}`}
                                         onClick={() => openMenuModal(item)}
                                     >
                                         <div className="relative w-full h-36 bg-gray-100 overflow-hidden">
@@ -411,7 +418,7 @@ export function CustomerHome() {
                                                 <img
                                                     src={item.menuPic}
                                                     alt={item.name}
-                                                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
+                                                    className={`w-full h-full object-cover transition-transform duration-500 ${isAvailable ? 'group-hover/card:scale-105' : 'opacity-50 grayscale'}`}
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-semibold">No Image</div>
@@ -419,6 +426,11 @@ export function CustomerHome() {
                                             <span className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                         {item.category}
                       </span>
+                                            {!isAvailable && (
+                                                <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-xs font-bold uppercase tracking-wide">
+                                                    {item.status === 'OUT_OF_ORDER' ? 'Out of Stock' : 'Unavailable'}
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="p-3.5 flex-1 flex flex-col justify-between">
@@ -440,15 +452,17 @@ export function CustomerHome() {
                                                         e.stopPropagation();
                                                         openMenuModal(item);
                                                     }}
-                                                    className="bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white rounded-xl w-8 h-8 flex items-center justify-center transition-colors shadow-sm transform active:scale-95 duration-150"
-                                                    title="Add to cart"
+                                                    disabled={!isAvailable}
+                                                    className={`rounded-xl w-8 h-8 flex items-center justify-center transition-colors shadow-sm transform duration-150 ${isAvailable ? 'bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                                    title={isAvailable ? 'Add to cart' : 'Currently unavailable'}
                                                 >
                                                     <Plus size={16} strokeWidth={2.5} />
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -484,11 +498,16 @@ export function CustomerHome() {
                                     {/* Dynamically fits exactly inside the window space so checkout never flies off-screen */}
                                     <div className="px-4 py-3 space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto scrollbar-hide flex-1">
                                         {cartItems.map((entry, idx) => (
-                                            <div key={`${entry.menuId}-${idx}`} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                                            <div key={`${entry.menuId}-${idx}`} className={`flex items-start gap-3 py-2 border-b border-gray-50 last:border-0 ${entry.status !== 'ACTIVE' ? 'opacity-60' : ''}`}>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-[#0B1F4D] font-bold text-xs leading-snug line-clamp-2">
                                                         {entry.name}
                                                     </p>
+                                                    {entry.status !== 'ACTIVE' && (
+                                                        <p className="text-[10px] text-red-500 font-bold mt-0.5">
+                                                            {entry.status === 'OUT_OF_ORDER' ? 'No longer in stock — remove to checkout' : 'No longer available — remove to checkout'}
+                                                        </p>
+                                                    )}
                                                     {entry.selectedCustomizations.length > 0 && (
                                                         <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1 italic">
                                                             Opts: {entry.selectedCustomizations.join(', ')}
@@ -532,9 +551,15 @@ export function CustomerHome() {
                                             <span>Total</span>
                                             <span>฿{cartTotal.toFixed(2)}</span>
                                         </div>
+                                        {hasUnavailableCartItem && (
+                                            <p className="text-[11px] text-red-500 font-semibold mb-2 text-center">
+                                                Remove unavailable items before checking out.
+                                            </p>
+                                        )}
                                         <button
                                             onClick={() => navigate('/customer/payment-method')}
-                                            className="w-full bg-[#2D7FF9] hover:bg-[#1a6de0] text-white font-bold py-3 rounded-xl text-sm transition-colors shadow-md"
+                                            disabled={hasUnavailableCartItem}
+                                            className={`w-full font-bold py-3 rounded-xl text-sm transition-colors shadow-md ${hasUnavailableCartItem ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#2D7FF9] hover:bg-[#1a6de0] text-white'}`}
                                         >
                                             Checkout →
                                         </button>
@@ -643,7 +668,11 @@ export function CustomerHome() {
                                     <Plus size={16} />
                                 </button>
                             </div>
-                            <button onClick={handleAddToCartConfirm} className="flex-1 bg-[#2D7FF9] hover:bg-[#1a6de0] text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-md flex justify-between px-5 items-center">
+                            <button
+                                onClick={handleAddToCartConfirm}
+                                disabled={selectedItem.status !== 'ACTIVE'}
+                                className="flex-1 bg-[#2D7FF9] hover:bg-[#1a6de0] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-md flex justify-between px-5 items-center"
+                            >
                                 <span>Add to Order</span>
                                 <span className="bg-white/20 px-2 py-0.5 rounded text-xs">฿{(selectedItem.price * itemQuantity).toFixed(2)}</span>
                             </button>
