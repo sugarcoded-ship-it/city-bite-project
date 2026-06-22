@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiClient } from '../../../lib/api-client';
-import { LogoutButton } from '../../auth/components/LogoutButton';
-import keycloak from '../../../lib/keycloak';
+import { apiClient } from '../../../../lib/api-client';
+import { LogoutButton } from '../../../auth/components/LogoutButton';
+import keycloak from '../../../../lib/keycloak';
 
 // PlaceHolder (waiting for backend)
 interface StaffDashboardData {
     OrderCount: number;
 }
 
-export const StaffHome = () => {
+export const StaffDashboard = () => {
     const [data, setData] = useState<StaffDashboardData | null>(null);
     // const [loading, setLoading] = useState<boolean>(true);
     // const [error, setError] = useState<string | null>(null);

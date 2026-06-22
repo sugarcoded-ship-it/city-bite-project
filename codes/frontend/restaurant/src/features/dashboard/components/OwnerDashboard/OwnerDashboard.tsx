@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { apiClient } from '../../lib/api-client';
+import { apiClient } from '../../../../lib/api-client';
 import { OwnerTopNav } from './OwnerTopNav';
-import { LogoutButton } from '../../features/auth/components/LogoutButton.tsx';
+import { LogoutButton } from '../../../auth/components/LogoutButton.tsx';
 import { MenuConfiguration } from './MenuConfiguration.tsx';
 import styles from './OwnerHome.module.css';
 import {
@@ -21,7 +21,7 @@ interface OwnerDashboardData {
     isStoreOpen: boolean;
 }
 
-export function OwnerHome() {
+export function OwnerDashboard() {
     const [searchParams, setSearchParams] = useSearchParams();
     const currentPage = searchParams.get('page') || 'dashboard';
 
