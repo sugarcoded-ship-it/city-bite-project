@@ -37,7 +37,7 @@ class Staff(
     var address: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("'DEACTIVATED'")
+    @ColumnDefault("'INACTIVE'")
     @Column(nullable = false)
-    var status: StaffStatus = StaffStatus.DEACTIVATED,
+    var status: StaffStatus = StaffStatus.INACTIVE,
 )
