@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.payment
 
 import com.food.restaurant.entity.payment.RefundCredit
 import com.food.restaurant.entity.user.Address

@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.menu
 
 import com.food.restaurant.entity.menu.MenuCategory
 import com.food.restaurant.entity.menu.menuCategoryEnum

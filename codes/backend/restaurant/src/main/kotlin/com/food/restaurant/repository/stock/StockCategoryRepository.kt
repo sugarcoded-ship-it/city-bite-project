@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.stock
 
 import com.food.restaurant.entity.stock.StockCategory
 import com.food.restaurant.entity.stock.stockCategoryEnum

@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.user
 
 import com.food.restaurant.entity.user.LeaveDay
 import org.springframework.data.jpa.repository.JpaRepository
