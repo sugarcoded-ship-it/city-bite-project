@@ -19,7 +19,7 @@ export function OwnerTopNav() {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const links = [
-        { label: 'Menu', icon: UtensilsCrossed, path: '/owner/dashboard' },
+        { label: 'Menu', icon: UtensilsCrossed, path: '/owner/menu' },
         { label: 'Staff', icon: Users, path: '/owner/staff' },
         { label: 'Day-Off', icon: CalendarOff, path: '/owner/dayoff' },
         { label: 'Store', icon: Store, path: '/owner/store-status' },

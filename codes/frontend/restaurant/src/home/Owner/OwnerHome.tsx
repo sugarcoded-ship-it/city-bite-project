@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client.ts';
 import { OwnerTopNav } from './OwnerTopNav';
 import { LogoutButton } from '../../authentication/LogoutButton.tsx';
+import { MenuConfiguration } from './MenuConfiguration.tsx';
 import styles from './OwnerHome.module.css';
 import {
     UtensilsCrossed, Users, CalendarOff, Store,
@@ -33,7 +34,6 @@ export function OwnerHome() {
             .then((res) => {
                 if (!res) throw new Error('Dashboard endpoint returned an empty response.');
                 setData(res);
-                console.log(res);
                 setError(null);
             })
             .catch((err) => {
@@ -45,13 +45,15 @@ export function OwnerHome() {
                 );
             })
             .finally(() => {
-                console.log("=== [FRONTEND CHECK] 4. Request cycle finished ===");
                 setLoading(false);
             });
     }, []);
 
     if (currentPage === 'store-status') {
         // return <StoreStatus />;
+    }
+    if (currentPage === 'menu-config') {
+        return <MenuConfiguration />; // <-- Add this intercept block!
     }
 
     if (loading) {
