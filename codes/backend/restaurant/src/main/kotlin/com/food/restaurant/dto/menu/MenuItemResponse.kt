@@ -9,16 +9,20 @@ data class MenuItemResponse(
     val price: BigDecimal,
     val category: String,
     val menuPic: String?,
-    val description: String?
+    val description: String?,
+    val status: String,
+    val recipe: List<MenuRecipeResponse>
 ) {
     companion object {
-        fun from(menuItem: MenuItem) = MenuItemResponse(
+        fun from(menuItem: MenuItem, recipe: List<MenuRecipeResponse> = emptyList()) = MenuItemResponse(
             id = menuItem.id,
             name = menuItem.name,
             price = menuItem.price,
             category = menuItem.category.name.displayName,
             menuPic = menuItem.menu_pic,
-            description = menuItem.description
+            description = menuItem.description,
+            status = menuItem.status.name.name,
+            recipe = recipe
         )
     }
 }
