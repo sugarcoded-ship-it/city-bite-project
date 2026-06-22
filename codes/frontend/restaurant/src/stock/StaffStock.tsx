@@ -32,8 +32,9 @@ export const StaffStock = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<number | null>(null); // null = All
 
-  const [pendingChanges, setPendingChanges] = useState<Record<number, number>>({});
-  const [isSaving, setIsSaving] = useState(false);
+  // addAmounts holds the quantity to ADD to each item (a delta), not the new total.
+  const [addAmounts, setAddAmounts] = useState<Record<number, number>>({});
+  const [savingId, setSavingId] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<StockResponse | null>(null);
 
@@ -59,31 +60,48 @@ export const StaffStock = () => {
     fetchStockData();
   }, [fetchStockData]);
 
-  const handleAmountChange = (itemId: number, newAmount: number) => {
-    if (newAmount < 0) return;
-    setPendingChanges((prev) => ({ ...prev, [itemId]: newAmount }));
+  const handleAddChange = (itemId: number, addAmount: number) => {
+    setAddAmounts((prev) => ({ ...prev, [itemId]: addAmount }));
   };
 
-  const handleSaveChanges = async () => {
-    const adjustments = Object.keys(pendingChanges).map((id) => ({
-      itemId: parseInt(id),
-      newAmount: pendingChanges[parseInt(id)],
-    }));
-    if (adjustments.length === 0) return;
+  // Confirm a single card's change: add the entered amount to the current stock.
+  const handleConfirm = async (itemId: number, currentAmount: number) => {
+    const addAmount = addAmounts[itemId];
+    if (!addAmount) return; // nothing to add (undefined or 0)
 
-    setIsSaving(true);
+    const newAmount = Math.max(0, currentAmount + addAmount);
+
+    setSavingId(itemId);
     try {
-      await api.patch('/staff/stocks/adjust', { adjustments });
-      setToastMessage('Inventory successfully updated!');
-      setPendingChanges({});
-      await fetchStockData();
+      await api.patch('/staff/stocks/adjust', {
+        adjustments: [{ itemId, newAmount }],
+      });
+      // Commit the new total locally and clear this item's add amount.
+      setItems((prev) =>
+        prev.map((it) => (it.id === itemId ? { ...it, amount: newAmount } : it))
+      );
+      setAddAmounts((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
+      setToastMessage('Stock updated!');
       setTimeout(() => setToastMessage(null), 3000);
     } catch (err) {
       console.error('Failed to update stock:', err);
-      alert('An error occurred while saving inventory changes.');
+      alert('An error occurred while saving this item.');
     } finally {
-      setIsSaving(false);
+      setSavingId(null);
     }
+  };
+
+  // Cancel a single card's change: discard the entered add amount.
+  const handleCancel = (itemId: number) => {
+    setAddAmounts((prev) => {
+      const next = { ...prev };
+      delete next[itemId];
+      return next;
+    });
   };
 
   const categoryName = (id: number) =>
@@ -93,8 +111,6 @@ export const StaffStock = () => {
     return <div className={styles.centeredContainer}><div className={styles.loadingText}>Loading inventory...</div></div>;
   if (error)
     return <div className={styles.centeredContainer}><div className={styles.errorText}>{error}</div></div>;
-
-  const hasPendingChanges = Object.keys(pendingChanges).length > 0;
 
   const visibleItems = items
     .filter((item) => activeCategory === null || item.categoryId === activeCategory)
@@ -111,13 +127,6 @@ export const StaffStock = () => {
           <p className={styles.subtitle}>Monitor and adjust real-time inventory levels</p>
         </div>
         <div className={styles.actionsArea}>
-          <button
-            className={`${styles.saveButton} ${hasPendingChanges ? styles.saveButtonActive : ''}`}
-            onClick={handleSaveChanges}
-            disabled={!hasPendingChanges || isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
           <LogoutButton />
         </div>
       </div>
@@ -157,10 +166,12 @@ export const StaffStock = () => {
       ) : (
         <div className={styles.stockGrid}>
           {visibleItems.map((item) => {
-            const displayAmount =
-              pendingChanges[item.id] !== undefined ? pendingChanges[item.id] : item.amount;
-            const isOut = displayAmount <= 0;
-            const edited = pendingChanges[item.id] !== undefined;
+            const currentAmount = item.amount;
+            const addAmount = addAmounts[item.id] ?? 0;
+            const newTotal = Math.max(0, currentAmount + addAmount);
+            const isOut = currentAmount <= 0;
+            const edited = addAmount !== 0;
+            const isSavingThis = savingId === item.id;
 
             return (
               <div key={item.id} className={`${styles.stockCard} ${edited ? styles.cardEdited : ''}`}>
@@ -175,25 +186,49 @@ export const StaffStock = () => {
                 </div>
 
                 <div className={styles.cardAmount}>
-                  <span className={styles.amountValue}>{displayAmount}</span>
+                  <span className={styles.amountValue}>{currentAmount}</span>
                   <span className={styles.amountUnit}>{item.measureUnit}</span>
+                  {edited && (
+                    <span className={styles.amountProjection}>→ {newTotal} {item.measureUnit}</span>
+                  )}
                 </div>
 
                 <div className={styles.cardControls}>
                   <div className={styles.inlineCounter}>
-                    <button className={styles.counterBtn} onClick={() => handleAmountChange(item.id, Math.max(0, displayAmount - 1))}>−</button>
+                    <button className={styles.counterBtn} onClick={() => handleAddChange(item.id, addAmount - 1)}>−</button>
                     <input
                       type="number"
                       step="0.1"
-                      min="0"
                       className={styles.counterInput}
-                      value={displayAmount}
-                      onChange={(e) => handleAmountChange(item.id, parseFloat(e.target.value) || 0)}
+                      placeholder="0"
+                      value={addAmount === 0 ? '' : addAmount}
+                      onChange={(e) => handleAddChange(item.id, parseFloat(e.target.value) || 0)}
                     />
-                    <button className={styles.counterBtn} onClick={() => handleAmountChange(item.id, displayAmount + 1)}>+</button>
+                    <button className={styles.counterBtn} onClick={() => handleAddChange(item.id, addAmount + 1)}>+</button>
                   </div>
                   <button className={styles.detailsBtn} onClick={() => setSelectedItem(item)}>Details</button>
                 </div>
+
+                <span className={styles.addHint}>Amount to add (use − for removing)</span>
+
+                {edited && (
+                  <div className={styles.confirmRow}>
+                    <button
+                      className={styles.cancelBtn}
+                      onClick={() => handleCancel(item.id)}
+                      disabled={isSavingThis}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className={styles.confirmBtn}
+                      onClick={() => handleConfirm(item.id, currentAmount)}
+                      disabled={isSavingThis}
+                    >
+                      {isSavingThis ? 'Saving...' : `Confirm (+${addAmount} → ${newTotal})`}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
