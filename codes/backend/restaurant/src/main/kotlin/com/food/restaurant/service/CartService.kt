@@ -18,7 +18,8 @@ class CartService(
     private val cartItemRepository: CartItemRepository,
     private val menuRepository: MenuRepository,
     private val optionChoiceRepository: OptionChoiceRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val menuAvailabilityService: MenuAvailabilityService
 ) {
 
     fun addItem(
@@ -89,6 +90,7 @@ class CartService(
 
             val extraCost = databaseChoices.sumOf { it.extraPrice.toDouble() }
             val finalCalculatedPrice = basePrice + extraCost
+            val resolvedMenuItem = menuAvailabilityService.syncStatus(item.menuItem)
 
             CartItemResponse(
                 menuId = item.menuItem.id,
@@ -96,7 +98,8 @@ class CartService(
                 price = finalCalculatedPrice,
                 quantity = item.quantity,
                 specialRequest = item.specialRequest,
-                selectedCustomizations = databaseChoices.map { it.choiceName }
+                selectedCustomizations = databaseChoices.map { it.choiceName },
+                status = resolvedMenuItem.status.name.name
             )
         }
     }

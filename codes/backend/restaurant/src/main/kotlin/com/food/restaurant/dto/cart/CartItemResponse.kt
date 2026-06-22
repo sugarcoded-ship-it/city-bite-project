@@ -6,5 +6,6 @@ data class CartItemResponse(
     val price: Double,
     val quantity: Int,
     val specialRequest: String?,
-    val selectedCustomizations: List<String>
+    val selectedCustomizations: List<String>,
+    val status: String
 )
