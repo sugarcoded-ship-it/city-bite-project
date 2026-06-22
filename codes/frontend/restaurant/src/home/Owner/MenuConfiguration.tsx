@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, X, Search, UtensilsCrossed, EyeClosed, Check, AlertTriangle, Filter } from 'lucide-react';
 import { Dialog } from '../../ui/Dialog';
 import { OwnerTopNav } from './OwnerTopNav';
 import { apiClient } from '../../api/client.ts';
 import styles from './MenuConfiguration.module.css';
 
-export const MENU_CATEGORIES = [
+const MENU_CATEGORIES = [
     'Appetizer',
     'Main Dish',
     'Broth',
@@ -113,20 +113,19 @@ export function MenuConfiguration() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isStatusFilterOpen]);
 
-    const fetchMenu = () => {
-        setIsLoading(true);
+    const fetchMenu = useCallback(() => {
         apiClient<MenuItem[]>('/owner/menu')
             .then(setMenuItems)
             .catch(err => console.error("Failed to load menu", err))
             .finally(() => setIsLoading(false));
-    };
+    }, []);
 
     useEffect(() => {
         fetchMenu();
         apiClient<Stock[]>('/owner/stock')
             .then(setStocks)
             .catch(err => console.error("Failed to load stock", err));
-    }, []);
+    }, [fetchMenu]);
 
     const categories = ['All', ...Array.from(new Set(menuItems.map((m) => m.category)))];
 
@@ -434,7 +433,7 @@ export function MenuConfiguration() {
                                     <label className={styles.formLabel}>{label}</label>
                                     <input
                                         type={type || 'text'}
-                                        value={(form as any)[key]}
+                                        value={(form as unknown as Record<string, string>)[key]}
                                         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                                         placeholder={placeholder}
                                         className={styles.formInput}
