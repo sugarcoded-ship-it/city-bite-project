@@ -4,7 +4,6 @@ import com.food.restaurant.dto.menu.MenuItemResponse
 import com.food.restaurant.dto.menu.OptionGroupResponse
 import com.food.restaurant.dto.menu.OptionChoiceResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
-import com.food.restaurant.entity.menu.menuStatusEnum
 import com.food.restaurant.repository.MenuRepository
 import com.food.restaurant.repository.OptionGroupRepository
 import com.food.restaurant.repository.OptionChoiceRepository // Inject this new repo
@@ -14,16 +13,18 @@ import org.springframework.stereotype.Service
 class MenuService(
     private val menuRepository: MenuRepository,
     private val optionGroupRepository: OptionGroupRepository,
-    private val optionChoiceRepository: OptionChoiceRepository // Add here
+    private val optionChoiceRepository: OptionChoiceRepository,
+    private val menuAvailabilityService: MenuAvailabilityService
 ) {
+
 
     fun getAvailableMenu(category: menuCategoryEnum?): List<MenuItemResponse> {
         val menuItems = if (category != null) {
-            menuRepository.findByStatus_NameAndCategory_Name(menuStatusEnum.ACTIVE, category)
+            menuRepository.findByCategory_Name(category)
         } else {
-            menuRepository.findByStatus_Name(menuStatusEnum.ACTIVE)
+            menuRepository.findAll()
         }
-        return menuItems.map { MenuItemResponse.from(it) }
+        return menuItems.map { MenuItemResponse.from(menuAvailabilityService.syncStatus(it)) }
     }
 
     fun getMenuItemCustomizations(menuId: Int): List<OptionGroupResponse> {
