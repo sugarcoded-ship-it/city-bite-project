@@ -44,7 +44,7 @@ interface CartItem {
 
 type SortOption = 'default' | 'price-asc' | 'price-desc';
 
-export function CustomerHome() {
+export function CustomerDashboard() {
     const navigate = useNavigate();
 
     // --- Data States ---
