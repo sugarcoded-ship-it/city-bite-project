@@ -76,11 +76,21 @@ export function CustomerHome() {
     const [sliding, setSliding] = useState(false);
 
     // --- Effects & API Calls ---
+    const fetchCartSnapshot = useCallback(() => {
+        apiClient<CartItem[]>('/customer/cart')
+            .then((data) => {
+                setCartItems(data);
+                const totalCount = data.reduce((acc, current) => acc + current.quantity, 0);
+                setCartCount(totalCount);
+            })
+            .catch((err) => console.error('Error synchronizing active cart snapshot:', err));
+    }, []);
+
     useEffect(() => {
         apiClient<MenuItem[]>('/customer/menu')
-            .then((data: any) => {
+            .then((data: MenuItem[] | { data: MenuItem[] }) => {
                 if (Array.isArray(data)) setItems(data);
-                else if (data && Array.isArray(data.data)) setItems(data.data);
+                else if (data && Array.isArray((data as { data: MenuItem[] }).data)) setItems((data as { data: MenuItem[] }).data);
                 else setItems([]);
                 setLoading(false);
             })
@@ -91,17 +101,7 @@ export function CustomerHome() {
             });
 
         fetchCartSnapshot();
-    }, []);
-
-    const fetchCartSnapshot = () => {
-        apiClient<CartItem[]>('/customer/cart')
-            .then((data) => {
-                setCartItems(data);
-                const totalCount = data.reduce((acc, current) => acc + current.quantity, 0);
-                setCartCount(totalCount);
-            })
-            .catch((err) => console.error('Error synchronizing active cart snapshot:', err));
-    };
+    }, [fetchCartSnapshot]);
 
     const showToast = (msg: string) => {
         setToastMessage(msg);
@@ -408,59 +408,59 @@ export function CustomerHome() {
                                 {displayedItems.map((item) => {
                                     const isAvailable = item.status === 'ACTIVE';
                                     return (
-                                    <div
-                                        key={item.id}
-                                        className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'}`}
-                                        onClick={() => openMenuModal(item)}
-                                    >
-                                        <div className="relative w-full h-36 bg-gray-100 overflow-hidden">
-                                            {item.menuPic ? (
-                                                <img
-                                                    src={item.menuPic}
-                                                    alt={item.name}
-                                                    className={`w-full h-full object-cover transition-transform duration-500 ${isAvailable ? 'group-hover/card:scale-105' : 'opacity-50 grayscale'}`}
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-semibold">No Image</div>
-                                            )}
-                                            <span className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                        <div
+                                            key={item.id}
+                                            className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'}`}
+                                            onClick={() => openMenuModal(item)}
+                                        >
+                                            <div className="relative w-full h-36 bg-gray-100 overflow-hidden">
+                                                {item.menuPic ? (
+                                                    <img
+                                                        src={item.menuPic}
+                                                        alt={item.name}
+                                                        className={`w-full h-full object-cover transition-transform duration-500 ${isAvailable ? 'group-hover/card:scale-105' : 'opacity-50 grayscale'}`}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-semibold">No Image</div>
+                                                )}
+                                                <span className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                         {item.category}
                       </span>
-                                            {!isAvailable && (
-                                                <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-xs font-bold uppercase tracking-wide">
+                                                {!isAvailable && (
+                                                    <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-xs font-bold uppercase tracking-wide">
                                                     {item.status === 'OUT_OF_ORDER' ? 'Out of Stock' : 'Unavailable'}
                                                 </span>
-                                            )}
-                                        </div>
-
-                                        <div className="p-3.5 flex-1 flex flex-col justify-between">
-                                            <div>
-                                                {/* Item Name */}
-                                                <p className="font-bold text-[#0B1F4D] text-sm leading-snug line-clamp-2 mb-0.5">
-                                                    {item.name}
-                                                </p>
+                                                )}
                                             </div>
 
-                                            {/* Action Footer Bar */}
-                                            <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                                            <div className="p-3.5 flex-1 flex flex-col justify-between">
+                                                <div>
+                                                    {/* Item Name */}
+                                                    <p className="font-bold text-[#0B1F4D] text-sm leading-snug line-clamp-2 mb-0.5">
+                                                        {item.name}
+                                                    </p>
+                                                </div>
+
+                                                {/* Action Footer Bar */}
+                                                <div className="flex items-center justify-between pt-2 border-t border-gray-50">
                                                 <span className="text-[#2D7FF9] font-extrabold text-base">
                                                     ฿{item.price.toFixed(2)}
                                                 </span>
 
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        openMenuModal(item);
-                                                    }}
-                                                    disabled={!isAvailable}
-                                                    className={`rounded-xl w-8 h-8 flex items-center justify-center transition-colors shadow-sm transform duration-150 ${isAvailable ? 'bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                                                    title={isAvailable ? 'Add to cart' : 'Currently unavailable'}
-                                                >
-                                                    <Plus size={16} strokeWidth={2.5} />
-                                                </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openMenuModal(item);
+                                                        }}
+                                                        disabled={!isAvailable}
+                                                        className={`rounded-xl w-8 h-8 flex items-center justify-center transition-colors shadow-sm transform duration-150 ${isAvailable ? 'bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                                        title={isAvailable ? 'Add to cart' : 'Currently unavailable'}
+                                                    >
+                                                        <Plus size={16} strokeWidth={2.5} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
                                     );
                                 })}
                             </div>
@@ -683,8 +683,8 @@ export function CustomerHome() {
 
             {/* ── TOAST ALERT ── */}
             {toastMessage && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-[60] whitespace-nowrap flex items-center gap-2 animate-toast">
-          <span className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-60 whitespace-nowrap flex items-center gap-2 animate-toast">
+          <span className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center shrink-0">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
