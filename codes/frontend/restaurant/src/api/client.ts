@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import keycloak from '../security/keycloak.ts';
 
 export const api = axios.create({
@@ -36,7 +37,13 @@ api.interceptors.response.use(
     }
 );
 
-export const apiClient = async <T>(endpoint: string, options = {}): Promise<T> => {
-    const response = await api.get<T>(endpoint, options);
+export const apiClient = async <T>(
+    endpoint: string,
+    options: AxiosRequestConfig<unknown> = {}
+): Promise<T> => {
+    const response = await api({
+        url: endpoint,
+        ...options
+    });
     return response.data;
 };

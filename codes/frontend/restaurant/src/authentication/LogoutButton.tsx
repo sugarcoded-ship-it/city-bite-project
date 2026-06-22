@@ -3,8 +3,8 @@ import keycloak from '../security/keycloak';
 import styles from './LogoutButton.module.css';
 
 export const LogoutButton: React.FC = () => {
-  const handleLogout = () => {
-    keycloak.logout({ 
+  const handleLogout = async () => {
+    keycloak.logout({
       redirectUri: window.location.origin // Automatically resolves to http://localhost/
     });
   };
