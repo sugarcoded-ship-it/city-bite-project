@@ -61,7 +61,8 @@ class MenuController(
 
         val savedItem = menuRepository.save(item)
         val recipe = saveRecipe(savedItem, request.recipe) ?: return ResponseEntity.badRequest().build()
-        val resolved = menuAvailabilityService.syncStatus(savedItem)
+        val freshItem = menuRepository.findById(savedItem.id).orElseThrow()
+        val resolved = menuAvailabilityService.syncStatus(freshItem)
         return ResponseEntity.ok(MenuItemResponse.from(resolved, recipe))
     }
 
