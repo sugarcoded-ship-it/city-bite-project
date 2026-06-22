@@ -268,7 +268,7 @@ export function MenuConfiguration() {
                     </div>
                     <button onClick={() => setIsAdding(true)} className={styles.addBtn}>
                         <Plus size={18} strokeWidth={2.5} />
-                        <span>Add Item</span>
+                        <span>Add Menu</span>
                     </button>
                 </div>
             </div>
@@ -417,7 +417,7 @@ export function MenuConfiguration() {
                         <div className={styles.modalHeader}>
                             <div>
                                 <p className={styles.modalTitleSub}>Menu</p>
-                                <h2 className={styles.modalTitle}>{editingMenu ? 'Edit Item' : 'Add New Item'}</h2>
+                                <h2 className={styles.modalTitle}>{editingMenu ? 'Edit Menu' : 'Add New Menu'}</h2>
                             </div>
                             <button onClick={closeForm} className={styles.modalCloseBtn}>
                                 <X size={16} />
@@ -556,7 +556,7 @@ export function MenuConfiguration() {
                             <div className={styles.modalActions}>
                                 <button onClick={closeForm} className={styles.btnCancel}>Cancel</button>
                                 <button onClick={handleSubmit} disabled={!isValid} className={styles.btnSubmit}>
-                                    {editingMenu ? 'Update Item' : 'Add to Menu'}
+                                    {editingMenu ? 'Update Menu' : 'Add to Menu'}
                                 </button>
                             </div>
                         </div>
@@ -572,7 +572,7 @@ export function MenuConfiguration() {
                             <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Trash2 size={18} color="white" />
                             </div>
-                            <h2 className={styles.modalTitle}>Delete Item?</h2>
+                            <h2 className={styles.modalTitle}>Delete Menu?</h2>
                         </div>
                     </div>
                     <div className={styles.modalBody}>
