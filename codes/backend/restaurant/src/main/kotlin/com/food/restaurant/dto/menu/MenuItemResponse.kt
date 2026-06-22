@@ -8,7 +8,8 @@ data class MenuItemResponse(
     val name: String,
     val price: BigDecimal,
     val category: String,
-    val menuPic: String?
+    val menuPic: String?,
+    val description: String?
 ) {
     companion object {
         fun from(menuItem: MenuItem) = MenuItemResponse(
@@ -16,7 +17,8 @@ data class MenuItemResponse(
             name = menuItem.name,
             price = menuItem.price,
             category = menuItem.category.name.displayName,
-            menuPic = menuItem.menu_pic
+            menuPic = menuItem.menu_pic,
+            description = menuItem.description
         )
     }
 }
