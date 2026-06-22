@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository
 interface MenuRepository : JpaRepository<MenuItem, Int> {
     fun findByStatus_Name(statusName: menuStatusEnum): List<MenuItem>
     fun findByStatus_NameAndCategory_Name(statusName: menuStatusEnum, categoryName: menuCategoryEnum): List<MenuItem>
+    fun findByCategory_Name(categoryName: menuCategoryEnum): List<MenuItem>
 
     fun countByStatus_Name(statusName: menuStatusEnum): Long
 }
