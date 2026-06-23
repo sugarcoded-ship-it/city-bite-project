@@ -3,8 +3,9 @@ package com.food.restaurant.service
 import com.food.restaurant.dto.AddressRequest
 import com.food.restaurant.dto.AddressResponse
 import com.food.restaurant.entity.user.Address
-import com.food.restaurant.repository.AddressRepository
-import com.food.restaurant.repository.UserRepository
+import com.food.restaurant.repository.user.AddressRepository
+import com.food.restaurant.repository.user.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -29,6 +30,7 @@ class AddressService(
         }
     }
 
+    @Transactional
     fun addNewAddress(customerUuid: UUID, request: AddressRequest): AddressResponse {
         val curAddrCount = addressRepository.countByCustomer_Id(customerUuid)
         if (curAddrCount >= 3){
@@ -57,5 +59,45 @@ class AddressService(
             province = savedAddr.province,
             postalCode = savedAddr.postalCode
         )
+    }
+
+    @Transactional
+    fun editAddress(customerUuid: UUID, addressId: Int, request: AddressRequest): AddressResponse {
+        val existingAddr = addressRepository.findById(addressId)
+            .orElseThrow { IllegalArgumentException("Address not found!") }
+
+        if (existingAddr.customer.id != customerUuid) {
+            throw IllegalStateException("You do not have permission to edit this address.")
+        }
+
+        existingAddr.addressInfo = request.addressInfo
+        existingAddr.subDistrict = request.subDistrict
+        existingAddr.district = request.district
+        existingAddr.province = request.province
+        existingAddr.postalCode = request.postalCode
+
+        val updatedAddr = addressRepository.save(existingAddr)
+
+        return AddressResponse(
+            id = updatedAddr.id,
+            addressInfo = updatedAddr.addressInfo,
+            subDistrict = updatedAddr.subDistrict,
+            district = updatedAddr.district,
+            province = updatedAddr.province,
+            postalCode = updatedAddr.postalCode
+        )
+    }
+
+
+    @Transactional
+    fun deleteAddress(customerUuid: UUID, addressId: Int) {
+        val existingAddr = addressRepository.findById(addressId)
+            .orElseThrow { IllegalArgumentException("Address not found!") }
+
+        if (existingAddr.customer.id != customerUuid) {
+            throw IllegalStateException("You do not have permission to delete this address.")
+        }
+
+        addressRepository.delete(existingAddr)
     }
 }
