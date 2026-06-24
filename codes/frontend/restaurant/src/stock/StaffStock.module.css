@@ -189,3 +189,54 @@
     color: #9ca3af;
     font-weight: 500;
 }
+
+/* Low-stock badge (below 50% of the item's full level) */
+.badgeLow { background: #fef3c7; color: #b45309; }
+
+/* Add Item button (header) */
+.addItemBtn {
+    background-color: #2D7FF9;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(45, 127, 249, 0.2);
+}
+.addItemBtn:hover { background-color: #0B1F4D; box-shadow: 0 6px 16px rgba(11, 31, 77, 0.25); }
+
+/* Add Item modal form */
+.addForm { display: flex; flex-direction: column; gap: 16px; }
+.formRow { display: flex; gap: 16px; }
+.formRow .formField { flex: 1; }
+.formField { display: flex; flex-direction: column; gap: 6px; }
+.formLabel { font-size: 0.8rem; font-weight: 700; color: #374151; }
+.formControl {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #111827;
+    box-sizing: border-box;
+    background: #fff;
+}
+.formControl:focus {
+    outline: none;
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.15);
+}
+textarea.formControl { resize: vertical; min-height: 70px; }
+.formActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+.formActions .cancelBtn,
+.formActions .confirmBtn { flex: 1; }

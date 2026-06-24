@@ -11,3 +11,7 @@ class StockCategoryEnumConverter : AttributeConverter<stockCategoryEnum, String>
     override fun convertToEntityAttribute(dbData: String?): stockCategoryEnum? =
         dbData?.let { stockCategoryEnum.fromDisplayName(it) }
 }
+
+enum class MeasurementUnits {
+    GRAM, KILOGRAM, MILLIGRAM, MILLILITER, LITER, TEASPOON, TABLESPOON, PIECE, SLICE, BUNCH, EACH
+}

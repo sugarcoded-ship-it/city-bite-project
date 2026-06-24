@@ -1,14 +1,11 @@
 package com.food.restaurant.dto.stock
 
-import com.food.restaurant.entity.stock.MeasurementUnits
 import java.math.BigDecimal
 
-
-data class StockResponse(
-    val id: Int,
+data class CreateStockItem(
     val name: String,
     val description: String?,
     val amount: BigDecimal,
-    val measureUnit: MeasurementUnits,
+    val measureUnit: String,
     val categoryId: Int,
 )

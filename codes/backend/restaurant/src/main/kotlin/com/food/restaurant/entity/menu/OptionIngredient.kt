@@ -1,7 +1,7 @@
 package com.food.restaurant.entity.menu
 
 import com.food.restaurant.entity.stock.Stock
-import com.food.restaurant.entity.MeasurementUnits
+import com.food.restaurant.entity.stock.MeasurementUnits
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType

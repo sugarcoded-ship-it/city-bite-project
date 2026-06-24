@@ -7,6 +7,12 @@ import com.food.restaurant.dto.stock.BatchAdjustRequest
 import com.food.restaurant.service.StockService
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import com.food.restaurant.dto.stock.CreateStockItem
+import com.food.restaurant.entity.stock.MeasurementUnits
+import com.food.restaurant.entity.stock.Stock
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 
 @RestController
 @RequestMapping("/api/staff/stocks")
@@ -26,7 +32,13 @@ class StockController(
         stockService.adjustStock(id, body.delta)
 
     @GetMapping("/items")
-    fun allItems() = stockService.getAllStocks()
+    fun allItems(): List<StockResponse> = stockService.getAllStocks()
+
+    // POST: create a new stock item (reads the JSON body)
+    @PostMapping("/items")
+    fun createItem(@RequestBody request: CreateStockItem): StockResponse =
+        stockService.createItem(request)
+
 
     @PatchMapping("/adjust")
     fun batchAdjust(@RequestBody body: BatchAdjustRequest) =

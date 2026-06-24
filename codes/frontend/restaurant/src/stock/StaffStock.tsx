@@ -21,6 +21,7 @@ interface StockResponse {
 
 export const StaffStock = () => {
 
+  const MEASURE_UNITS = ['GRAM', 'KILOGRAM', 'MILLILITER', 'LITER', 'PIECE'];
   const navigate = useNavigate();
   const goToDashboard = () => navigate('/');
 
@@ -32,11 +33,21 @@ export const StaffStock = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<number | null>(null); // null = All
 
-  // addAmounts holds the quantity to ADD to each item (a delta), not the new total.
   const [addAmounts, setAddAmounts] = useState<Record<number, number>>({});
   const [savingId, setSavingId] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<StockResponse | null>(null);
+
+  const emptyNewItem = {
+    name: '',
+    categoryId: '',
+    amount: '',
+    measureUnit: '',
+    description: '',
+  };
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newItem, setNewItem] = useState(emptyNewItem);
+  const [creating, setCreating] = useState(false);
 
   const fetchStockData = useCallback(async () => {
     try {
@@ -64,10 +75,9 @@ export const StaffStock = () => {
     setAddAmounts((prev) => ({ ...prev, [itemId]: addAmount }));
   };
 
-  // Confirm a single card's change: add the entered amount to the current stock.
   const handleConfirm = async (itemId: number, currentAmount: number) => {
     const addAmount = addAmounts[itemId];
-    if (!addAmount) return; // nothing to add (undefined or 0)
+    if (!addAmount) return;
 
     const newAmount = Math.max(0, currentAmount + addAmount);
 
@@ -76,7 +86,7 @@ export const StaffStock = () => {
       await api.patch('/staff/stocks/adjust', {
         adjustments: [{ itemId, newAmount }],
       });
-      // Commit the new total locally and clear this item's add amount.
+
       setItems((prev) =>
         prev.map((it) => (it.id === itemId ? { ...it, amount: newAmount } : it))
       );
@@ -95,13 +105,45 @@ export const StaffStock = () => {
     }
   };
 
-  // Cancel a single card's change: discard the entered add amount.
   const handleCancel = (itemId: number) => {
     setAddAmounts((prev) => {
       const next = { ...prev };
       delete next[itemId];
       return next;
     });
+  };
+
+  const openAddModal = () => {
+    setNewItem(emptyNewItem);
+    setShowAddModal(true);
+  };
+
+  const handleCreateItem = async () => {
+    if (!newItem.name.trim() || !newItem.categoryId || !newItem.measureUnit.trim()) {
+      alert('Please fill in name, category and unit.');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await api.post('/staff/stocks/items', {
+        name: newItem.name.trim(),
+        description: newItem.description.trim() || null,
+        amount: parseFloat(newItem.amount) || 0,
+        measureUnit: newItem.measureUnit.trim(),
+        categoryId: parseInt(newItem.categoryId, 10),
+      });
+      await fetchStockData();
+      setShowAddModal(false);
+      setNewItem(emptyNewItem);
+      setToastMessage('Item added!');
+      setTimeout(() => setToastMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to add item:', err);
+      alert('An error occurred while adding the item.');
+    } finally {
+      setCreating(false);
+    }
   };
 
   const categoryName = (id: number) =>
@@ -127,6 +169,9 @@ export const StaffStock = () => {
           <p className={styles.subtitle}>Monitor and adjust real-time inventory levels</p>
         </div>
         <div className={styles.actionsArea}>
+          <button className={styles.addItemBtn} onClick={openAddModal}>
+            + Add Item
+          </button>
           <LogoutButton />
         </div>
       </div>
@@ -169,7 +214,6 @@ export const StaffStock = () => {
             const currentAmount = item.amount;
             const addAmount = addAmounts[item.id] ?? 0;
             const newTotal = Math.max(0, currentAmount + addAmount);
-            const isOut = currentAmount <= 0;
             const edited = addAmount !== 0;
             const isSavingThis = savingId === item.id;
 
@@ -180,9 +224,6 @@ export const StaffStock = () => {
                     <h3 className={styles.cardTitle}>{item.name}</h3>
                     <span className={styles.cardCategory}>{categoryName(item.categoryId)}</span>
                   </div>
-                  <span className={`${styles.statusBadge} ${isOut ? styles.badgeOut : styles.badgeOk}`}>
-                    {isOut ? 'Out of Stock' : 'In Stock'}
-                  </span>
                 </div>
 
                 <div className={styles.cardAmount}>
@@ -263,6 +304,107 @@ export const StaffStock = () => {
                 <div className={styles.detailCard} style={{ gridColumn: 'span 2' }}>
                   <span className={styles.detailLabel}>Description</span>
                   <span className={styles.detailValue}>{selectedItem.description || 'No description provided.'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddModal && (
+        <div className={styles.modalOverlay} onClick={() => !creating && setShowAddModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Add New Item</h2>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowAddModal(false)}
+                disabled={creating}
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.addForm}>
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Name *</label>
+                  <input
+                    className={styles.formControl}
+                    type="text"
+                    placeholder="e.g. Chicken Breast"
+                    value={newItem.name}
+                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Category *</label>
+                  <select
+                    className={styles.formControl}
+                    value={newItem.categoryId}
+                    onChange={(e) => setNewItem({ ...newItem, categoryId: e.target.value })}
+                  >
+                    <option value="">Select a category…</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Starting Amount</label>
+                    <input
+                      className={styles.formControl}
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      placeholder="0"
+                      value={newItem.amount}
+                      onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Unit *</label>
+                    <select
+                      className={styles.formControl}
+                      value={newItem.measureUnit}
+                      onChange={(e) => setNewItem({ ...newItem, measureUnit: e.target.value })}
+                    >
+                      <option value="">Select a unit…</option>
+                      {MEASURE_UNITS.map((u) => (
+                        <option key={u} value={u}>{u}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Description (optional)</label>
+                  <textarea
+                    className={styles.formControl}
+                    rows={3}
+                    placeholder="Notes about this item…"
+                    value={newItem.description}
+                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                  />
+                </div>
+
+                <div className={styles.formActions}>
+                  <button
+                    className={styles.cancelBtn}
+                    onClick={() => setShowAddModal(false)}
+                    disabled={creating}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={styles.confirmBtn}
+                    onClick={handleCreateItem}
+                    disabled={creating}
+                  >
+                    {creating ? 'Adding…' : 'Add Item'}
+                  </button>
                 </div>
               </div>
             </div>
