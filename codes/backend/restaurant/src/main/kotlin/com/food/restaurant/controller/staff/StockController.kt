@@ -34,7 +34,6 @@ class StockController(
     @GetMapping("/items")
     fun allItems(): List<StockResponse> = stockService.getAllStocks()
 
-    // POST: create a new stock item (reads the JSON body)
     @PostMapping("/items")
     fun createItem(@RequestBody request: CreateStockItem): StockResponse =
         stockService.createItem(request)
