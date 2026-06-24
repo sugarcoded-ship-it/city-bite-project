@@ -1,7 +1,7 @@
 package com.food.restaurant.service
 
 import com.food.restaurant.dto.PaymentMethodResponse
-import com.food.restaurant.repository.PaymentMethodRepository
+import com.food.restaurant.repository.payment.PaymentMethodRepository
 import org.springframework.stereotype.Service
 
 @Service

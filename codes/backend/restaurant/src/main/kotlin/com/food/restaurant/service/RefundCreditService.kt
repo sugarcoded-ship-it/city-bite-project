@@ -2,7 +2,7 @@ package com.food.restaurant.service
 
 import com.food.restaurant.entity.payment.RefundCredit
 import com.food.restaurant.entity.user.User
-import com.food.restaurant.repository.RefundCreditRepository
+import com.food.restaurant.repository.payment.RefundCreditRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
