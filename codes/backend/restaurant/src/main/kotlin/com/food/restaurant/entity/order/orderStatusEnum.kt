@@ -7,7 +7,8 @@ enum class orderStatusEnum(val displayName: String) {
     RECEIVED("Received"),
     PROCESSING("Processing"),
     ON_DELIVERY("On Delivery"),
-    SHIPPED("Shipped");
+    SHIPPED("Shipped"),
+    CANCELED("Canceled");
 
     // This makes Json sends the displayName in API instead of the actual enum. It looks more beautiful
     @JsonValue

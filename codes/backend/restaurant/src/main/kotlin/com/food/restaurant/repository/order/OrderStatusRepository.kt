@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface OrderStatusRepository: JpaRepository<OrderStatus, Int> {
-    fun findByName(name: String): OrderStatus
+    fun findByStatusName(name: String): OrderStatus
 }
