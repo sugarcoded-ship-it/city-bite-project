@@ -2,15 +2,13 @@ package com.food.restaurant.service
 
 import com.food.restaurant.entity.store.Store
 import com.food.restaurant.entity.user.User
-import com.food.restaurant.repository.store.StoreRepository
+import com.food.restaurant.repository.StoreRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalTime
 
 @Service
-class StoreService(
-    private val storeRepository: StoreRepository
-) {
+class StoreService(private val storeRepository: StoreRepository) {
 
     fun isStoreOpen(): Boolean = storeRepository.findAll().firstOrNull()?.isOpen ?: false
 
@@ -41,5 +39,3 @@ class StoreService(
         }
     }
 }
-
-

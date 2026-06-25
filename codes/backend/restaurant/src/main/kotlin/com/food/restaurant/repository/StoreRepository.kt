@@ -9,6 +9,7 @@ import java.util.UUID
 @Repository
 interface StoreRepository : JpaRepository<Store, Int> {
     fun findByOwner(owner: User): Store?
+    fun findTopByIsOpenTrue(): Store?
     fun findTopByOrderByIdAsc(): Store?
     fun findByOwnerId(ownerId: UUID): Store?
 }
