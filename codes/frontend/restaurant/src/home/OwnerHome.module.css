@@ -250,6 +250,45 @@
     flex-grow: 1;
 }
 
+/* Store Toggle Button - Enhanced */
+.featureCard:first-child {
+    grid-column: span 1;
+    min-height: 280px;
+    padding: 32px;
+}
+
+.featureCard:first-child .iconWrapper {
+    width: 64px;
+    height: 64px;
+    font-size: 36px;
+}
+
+.featureCard:first-child .cardTitle {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+}
+
+.featureCard:first-child .cardDesc {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.featureCard:first-child .cardFooter {
+    font-size: 1.125rem;
+    padding-top: 20px;
+}
+
+.featureCard:active {
+    transform: scale(0.98);
+}
+
+.featureCard:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-6px);
+}
+
 .cardFooter {
     margin-top: 20px;
     padding-top: 16px;
