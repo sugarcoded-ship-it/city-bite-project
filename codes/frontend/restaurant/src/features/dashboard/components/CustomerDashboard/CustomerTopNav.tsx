@@ -21,11 +21,11 @@ export function CustomerTopNav({customerName }: CustomerTopNavProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const links = [
-        { label: 'Menu', icon: UtensilsCrossed, path: '/customer/home' },
-        { label: 'History', icon: ClockArrowUp, path: '/customer/history' },
+        { label: 'Menu', icon: UtensilsCrossed, path: '/home' },
+        { label: 'History', icon: ClockArrowUp, path: '/history' },
     ];
 
-    const isProfileActive = pathname === '/customer/profile';
+    const isProfileActive = pathname === '/profile';
 
     const displayName = customerName ||
         keycloak.tokenParsed?.given_name ||
@@ -38,7 +38,7 @@ export function CustomerTopNav({customerName }: CustomerTopNavProps) {
 
                 {/* Left: Brand / Logo */}
                 <button
-                    onClick={() => navigate('/customer/home')}
+                    onClick={() => navigate('/home')}
                     className="flex items-center justify-start focus:outline-none py-1"
                 >
                     <img
@@ -91,7 +91,7 @@ export function CustomerTopNav({customerName }: CustomerTopNavProps) {
                                     <button
                                         onClick={() => {
                                             setIsDropdownOpen(false);
-                                            navigate('/customer/profile');
+                                            navigate('/profile');
                                         }}
                                         className="w-full text-left block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
                                     >
