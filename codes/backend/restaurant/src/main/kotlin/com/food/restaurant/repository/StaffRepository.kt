@@ -14,11 +14,12 @@ interface StaffRepository : JpaRepository<Staff, UUID> {
         SELECT new com.food.restaurant.dto.staff.StaffListResponse(
             s.id,
             u.username,
-            concat(u.firstName, ' ', u.lastName), 
-            CASE WHEN s.status = 'ACTIVATED' THEN true ELSE false END
+            concat(u.firstName, ' ', u.lastName),
+            s.status
         )
         FROM Staff s
         JOIN s.user u
+        ORDER BY CASE WHEN s.status = 'ACTIVE' THEN 1 ELSE 2 END ASC
     """)
     fun findAllStaffList(): List<StaffListResponse>
 

@@ -31,7 +31,7 @@ class OwnerService(
         val completedOrdersToday = try { orderRepository.countCompletedOrdersToday() } catch (e: Exception) { 0L }
 
         val activeStaffCount = try {
-            staffRepository.countByStatus(StaffStatus.ACTIVATED)
+            staffRepository.countByStatus(StaffStatus.ACTIVE)
         } catch (e: Exception) {
             0L
         }
