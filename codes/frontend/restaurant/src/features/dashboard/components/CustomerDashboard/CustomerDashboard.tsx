@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../lib/api-client';
+import { apiClient } from '../../../../lib/api-client';
 import { CustomerTopNav } from './CustomerTopNav';
 import {
     Search, Plus, Minus, X, ChevronLeft, ChevronRight,
