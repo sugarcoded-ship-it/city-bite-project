@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { apiClient } from '../../api/client.ts';
+import { useNavigate } from 'react-router-dom';
+import { apiClient } from '../../../../lib/api-client';
 import { OwnerTopNav } from './OwnerTopNav';
-import { LogoutButton } from '../../authentication/LogoutButton.tsx';
-import { MenuConfiguration } from './MenuConfiguration.tsx';
-import styles from './OwnerHome.module.css';
+import { LogoutButton } from '../../../auth/components/LogoutButton.tsx';
+import styles from './OwnerDashboard.module.css';
 import {
     UtensilsCrossed, Users, CalendarOff, Store,
     BarChart3, User, Crown, TrendingUp, AlertCircle, ChevronRight
@@ -21,9 +20,8 @@ interface OwnerDashboardData {
     isStoreOpen: boolean;
 }
 
-export function OwnerHome() {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const currentPage = searchParams.get('page') || 'dashboard';
+export function OwnerDashboard() {
+    const navigate = useNavigate();
 
     const [data, setData] = useState<OwnerDashboardData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -48,13 +46,6 @@ export function OwnerHome() {
                 setLoading(false);
             });
     }, []);
-
-    if (currentPage === 'store-status') {
-        // return <StoreStatus />;
-    }
-    if (currentPage === 'menu-config') {
-        return <MenuConfiguration />; // <-- Add this intercept block!
-    }
 
     if (loading) {
         return <div className={styles.loadingContainer}>Loading dashboard...</div>;
@@ -87,7 +78,7 @@ export function OwnerHome() {
             title: 'Menu Configuration',
             desc: 'Add, edit, and manage dishes, prices and categories',
             icon: UtensilsCrossed,
-            pageId: 'menu-config',
+            url: '/menu',
             accent: '#2D7FF9',
             badge: `${data.totalMenuItems} items`,
         },
@@ -95,7 +86,7 @@ export function OwnerHome() {
             title: 'Analytics',
             desc: 'Revenue charts, top sellers and performance metrics',
             icon: BarChart3,
-            pageId: 'analytics',
+            url: '/analytics',
             accent: '#a855f7',
             badge: 'Live data',
         },
@@ -103,7 +94,7 @@ export function OwnerHome() {
             title: "Day-Off Requests",
             desc: 'Review and approve pending staff leave requests',
             icon: CalendarOff,
-            pageId: 'dayoff',
+            url: '/dayoff',
             accent: '#f59e0b',
             badge: data.pendingLeaveRequests > 0 ? `${data.pendingLeaveRequests} pending` : 'All clear',
             alert: data.pendingLeaveRequests > 0,
@@ -112,7 +103,7 @@ export function OwnerHome() {
             title: 'Manage Staff',
             desc: 'Add new staff, deactivate accounts and edit roles',
             icon: Users,
-            pageId: 'staff',
+            url: '/staff',
             accent: '#22c55e',
             badge: `${data.activeStaffCount} active`,
         },
@@ -120,7 +111,7 @@ export function OwnerHome() {
             title: 'Store Status',
             desc: 'Open or close the store and manage operating hours',
             icon: Store,
-            pageId: 'store-status',
+            url: '/store-status',
             accent: '#f97316',
             badge: data.isStoreOpen ? 'Now Open' : 'Closed',
         },
@@ -128,7 +119,7 @@ export function OwnerHome() {
             title: 'My Profile',
             desc: 'Edit account info and change your password',
             icon: User,
-            pageId: 'profile',
+            url: '/profile',
             accent: '#6b7280',
             badge: 'Owner',
         },
@@ -185,10 +176,10 @@ export function OwnerHome() {
                 </div>
 
                 <div className={styles.featuresGrid}>
-                    {features.map(({ title, desc, icon: Icon, pageId, accent, badge, alert }) => (
+                    {features.map(({ title, desc, icon: Icon, url, accent, badge, alert }) => (
                         <button
-                            key={pageId}
-                            onClick={() => setSearchParams({ page: pageId })}
+                            key={url}
+                            onClick={() => navigate(url)}
                             className={`${styles.featureCard} transform hover:-translate-y-1.5 hover:scale-[1.01] transition-all duration-300`}
                         >
                             <div className={styles.accentStripe} style={{ backgroundColor: accent }} />

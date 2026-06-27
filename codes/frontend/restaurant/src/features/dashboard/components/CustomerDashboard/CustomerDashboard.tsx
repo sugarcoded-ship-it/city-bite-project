@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../api/client.ts';
+import { apiClient } from '../../../../lib/api-client';
 import { CustomerTopNav } from './CustomerTopNav';
 import {
     Search, Plus, Minus, X, ChevronLeft, ChevronRight,
@@ -44,7 +44,7 @@ interface CartItem {
 
 type SortOption = 'default' | 'price-asc' | 'price-desc';
 
-export function CustomerHome() {
+export function CustomerDashboard() {
     const navigate = useNavigate();
 
     // --- Data States ---
@@ -694,6 +694,17 @@ export function CustomerHome() {
             )}
 
             <style>{`
+            @keyframes modalIn {
+          from { opacity: 0; transform: translateY(40px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+        }
+        .animate-toast { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
         </div>
     );

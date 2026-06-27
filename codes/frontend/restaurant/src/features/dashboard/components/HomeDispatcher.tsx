@@ -1,21 +1,21 @@
 import React from 'react';
-import keycloak from '../security/keycloak';
-import { CustomerHome } from './Customer/CustomerHome.tsx';
-import { OwnerHome } from './Owner/OwnerHome.tsx';
-import { StaffHome } from './StaffHome.tsx';
+import keycloak from '../../../lib/keycloak';
+import { CustomerDashboard } from './CustomerDashboard/CustomerDashboard';
+import { OwnerDashboard } from './OwnerDashboard/OwnerDashboard';
+import { StaffDashboard } from './StaffDashboard/StaffDashboard';
 
 const HomeDispatcher: React.FC = () => {
     // Check Keycloak realm roles directly
     if (keycloak.hasRealmRole('OWNER') || keycloak.hasRealmRole('ROLE_OWNER')) {
-        return <OwnerHome />;
+        return <OwnerDashboard />;
     }
 
     if (keycloak.hasRealmRole('STAFF') || keycloak.hasRealmRole('ROLE_STAFF')) {
-        return <StaffHome />;
+        return <StaffDashboard />;
     }
 
     if (keycloak.hasRealmRole('CUSTOMER') || keycloak.hasRealmRole('ROLE_CUSTOMER')) {
-        return <CustomerHome />;
+        return <CustomerDashboard />;
     }
 
     // Fallback if authenticated user somehow has none of the required roles

@@ -1,26 +1,26 @@
 import { useEffect, useState } from 'react';
-import { apiClient } from '../api/client.ts';
-import { LogoutButton } from '../authentication/LogoutButton.tsx';
+import { apiClient } from '../../../lib/api-client';
+import { LogoutButton } from '../../auth/components/LogoutButton';
 
 // PlaceHolder (waiting for backend)
-interface StaffDashboardData {
-    OrderCount: number;
+interface CustomerDashboardData {
+    Menu: number;
 }
 
-export const StaffHome = () => {
-    const [data, setData] = useState<StaffDashboardData | null>(null);
+export const CustomerHome = () => {
+    const [data, setData] = useState<CustomerDashboardData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        apiClient<StaffDashboardData>('/staff/')
+        apiClient<CustomerDashboardData>('/customer/')
             .then((res) => {
                 setData(res);
                 setLoading(false);
             })
             .catch((err) => {
                 console.error("Dashboard loading failed:", err);
-                setError("Failed to load staff dashboard metrics.");
+                setError("Failed to load customer dashboard metrics.");
                 setLoading(false);
             });
     }, []);
@@ -34,10 +34,10 @@ export const StaffHome = () => {
                 <LogoutButton />
             </div>
 
-            <h1>Staff Dashboard</h1>
+            <h1>Customer Dashboard</h1>
             <hr />
             <div className="metrics-grid">
-                <div className="card">Pending Orders: {data?.OrderCount}</div>
+                <div className="card">Pending Orders: {data?.Menu}</div>
             </div>
         </div>
     );
