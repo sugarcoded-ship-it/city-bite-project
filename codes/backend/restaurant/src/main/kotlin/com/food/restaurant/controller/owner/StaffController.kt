@@ -1,0 +1,34 @@
+package com.food.restaurant.controller.owner
+
+import com.food.restaurant.dto.staff.OwnerStaffDetailResponse
+import com.food.restaurant.dto.staff.StaffListResponse
+import com.food.restaurant.service.StaffService
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import com.food.restaurant.dto.staff.StaffStatusUpdateRequest
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
+
+
+@RestController
+@RequestMapping("/api/owner")
+@PreAuthorize("hasRole('ROLE_OWNER')")
+class StaffController (
+    private val staffService: StaffService,
+) {
+
+    @GetMapping("/staff")
+    fun getEmployeeList(): ResponseEntity<List<StaffListResponse>> {
+        return ResponseEntity.ok(staffService.getAllStaff())
+    }
+
+    @PutMapping("/staff-update-status")
+    fun updateEmployeeStatus(@RequestBody updates: List<StaffStatusUpdateRequest>): ResponseEntity<List<StaffListResponse>> {
+        staffService.updateStaffStatuses(updates)
+        return ResponseEntity.ok(staffService.getAllStaff())
+    }
+}

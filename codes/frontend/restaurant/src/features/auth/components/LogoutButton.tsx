@@ -1,5 +1,5 @@
 import React from 'react';
-import keycloak from '../security/keycloak';
+import keycloak from '../../../lib/keycloak';
 import styles from './LogoutButton.module.css';
 
 export const LogoutButton: React.FC = () => {
