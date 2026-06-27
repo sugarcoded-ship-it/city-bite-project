@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 
 @RestController
@@ -24,6 +25,11 @@ class StaffController (
     @GetMapping("/staff")
     fun getEmployeeList(): ResponseEntity<List<StaffListResponse>> {
         return ResponseEntity.ok(staffService.getAllStaff())
+    }
+
+    @GetMapping("/staff/{id}")
+    fun getStaffDetail(@PathVariable id: UUID): ResponseEntity<OwnerStaffDetailResponse> {
+        return ResponseEntity.ok(staffService.getStaffById(id))
     }
 
     @PutMapping("/staff-update-status")
