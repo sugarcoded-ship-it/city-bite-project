@@ -28,11 +28,7 @@ export const StaffDetail = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!resolvedId) {
-            setError("No Staff ID provided.");
-            setLoading(false);
-            return;
-        }
+        if (!resolvedId) return;
 
         apiClient<OwnerStaffDetail>(`/owner/staff/${resolvedId}`)
             .then((res) => {
@@ -45,6 +41,10 @@ export const StaffDetail = () => {
                 setLoading(false);
             });
     }, [resolvedId]);
+
+    if (!resolvedId) {
+        return <div className={styles.loadingContainer}>Error: No Staff ID provided.</div>;
+    }
 
     if (loading) {
         return <div className={styles.loadingContainer}>Loading staff details…</div>;
