@@ -1,10 +1,13 @@
 package com.food.restaurant.repository
 
 import com.food.restaurant.entity.order.Order
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
+import java.util.UUID
 
 @Repository
 interface OrderRepository : JpaRepository<Order, Int> {
@@ -30,4 +33,8 @@ interface OrderRepository : JpaRepository<Order, Int> {
         nativeQuery = true
     )
     fun countCompletedOrdersToday(): Long
+
+    fun findByCustomerIdOrderByCreatedAtDesc(customerId: UUID): List<Order>
+
+    fun findByCustomerIdOrderByCreatedAtDesc(customerId: UUID, pageable: Pageable): Page<Order>
 }
