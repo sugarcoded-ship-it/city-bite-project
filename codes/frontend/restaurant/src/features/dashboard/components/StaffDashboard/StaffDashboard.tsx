@@ -41,7 +41,7 @@ export const StaffDashboard = () => {
             <div className="metrics-grid">
                 <div className="card">Pending Orders: {data?.OrderCount}</div>
                 <div className="card">
-                    <Link to="/staff-detail" state={{ id: keycloak.tokenParsed?.sub }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Link to="/staff/:id" state={{ id: keycloak.tokenParsed?.sub }} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <h3>My Profile</h3>
                         <p>View your staff details</p>
                     </Link>
