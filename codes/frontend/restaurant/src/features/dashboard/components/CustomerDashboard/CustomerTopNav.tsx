@@ -21,8 +21,8 @@ export function CustomerTopNav({customerName }: CustomerTopNavProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const links = [
-        { label: 'Menu', icon: UtensilsCrossed, path: '/home' },
-        { label: 'History', icon: ClockArrowUp, path: '/customer/history' },
+        { label: 'Menu', icon: UtensilsCrossed, path: '/' },
+        { label: 'History', icon: ClockArrowUp, path: '/history' },
     ];
 
     const isProfileActive = pathname === '/profile';
@@ -38,7 +38,7 @@ export function CustomerTopNav({customerName }: CustomerTopNavProps) {
 
                 {/* Left: Brand / Logo */}
                 <button
-                    onClick={() => navigate('/home')}
+                    onClick={() => navigate('/')}
                     className="flex items-center justify-start focus:outline-none py-1"
                 >
                     <img
