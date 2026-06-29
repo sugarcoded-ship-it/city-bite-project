@@ -4,6 +4,7 @@ package com.food.restaurant.service
 import com.food.restaurant.dto.staff.OwnerStaffDetailResponse
 import com.food.restaurant.dto.staff.StaffListResponse
 import com.food.restaurant.dto.staff.StaffStatusUpdateRequest
+import com.food.restaurant.entity.user.StaffStatus
 import com.food.restaurant.repository.StaffRepository
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service
@@ -13,6 +14,11 @@ import java.util.UUID
 class StaffService(
     private val staffRepository: StaffRepository,
 ) {
+
+    fun isInactive(id: UUID): Boolean {
+        val staff = staffRepository.findById(id).get()
+        return staff.status == StaffStatus.INACTIVE
+    }
 
     fun getAllStaff(): List<StaffListResponse> {
         return staffRepository.findAllStaffList()
