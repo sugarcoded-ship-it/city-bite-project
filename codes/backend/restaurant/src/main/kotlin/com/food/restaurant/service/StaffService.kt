@@ -1,10 +1,10 @@
 
 package com.food.restaurant.service
 
+import com.food.restaurant.dto.staff.OwnerStaffDetailResponse
 import com.food.restaurant.dto.staff.StaffListResponse
 import com.food.restaurant.dto.staff.StaffStatusUpdateRequest
 import com.food.restaurant.repository.StaffRepository
-import com.food.restaurant.repository.UserRepository
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -16,6 +16,21 @@ class StaffService(
 
     fun getAllStaff(): List<StaffListResponse> {
         return staffRepository.findAllStaffList()
+    }
+
+    fun getStaffById(id: UUID): OwnerStaffDetailResponse {
+        val staff = staffRepository.findById(id)
+            .orElseThrow { NoSuchElementException("Staff not found with id: $id") }
+        val user = staff.user
+        return OwnerStaffDetailResponse(
+            id = staff.id,
+            fullName = "${user.firstName ?: ""} ${user.lastName ?: ""}".trim(),
+            email = user.email,
+            phone = user.phoneNumber,
+            leaveDayAmount = staff.dayOffAmount,
+            salary = staff.salary,
+            address = staff.address
+        )
     }
 
     @Transactional

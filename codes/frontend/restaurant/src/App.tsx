@@ -5,8 +5,8 @@ import { Placeholder } from './components/Placeholder.tsx';
 // Owner pages
 import { MenuConfiguration } from './features/dashboard/components/OwnerDashboard/MenuConfiguration';
 import { StaffList } from './features/staff/components/StaffList/StaffList';
-
 import './App.css'
+import {StaffDetail} from "./features/staff/components/StaffDetail/StaffDetail.tsx";
 
 function App() {
     return (
@@ -16,6 +16,7 @@ function App() {
 
             <Route path="/menu"         element={<MenuConfiguration />} />
             <Route path="/staff"        element={<StaffList />} />
+            <Route path="/staff/:id"    element={<StaffDetail />} />
             <Route path="/dayoff"       element={<Placeholder pageName="Day-Off Requests" />} />
             <Route path="/store-status" element={<Placeholder pageName="Store Status" />} />
             <Route path="/analytics"    element={<Placeholder pageName="Analytics" />} />
