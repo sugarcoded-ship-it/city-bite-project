@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { apiClient, api } from '../api/client';
-import { LogoutButton } from '../authentication/LogoutButton';
+import { apiClient, api } from "../lib/api-client";
+import { LogoutButton } from "../features/auth/components/LogoutButton";
 import styles from './StaffStock.module.css';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -31,7 +31,7 @@ export const StaffStock = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<number | null>(null); // null = All
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
 
   const [addAmounts, setAddAmounts] = useState<Record<number, number>>({});
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -411,7 +411,6 @@ export const StaffStock = () => {
           </div>
         </div>
       )}
-
       {toastMessage && <div className={styles.toast}>{toastMessage}</div>}
     </div>
   );

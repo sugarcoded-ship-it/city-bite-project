@@ -25,7 +25,7 @@ function App() {
 
             <Route path="/history"        element={<Placeholder pageName="Order History" />} />
             <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
-            <Route path="/staff/stock" element={<StaffStock />} />
+            <Route path="/staff/stock"    element={<StaffStock />} />
 
             {/* Shared Routes (all roles) */}
             <Route path="/profile" element={<Placeholder pageName="My Profile" />} />

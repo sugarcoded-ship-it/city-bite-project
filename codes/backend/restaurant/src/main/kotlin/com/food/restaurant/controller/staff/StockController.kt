@@ -8,20 +8,19 @@ import com.food.restaurant.service.StockService
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import com.food.restaurant.dto.stock.CreateStockItem
-import com.food.restaurant.entity.stock.MeasurementUnits
-import com.food.restaurant.entity.stock.Stock
-import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 
-@RestController
+@RestController("StaffStockController")
 @RequestMapping("/api/staff/stocks")
 @PreAuthorize("hasAnyRole('STAFF', 'OWNER')")
 class StockController(
     private val stockService: StockService,
 ) {
     @GetMapping("/categories")
-    fun getCategories(): List<StockCategoryResponse> = stockService.getCategories()
+    fun getCategories(): ResponseEntity<List<StockCategoryResponse>> =
+        ResponseEntity.ok(stockService.getCategories())
 
     @GetMapping
     fun getStocks(@RequestParam categoryId: Int): List<StockResponse> =
@@ -32,7 +31,8 @@ class StockController(
         stockService.adjustStock(id, body.delta)
 
     @GetMapping("/items")
-    fun allItems(): List<StockResponse> = stockService.getAllStocks()
+    fun allItems(): ResponseEntity<List<StockResponse>> =
+        ResponseEntity.ok(stockService.getAllStocks())
 
     @PostMapping("/items")
     fun createItem(@RequestBody request: CreateStockItem): StockResponse =
