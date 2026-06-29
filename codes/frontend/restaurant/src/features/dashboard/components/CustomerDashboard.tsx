@@ -1,26 +1,26 @@
 import { useEffect, useState } from 'react';
-import { apiClient } from '../api/client';
-import { LogoutButton } from '../authentication/LogoutButton';
+import { apiClient } from '../../../lib/api-client';
+import { LogoutButton } from '../../auth/components/LogoutButton';
 
 // PlaceHolder (waiting for backend)
-interface OwnerDashboardData {
-    Income: number;
+interface CustomerDashboardData {
+    Menu: number;
 }
 
-export const OwnerHome = () => {
-    const [data, setData] = useState<OwnerDashboardData | null>(null);
+export const CustomerHome = () => {
+    const [data, setData] = useState<CustomerDashboardData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        apiClient<OwnerDashboardData>('/owner/')
+        apiClient<CustomerDashboardData>('/customer/')
             .then((res) => {
                 setData(res);
                 setLoading(false);
             })
             .catch((err) => {
                 console.error("Dashboard loading failed:", err);
-                setError("Failed to load owner dashboard metrics.");
+                setError("Failed to load customer dashboard metrics.");
                 setLoading(false);
             });
     }, []);
@@ -34,10 +34,10 @@ export const OwnerHome = () => {
                 <LogoutButton />
             </div>
 
-            <h1>Owner Dashboard</h1>
+            <h1>Customer Dashboard</h1>
             <hr />
             <div className="metrics-grid">
-                <div className="card">Pending Orders: {data?.Income}</div>
+                <div className="card">Pending Orders: {data?.Menu}</div>
             </div>
         </div>
     );

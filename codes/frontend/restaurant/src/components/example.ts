@@ -1,7 +1,7 @@
 // This is just example how to use apiClient. 
 // You can delete this file and create your own components in the src/components directory.
 /*
-    import { apiClient } from '../api/client';
+    import { apiClient } from '../lib/api-client';
 
     interface MenuItem {
       id: number;
