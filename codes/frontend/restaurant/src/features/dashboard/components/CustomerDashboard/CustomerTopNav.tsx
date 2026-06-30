@@ -22,7 +22,7 @@ export function CustomerTopNav({customerName }: CustomerTopNavProps) {
 
     const links = [
         { label: 'Menu', icon: UtensilsCrossed, path: '/home' },
-        { label: 'History', icon: ClockArrowUp, path: '/history' },
+        { label: 'History', icon: ClockArrowUp, path: '/customer/history' },
     ];
 
     const isProfileActive = pathname === '/profile';
