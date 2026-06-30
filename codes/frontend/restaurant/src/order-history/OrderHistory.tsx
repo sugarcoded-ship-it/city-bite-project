@@ -96,58 +96,9 @@ export default function OrderHistory() {
             setError(null);
         }
         try {
-            // const data = await apiClient<PageResponse>(
-            //     `/customer/orders/history?page=${p}&size=10`
-            // );
-            // Mock data for frontend testing
-            const mockData: PageResponse = {
-                content: [
-                    {
-                        orderId: 1001,
-                        totalAmount: 160.00,
-                        createdAt: "2026-06-27 12:30",
-                        status: "Shipped",
-                        deliveryAddress: "123 Main St, Apt 4B, Bangkok",
-                        items: [
-                            { menuId: 1, menuName: "Pad Thai", quantity: 2, price: 60, specialRequest: "No peanuts", selectedChoiceIds: [] },
-                            { menuId: 2, menuName: "Thai Iced Tea", quantity: 1, price: 40, specialRequest: null, selectedChoiceIds: [] }
-                        ]
-                    },
-                    {
-                        orderId: 1002,
-                        totalAmount: 240.00,
-                        createdAt: "2026-06-26 18:45",
-                        status: "Processing",
-                        deliveryAddress: "456 Sukhumvit Rd, Condo 10, Bangkok",
-                        items: [
-                            { menuId: 3, menuName: "Green Curry", quantity: 1, price: 120, specialRequest: "Extra spicy", selectedChoiceIds: [] },
-                            { menuId: 4, menuName: "Jasmine Rice", quantity: 2, price: 20, specialRequest: null, selectedChoiceIds: [] },
-                            { menuId: 5, menuName: "Mango Sticky Rice", quantity: 1, price: 80, specialRequest: null, selectedChoiceIds: [] }
-                        ]
-                    },
-                    {
-                        orderId: 1003,
-                        totalAmount: 120.00,
-                        createdAt: "2026-06-25 10:15",
-                        status: "Pending",
-                        deliveryAddress: "789 Silom Rd, Office 22, Bangkok",
-                        items: [
-                            { menuId: 6, menuName: "Tom Yum Goong", quantity: 1, price: 120, specialRequest: "Mild", selectedChoiceIds: [] }
-                        ]
-                    }
-                ],
-                totalPages: 1,
-                totalElements: 3,
-                number: 0,
-                size: 10,
-                first: true,
-                last: true
-            };
-            
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            const data = mockData;
+            const data = await apiClient<PageResponse>(
+                `/customer/orders/history?page=${p}&size=10`
+            );
             
             setOrders(data?.content || []);
             setTotalPages(data?.totalPages || 0);
