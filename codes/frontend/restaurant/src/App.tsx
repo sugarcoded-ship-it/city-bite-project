@@ -19,21 +19,22 @@ function App() {
         <Routes>
             {/* Root — renders the correct dashboard based on the user's role */}
             <Route path="/" element={<HomeDispatcher />} />
+
             <Route element={<ProtectedRoute allowedRoles={['OWNER']} />}>
-                <Route path="owner/dashboard"    element={<OwnerDashboard />} />
-                <Route path="owner/menu"         element={<MenuConfiguration />} />
-                <Route path="owner/staff"        element={<StaffList />} />
-                <Route path="owner/staff/:id"    element={<StaffDetail />} />
-                <Route path="owner/dayoff"       element={<Placeholder pageName="Day-Off Requests" />} />
-                <Route path="owner/store-status" element={<Placeholder pageName="Store Status" />} />
-                <Route path="owner/analytics"    element={<Placeholder pageName="Analytics" />} />
-                <Route path="owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
+                <Route path="/owner/dashboard"    element={<OwnerDashboard />} />
+                <Route path="/owner/menu"         element={<MenuConfiguration />} />
+                <Route path="/owner/staff"        element={<StaffList />} />
+                <Route path="/owner/staff/:id"    element={<StaffDetail />} />
+                <Route path="/owner/dayoff"       element={<Placeholder pageName="Day-Off Requests" />} />
+                <Route path="/owner/store-status" element={<Placeholder pageName="Store Status" />} />
+                <Route path="/owner/analytics"    element={<Placeholder pageName="Analytics" />} />
+                <Route path="/owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['STAFF', 'OWNER']} />}>
-                <Route path="staff/dashboard"    element={<StaffDashboard />} />
-                <Route path="staff/profile"      element={<Placeholder pageName="My Profile (Staff)" />} />
-                <Route path="staff/order"        element={<Placeholder pageName="Order" />} />
+                <Route path="/staff/dashboard"    element={<StaffDashboard />} />
+                <Route path="/staff/profile"      element={<Placeholder pageName="My Profile (Staff)" />} />
+                <Route path="/staff/order"        element={<Placeholder pageName="Order" />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>

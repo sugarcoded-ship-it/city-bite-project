@@ -76,7 +76,7 @@ export const StaffDetail = () => {
             {/* Navy Header */}
             <header className={styles.header}>
                 <div className={styles.headerContent}>
-                    <button onClick={() => navigate('/staff')} className={styles.backBtn}>
+                    <button onClick={() => navigate('/owner/staff')} className={styles.backBtn}>
                         <ArrowLeft size={14} />
                         Back to Staff
                     </button>
