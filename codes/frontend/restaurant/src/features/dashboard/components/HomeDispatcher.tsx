@@ -1,24 +1,15 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { hasRole } from '../../../lib/roles';
 import keycloak from '../../../lib/keycloak';
 import { CustomerDashboard } from './CustomerDashboard/CustomerDashboard';
-import { OwnerDashboard } from './OwnerDashboard/OwnerDashboard';
-import { StaffDashboard } from './StaffDashboard/StaffDashboard';
 
 const HomeDispatcher: React.FC = () => {
-    // Check Keycloak realm roles directly
-    if (keycloak.hasRealmRole('OWNER') || keycloak.hasRealmRole('ROLE_OWNER')) {
-        return <OwnerDashboard />;
-    }
+    if (hasRole('OWNER'))    return <Navigate to="/owner/dashboard" replace />;
+    if (hasRole('STAFF'))    return <Navigate to="/staff/dashboard" replace />;
+    if (hasRole('CUSTOMER')) return <CustomerDashboard />;
 
-    if (keycloak.hasRealmRole('STAFF') || keycloak.hasRealmRole('ROLE_STAFF')) {
-        return <StaffDashboard />;
-    }
-
-    if (keycloak.hasRealmRole('CUSTOMER') || keycloak.hasRealmRole('ROLE_CUSTOMER')) {
-        return <CustomerDashboard />;
-    }
-
-    // Fallback if authenticated user somehow has none of the required roles
+    // No recognized role
     return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
             <h2>Access Denied</h2>
