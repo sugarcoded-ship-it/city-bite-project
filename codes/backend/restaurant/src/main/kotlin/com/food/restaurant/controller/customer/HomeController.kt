@@ -4,12 +4,10 @@ import com.food.restaurant.dto.cart.AddToCartRequest
 import com.food.restaurant.dto.cart.CartItemResponse
 import com.food.restaurant.dto.menu.MenuItemResponse
 import com.food.restaurant.dto.menu.OptionGroupResponse
-import com.food.restaurant.dto.order.OrderHistoryResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.service.CartService
 import com.food.restaurant.service.MenuService
 import com.food.restaurant.service.UserSyncService
-import com.food.restaurant.service.order.OrderHistoryService
 import org.springframework.data.domain.Page
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.access.prepost.PreAuthorize
@@ -32,8 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody
 class HomeController(
     private val userSyncService: UserSyncService,
     private val menuService: MenuService,
-    private val cartService: CartService,
-    private val orderHistoryService: OrderHistoryService,
+    private val cartService: CartService
 ) {
 
     @GetMapping("/")
@@ -109,27 +106,4 @@ class HomeController(
         return cartService.getCartItemsForUser(userId)
     }
 
-    // ── Order History ──
-
-    @GetMapping("/orders/history")
-    @PreAuthorize("isAuthenticated()")
-    fun getOrderHistory(
-        @AuthenticationPrincipal jwt: Jwt,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
-    ): Page<OrderHistoryResponse> {
-        val userId = jwt.subject
-        return orderHistoryService.getOrderHistory(userId, page, size)
-    }
-
-    @PostMapping("/orders/reorder/{orderId}")
-    @PreAuthorize("isAuthenticated()")
-    fun reorderPastOrder(
-        @PathVariable orderId: Int,
-        @AuthenticationPrincipal jwt: Jwt
-    ): ResponseEntity<Map<String, String>> {
-        val userId = jwt.subject
-        orderHistoryService.reorder(userId, orderId)
-        return ResponseEntity.ok(mapOf("message" to "Order items added to cart"))
-    }
 }
