@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface OrderDetailRepository : JpaRepository<OrderDetail, Int> {
     fun findByOrderId(orderId: Int): List<OrderDetail>
+    fun findByOrderIdIn(orderIds: List<Int>): List<OrderDetail>
 }
