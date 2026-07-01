@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.menu
 
 import com.food.restaurant.entity.menu.OptionChoice // Or wherever your choice entity is located
 import org.springframework.data.jpa.repository.JpaRepository

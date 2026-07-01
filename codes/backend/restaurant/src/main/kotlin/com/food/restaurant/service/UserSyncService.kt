@@ -1,7 +1,7 @@
 package com.food.restaurant.service
 
 import com.food.restaurant.entity.user.User
-import com.food.restaurant.repository.UserRepository
+import com.food.restaurant.repository.user.UserRepository
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

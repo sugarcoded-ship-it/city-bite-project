@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.order
 
 import com.food.restaurant.entity.order.Order
 import org.springframework.data.domain.Page

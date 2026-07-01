@@ -1,4 +1,4 @@
-package com.food.restaurant.repository
+package com.food.restaurant.repository.stock
 
 import com.food.restaurant.entity.stock.Stock
 import org.springframework.data.jpa.repository.JpaRepository
