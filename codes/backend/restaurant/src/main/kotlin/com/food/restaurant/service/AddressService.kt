@@ -16,7 +16,7 @@ class AddressService(
 ) {
 
     fun getCustomerAddresses(customerUuid: UUID): List<AddressResponse> {
-        val addresses = addressRepository.findByCustomer_Id(customerUuid)
+        val addresses = addressRepository.findByCustomer_IdAndActiveTrue(customerUuid)
 
         return addresses.map { address ->
             AddressResponse(
@@ -32,7 +32,7 @@ class AddressService(
 
     @Transactional
     fun addNewAddress(customerUuid: UUID, request: AddressRequest): AddressResponse {
-        val curAddrCount = addressRepository.countByCustomer_Id(customerUuid)
+        val curAddrCount = addressRepository.countByCustomer_IdAndActiveTrue(customerUuid)
         if (curAddrCount >= 3){
             throw IllegalStateException("You can only save a maximum of 3 delivery addresses.")
         }
@@ -98,6 +98,6 @@ class AddressService(
             throw IllegalStateException("You do not have permission to delete this address.")
         }
 
-        addressRepository.delete(existingAddr)
+        existingAddr.active = false
     }
 }
