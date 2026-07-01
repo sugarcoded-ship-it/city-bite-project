@@ -1,7 +1,7 @@
 import React from 'react';
 import keycloak from '../../../lib/keycloak';
 import styles from './LogoutButton.module.css';
-import {apiClient} from "../api/client.ts";
+import {apiClient} from "../../../lib/api-client.ts";
 
 export const LogoutButton: React.FC = () => {
   const handleLogout = async () => {
