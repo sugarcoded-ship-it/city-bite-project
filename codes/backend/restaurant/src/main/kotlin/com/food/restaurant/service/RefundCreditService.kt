@@ -15,7 +15,7 @@ class RefundCreditService(
 
     fun getBalance (customerUuid : UUID): BigDecimal {
         val credit = refundCreditRepository.findByCustomer_Id(customerUuid)
-        return credit.amount ?: BigDecimal.ZERO
+        return credit?.amount ?: BigDecimal.ZERO
     }
 
     @Transactional

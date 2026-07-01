@@ -559,7 +559,7 @@ export function CustomerDashboard() {
                                             </p>
                                         )}
                                         <button
-                                            onClick={() => navigate('/payment-method')}
+                                            onClick={() => navigate('/order-summary')}
                                             disabled={hasUnavailableCartItem}
                                             className={`w-full font-bold py-3 rounded-xl text-sm transition-colors shadow-md ${hasUnavailableCartItem ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#2D7FF9] hover:bg-[#1a6de0] text-white'}`}
                                         >
