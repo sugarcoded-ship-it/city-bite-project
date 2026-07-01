@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import HomeDispatcher from './features/dashboard/components/HomeDispatcher.tsx';
 import { Placeholder } from './components/Placeholder.tsx';
-import OrderHistory from './order-history/OrderHistory.tsx';
 import { ProtectedRoute } from './lib/ProtectedRoute'
 
 // Owner pages
@@ -14,9 +13,8 @@ import { OwnerDashboard } from './features/dashboard/components/OwnerDashboard/O
 import { StaffDashboard } from './features/dashboard/components/StaffDashboard/StaffDashboard.tsx';
 
 // Customer pages
-import { OrderHistory } from './order-history/OrderHistory.tsx';
+import OrderHistory from './order-history/OrderHistory.tsx';
 import './App.css'
-import {StaffDetail} from "./features/staff/components/StaffDetail/StaffDetail.tsx";
 
 function App() {
     return (
