@@ -8,6 +8,7 @@ import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.service.CartService
 import com.food.restaurant.service.MenuService
 import com.food.restaurant.service.UserSyncService
+import org.springframework.data.domain.Page
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody
 class HomeController(
     private val userSyncService: UserSyncService,
     private val menuService: MenuService,
-    private val cartService: CartService,
+    private val cartService: CartService
 ) {
 
     @GetMapping("/")
@@ -104,4 +105,5 @@ class HomeController(
         cartService.removeItemByIndex(userId, itemIndex)
         return cartService.getCartItemsForUser(userId)
     }
+
 }

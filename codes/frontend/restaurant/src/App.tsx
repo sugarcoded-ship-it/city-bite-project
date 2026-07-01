@@ -12,6 +12,8 @@ import { OwnerDashboard } from './features/dashboard/components/OwnerDashboard/O
 // Staff pages
 import { StaffDashboard } from './features/dashboard/components/StaffDashboard/StaffDashboard.tsx';
 
+// Customer pages
+import OrderHistory from './order-history/OrderHistory.tsx';
 import './App.css'
 
 function App() {
@@ -38,7 +40,7 @@ function App() {
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>
-                <Route path="/history"        element={<Placeholder pageName="Order History" />} />
+                <Route path="/history"        element={<OrderHistory />} />
                 <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
                 <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
             </Route>

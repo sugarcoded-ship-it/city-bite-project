@@ -87,6 +87,8 @@ export function CustomerDashboard() {
     }, []);
 
     useEffect(() => {
+        apiClient('/customer/').catch((err) => console.error('Failed to sync user profile:', err));
+
         apiClient<MenuItem[]>('/customer/menu')
             .then((data: MenuItem[] | { data: MenuItem[] }) => {
                 if (Array.isArray(data)) setItems(data);
