@@ -48,6 +48,13 @@ function getStatusClass(status: string): string {
     return styles.statusDefault;
 }
 
+function formatDisplayDate(dateString: string): string {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ', ' + 
+           date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
 function getGroupLabel(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
@@ -237,7 +244,7 @@ export default function OrderHistory() {
                                         <Calendar size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: '-1px' }} />
                                         Date & Time
                                     </span>
-                                    <span className={styles.infoValue}>{order.createdAt}</span>
+                                    <span className={styles.infoValue}>{formatDisplayDate(order.createdAt)}</span>
                                 </div>
 
                                 <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>

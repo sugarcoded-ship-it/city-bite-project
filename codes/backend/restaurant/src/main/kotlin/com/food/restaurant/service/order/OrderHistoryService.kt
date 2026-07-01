@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Service
@@ -23,8 +22,6 @@ class OrderHistoryService(
     private val orderItemSelectionRepository: OrderItemSelectionRepository,
     private val cartService: CartService
 ) {
-
-    private val displayFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy, HH:mm")
 
     fun getOrderHistory(userId: String, page: Int, size: Int): Page<OrderHistoryResponse> {
         val userUuid = UUID.fromString(userId)
@@ -81,7 +78,7 @@ class OrderHistoryService(
             OrderHistoryResponse(
                 orderId = order.id,
                 totalAmount = order.totalPrice.toDouble(),
-                createdAt = order.createdAt.format(displayFormatter),
+                createdAt = order.createdAt.toString(),
                 status = order.orderStatus.statusName.displayName,
                 deliveryAddress = addressString,
                 items = itemResponses
