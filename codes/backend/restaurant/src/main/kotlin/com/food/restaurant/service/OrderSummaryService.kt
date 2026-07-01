@@ -8,9 +8,11 @@ import com.food.restaurant.dto.OptionSummaryResponse
 import com.food.restaurant.entity.order.Order
 import com.food.restaurant.entity.order.OrderDetail
 import com.food.restaurant.entity.order.OrderItemSelection
+import com.food.restaurant.entity.order.orderStatusEnum
 import com.food.restaurant.entity.payment.PaymentTransaction
 import com.food.restaurant.entity.payment.RefundCredit
 import com.food.restaurant.entity.payment.RefundCreditLog
+import com.food.restaurant.repository.cart.CartItemRepository
 import com.food.restaurant.repository.user.AddressRepository
 import com.food.restaurant.repository.menu.MenuRepository
 import com.food.restaurant.repository.menu.OptionChoiceRepository
@@ -41,7 +43,8 @@ class OrderSummaryService(
     private val paymentMethodRepository: PaymentMethodRepository,
     private val paymentTransactionRepository: PaymentTransactionRepository,
     private val refundCreditRepository: RefundCreditRepository,
-    private val refundCreditLogRepository: RefundCreditLogRepository
+    private val refundCreditLogRepository: RefundCreditLogRepository,
+    private val cartItemRepository: CartItemRepository
 ) {
     fun summarizeCartBeforePayment(requestedItems: List<CartItemRequest>): CartSummaryResponse {
 
@@ -97,7 +100,7 @@ class OrderSummaryService(
         val addressEntity = addressRepository.findById(request.addressId)
             .orElseThrow { IllegalArgumentException("Address not found") }
 
-        val pendingStatus = orderStatusRepository.findByStatusName("PENDING")
+        val pendingStatus = orderStatusRepository.findByStatusName(orderStatusEnum.PENDING)
 
         val paymentMethodEntity = paymentMethodRepository.findById(request.paymentMethodId)
             .orElseThrow { IllegalArgumentException("Payment method not found") }
@@ -159,6 +162,8 @@ class OrderSummaryService(
         )
         paymentTransactionRepository.save(transactionMock)
 
+        cartItemRepository.deleteByCustomerUuid(request.customerUuid)
+
         return savedOrder
     }
 
@@ -168,7 +173,7 @@ class OrderSummaryService(
         val orderEntity = orderRepository.findById(orderId)
             .orElseThrow { IllegalArgumentException("Order not found with ID: $orderId") }
 
-        val canceledStatus = orderStatusRepository.findByStatusName("CANCELED")
+        val canceledStatus = orderStatusRepository.findByStatusName(orderStatusEnum.CANCELED)
 
         orderEntity.orderStatus = canceledStatus
         orderRepository.save(orderEntity)

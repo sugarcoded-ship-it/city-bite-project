@@ -26,9 +26,16 @@ class OrderSummaryController(private val orderService: OrderSummaryService) {
     }
 
     @PostMapping("/create")
-    fun createOrder(@RequestBody request: CreateOrderRequest): ResponseEntity<Order> {
+    @PreAuthorize("isAuthenticated()")
+    fun createOrder(@RequestBody request: CreateOrderRequest): ResponseEntity<Map<String, Any>> {
         val newOrder = orderService.processCheckout(request)
-        return ResponseEntity.ok(newOrder)
+        return ResponseEntity.ok(
+            mapOf(
+                "orderId" to newOrder.id,
+                "totalPrice" to newOrder.totalPrice,
+                "status" to "PENDING"
+            )
+        )
     }
 
     @PostMapping("/{orderId}/cancel")

@@ -1,7 +1,21 @@
 import React, {useState, useEffect} from 'react';
-// import { useKeycloak } from '@react-keycloak/web';
-import {apiClient} from "./api/client.ts";
-import keycloak from "./security/keycloak.ts";
+import { useNavigate } from "react-router-dom";
+import {apiClient} from "./lib/api-client.ts";
+import keycloak from "./lib/keycloak.ts";
+
+interface CartItemResponse {
+    menuId: number;
+    name: string;
+    price: number;
+    quantity: number;
+    specialRequest: string | null;
+    selectedCustomizations: string[];
+    status: string;
+}
+
+interface RefundCreditResponse {
+    currentBalance: number;
+}
 
 interface OptionSummaryResponse {
     choiceName: string;
@@ -26,7 +40,7 @@ interface CartSummaryResponse {
 
 interface AddressDto {
     id: number;
-    extra_info: string;
+    addressInfo: string;
     subDistrict: string;
     district: string;
     province: string;
@@ -38,8 +52,6 @@ interface PaymentMethodResponse {
     methodCode: string;
 }
 
-// const API_BASE_URL = 'http://localhost:8080/api';
-// const CUSTOMER_UUID = ???
 
 const OrderSummaryPage: React.FC = () => {
     const [cartSummary, setCartSummary] = useState<CartSummaryResponse | null>(null);
@@ -53,12 +65,30 @@ const OrderSummaryPage: React.FC = () => {
 
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const navigate = useNavigate();
     const [isAddressModalOpen, setIsAddressModalOpen] = useState<boolean>(false);
     const [isAddressFormOpen, setIsAddressFormOpen] = useState<boolean>(false);
     const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
 
     const [addressForm, setAddressForm] = useState({
-        extra_info: '', subDistrict: '', district: '', province: '', postalCode: ''
+        addressInfo: '', subDistrict: '', district: '', province: '', postalCode: ''
+    });
+
+    const buildSummary = (cart: CartItemResponse[]): CartSummaryResponse => ({
+        items: cart.map(ci => ({
+            menuId: ci.menuId,
+            menuName: ci.name,
+            amount: ci.quantity,
+            specialRequest: ci.specialRequest ?? undefined,
+            unitPrice: ci.price,
+            lineTotal: ci.price * ci.quantity,
+            selectedOptions: ci.selectedCustomizations.map(name => ({ choiceName: name, extraPrice: 0 })),
+            selectedChoiceIds: [],
+        })),
+        totalPrice: cart.reduce((sum, ci) => sum + ci.price * ci.quantity, 0),
     });
 
     useEffect(() => {
@@ -66,8 +96,8 @@ const OrderSummaryPage: React.FC = () => {
             try {
                 setIsLoading(true);
 
-                const cartPromise = apiClient<CartSummaryResponse>('/customer/cart');
-                const creditPromise = apiClient<number>('/customer/credits/balance');
+                const cartPromise = apiClient<CartItemResponse[]>('/customer/cart');
+                const creditPromise = apiClient<RefundCreditResponse>('/customer/credits/balance');
                 const addressPromise = apiClient<AddressDto[]>('/customer/addresses');
                 const paymentPromise = apiClient<PaymentMethodResponse[]>('/customer/payments');
 
@@ -78,8 +108,8 @@ const OrderSummaryPage: React.FC = () => {
                     paymentPromise
                 ]);
 
-                setCartSummary(cartData);
-                setRefundCredit(creditData);
+                setCartSummary(buildSummary(cartData));
+                setRefundCredit(creditData.currentBalance);
                 setUserAddresses(addressData);
 
                 if (addressData.length > 0) {
@@ -103,38 +133,54 @@ const OrderSummaryPage: React.FC = () => {
 
     const handleOpenAddAddress = () => {
         setEditingAddressId(null);
-        setAddressForm({ extra_info: '', subDistrict: '', district: '', province: '', postalCode: '' });
+        setAddressForm({ addressInfo: '', subDistrict: '', district: '', province: '', postalCode: '' });
         setIsAddressFormOpen(true);
     };
 
     const handleOpenEditAddress = (addr: AddressDto) => {
         setEditingAddressId(addr.id);
         setAddressForm({
-            extra_info: addr.extra_info, subDistrict: addr.subDistrict,
+            addressInfo: addr.addressInfo, subDistrict: addr.subDistrict,
             district: addr.district, province: addr.province, postalCode: addr.postalCode
         });
         setIsAddressFormOpen(true);
     };
 
     const handleSaveAddress = async () => {
-        if (editingAddressId) {
-            const updatedList = userAddresses.map(a => a.id === editingAddressId ? { id: editingAddressId, ...addressForm } : a);
-            setUserAddresses(updatedList);
-            if (selectedAddress?.id === editingAddressId) setSelectedAddress({ id: editingAddressId, ...addressForm });
-        } else {
-            const newlySavedAddress: AddressDto = { id: Math.floor(Math.random() * 1000), ...addressForm };
-            setUserAddresses([...userAddresses, newlySavedAddress]);
-            setSelectedAddress(newlySavedAddress);
+        try {
+            if (editingAddressId) {
+                const updated = await apiClient<AddressDto>(`/customer/addresses/${editingAddressId}`, {
+                    method: 'PUT', data: addressForm
+                });
+                setUserAddresses(prev => prev.map(a => (a.id === editingAddressId ? updated : a)));
+                if (selectedAddress?.id === editingAddressId) setSelectedAddress(updated);
+            } else {
+                const created = await apiClient<AddressDto>('/customer/addresses', {
+                    method: 'POST', data: addressForm
+                });
+                setUserAddresses(prev => [...prev, created]);
+                setSelectedAddress(created);
+            }
+            setIsAddressFormOpen(false);
+        } catch (err) {
+            const e = err as { response?: { data?: { message?: string } } };
+            console.error("Failed to save address:", e.response?.data ?? err);
+            alert(e.response?.data?.message ?? "Could not save the address. Please try again.");
         }
-
-        setIsAddressFormOpen(false);
     };
 
     const handleDeleteAddress = async (idToDelete: number) => {
-        const updatedList = userAddresses.filter(a => a.id !== idToDelete);
-        setUserAddresses(updatedList);
-        if (selectedAddress?.id === idToDelete) {
-            setSelectedAddress(updatedList.length > 0 ? updatedList[0] : null);
+        try {
+            await apiClient(`/customer/addresses/${idToDelete}`, { method: 'DELETE' });
+            const updatedList = userAddresses.filter(a => a.id !== idToDelete);
+            setUserAddresses(updatedList);
+            if (selectedAddress?.id === idToDelete) {
+                setSelectedAddress(updatedList.length > 0 ? updatedList[0] : null);
+            }
+        } catch (err) {
+            const e = err as { response?: { data?: { message?: string } } };
+            console.error("Failed to delete address:", e.response?.data ?? err);
+            alert(e.response?.data?.message ?? "Could not delete the address. Please try again.");
         }
     };
 
@@ -144,23 +190,36 @@ const OrderSummaryPage: React.FC = () => {
         const orderPayload = {
             customerUuid: keycloak.subject,
             addressId: selectedAddress.id,
+            orderStatusId: 1,
             paymentMethodId: Number(paymentMethodId),
             totalPrice: finalTotal,
             items: cartSummary.items.map(item => ({
                 menuId: item.menuId,
-                quantity: item.amount,
-                specialRequest: item.specialRequest || null,
+                amount: item.amount,
+                specialRequest: item.specialRequest ?? '',
                 selectedChoiceIds: item.selectedChoiceIds
             }))
         };
 
         try {
-            await apiClient('customer/orders/create', {
+            setIsSubmitting(true);
+            setSubmitError(null);
+            await apiClient('/customer/orders/create', {
                 method: 'POST',
                 data: orderPayload
             });
+            setOrderPlaced(true);
         } catch (err) {
-            console.error("Order submission network error:", err);
+            const e = err as { response?: { status?: number; data?: { message?: string; error?: string } } };
+            const serverMsg = e.response?.data?.message || e.response?.data?.error;
+            console.error("Order submission failed:", e.response?.status, e.response?.data);
+            setSubmitError(
+                serverMsg
+                    ? `Order failed (HTTP ${e.response?.status}): ${serverMsg}`
+                    : "Order could not be placed. Please try again."
+            );
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -175,6 +234,16 @@ const OrderSummaryPage: React.FC = () => {
     const finalTotal: number = useCredit
         ? Math.max(0, cartSummary.totalPrice - refundCredit)
         : cartSummary.totalPrice;
+
+    if (orderPlaced) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col gap-4 justify-center items-center p-8 text-center">
+                <div className="text-3xl font-extrabold text-green-600">Order placed! 🎉</div>
+                <p className="text-gray-600">Your order is now pending. Total charged: ${finalTotal.toFixed(2)}</p>
+                <button onClick={() => navigate('/')} className="px-6 py-3 bg-[#3b82f6] text-white font-bold rounded-xl hover:bg-blue-600">Back to menu</button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-8 font-sans text-gray-900">
@@ -209,7 +278,7 @@ const OrderSummaryPage: React.FC = () => {
                         <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex justify-between items-center">
                             {selectedAddress ? (
                                 <div>
-                                    <p className="font-bold text-gray-900">{selectedAddress.extra_info}</p>
+                                    <p className="font-bold text-gray-900">{selectedAddress.addressInfo}</p>
                                     <p className="text-sm text-gray-500">{selectedAddress.subDistrict}, {selectedAddress.district}</p>
                                     <p className="text-sm text-gray-500">{selectedAddress.province} {selectedAddress.postalCode}</p>
                                 </div>
@@ -256,12 +325,13 @@ const OrderSummaryPage: React.FC = () => {
                             <span className="font-bold text-lg">Total</span>
                             <span className="font-black text-2xl text-[#3b82f6]">${finalTotal.toFixed(2)}</span>
                         </div>
+                        {submitError && <p className="text-sm text-red-600 mb-3">{submitError}</p>}
                         <button
                             onClick={handleConfirmOrder}
-                            disabled={cartSummary.items.length === 0 || !selectedAddress || !paymentMethodId}
+                            disabled={cartSummary.items.length === 0 || !selectedAddress || !paymentMethodId || isSubmitting}
                             className="w-full bg-[#3b82f6] hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-md transition-colors"
                         >
-                            Confirm Order
+                            {isSubmitting ? 'Placing order...' : 'Confirm Order'}
                         </button>
                     </div>
                 </div>
@@ -277,7 +347,7 @@ const OrderSummaryPage: React.FC = () => {
 
                         {isAddressFormOpen ? (
                             <div className="space-y-4">
-                                <input placeholder="Extra Address Information" value={addressForm.extra_info} onChange={(e) => setAddressForm({...addressForm, extra_info: e.target.value})} className="border p-3 rounded-lg w-full bg-gray-50 outline-none" />
+                                <input placeholder="Extra Address Information" value={addressForm.addressInfo} onChange={(e) => setAddressForm({...addressForm, addressInfo: e.target.value})} className="border p-3 rounded-lg w-full bg-gray-50 outline-none" />
                                 <div className="grid grid-cols-2 gap-4">
                                     <input placeholder="Sub-district" value={addressForm.subDistrict} onChange={(e) => setAddressForm({...addressForm, subDistrict: e.target.value})} className="border p-3 rounded-lg w-full bg-gray-50 outline-none" />
                                     <input placeholder="District" value={addressForm.district} onChange={(e) => setAddressForm({...addressForm, district: e.target.value})} className="border p-3 rounded-lg w-full bg-gray-50 outline-none" />
@@ -298,7 +368,7 @@ const OrderSummaryPage: React.FC = () => {
                                     {userAddresses.map((addr) => (
                                         <div key={addr.id} className={`p-4 rounded-xl border flex flex-col transition ${selectedAddress?.id === addr.id ? 'border-[#3b82f6] bg-blue-50 ring-1 ring-[#3b82f6]' : 'border-gray-200'}`}>
                                             <div className="flex-1 cursor-pointer" onClick={() => { setSelectedAddress(addr); setIsAddressModalOpen(false); }}>
-                                                <p className="font-bold">{addr.extra_info}</p>
+                                                <p className="font-bold">{addr.addressInfo}</p>
                                                 <p className="text-sm text-gray-500">{addr.subDistrict}, {addr.district}</p>
                                                 <p className="text-sm text-gray-500">{addr.province} {addr.postalCode}</p>
                                             </div>

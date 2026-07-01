@@ -3,11 +3,9 @@ package com.food.restaurant.service
 
 import com.food.restaurant.dto.staff.StaffListResponse
 import com.food.restaurant.dto.staff.StaffStatusUpdateRequest
-import com.food.restaurant.repository.StaffRepository
-import com.food.restaurant.repository.UserRepository
+import com.food.restaurant.repository.user.StaffRepository
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 @Service
 class StaffService(

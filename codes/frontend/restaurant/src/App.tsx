@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import HomeDispatcher from './home/HomeDispatcher.tsx';
+import HomeDispatcher from './features/dashboard/components/HomeDispatcher.tsx';
 import './App.css'
 import OrderSummaryPage from "./OrderSummaryPage.tsx";
 
@@ -10,7 +10,7 @@ function App() {
         <Routes>
             <Route path="/" element={<HomeDispatcher />} />
 
-            <Route path="/" element={<OrderSummaryPage />} />
+            <Route path="/order-summary" element={<OrderSummaryPage />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

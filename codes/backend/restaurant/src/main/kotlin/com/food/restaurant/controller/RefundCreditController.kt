@@ -1,5 +1,6 @@
 package com.food.restaurant.controller
 
+import com.food.restaurant.dto.CreditRequest
 import com.food.restaurant.dto.RefundCreditResponse
 import com.food.restaurant.service.RefundCreditService
 import com.food.restaurant.service.UserSyncService
@@ -16,11 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.util.UUID
-
-
-data class CreditRequest(
-    val amount: BigDecimal
-)
 
 @RestController
 @RequestMapping("/api/customer/credits")

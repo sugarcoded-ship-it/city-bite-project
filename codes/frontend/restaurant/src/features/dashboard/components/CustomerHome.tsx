@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { apiClient } from '../api/client';
-import { LogoutButton } from '../authentication/LogoutButton';
+import { apiClient } from '../../../lib/api-client';
+import { LogoutButton } from '../../auth/components/LogoutButton.tsx';
 import styles from './CustomerHome.module.css';
+import { Link } from 'react-router-dom';
 
 interface MenuItem {
     id: number;
@@ -548,9 +549,21 @@ export const CustomerHome = () => {
                                         <button className={styles.cancelButton} onClick={closeCartModal} style={{ flex: 1 }}>
                                             Close
                                         </button>
-                                        <button className={styles.confirmButton} style={{ flex: 1 }} onClick={() => alert("Proceeding to Checkout...")}>
+
+                                        <Link
+                                            to="/order-summary"
+                                            className={styles.confirmButton}
+                                            style={{
+                                                flex: 1,
+                                                textDecoration: 'none',
+                                                textAlign: 'center',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
                                             Checkout
-                                        </button>
+                                        </Link>
                                     </div>
                                 </>
                             )}
