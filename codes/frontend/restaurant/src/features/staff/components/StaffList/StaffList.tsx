@@ -37,7 +37,7 @@ export const StaffList = () => {
                 salary: parseInt(createForm.salary) || 0,
                 dayOffAmount: parseInt(createForm.dayOffAmount) || 100
             }
-        }).then((res: any) => {
+        }).then((res: Staffs) => {
             const newStaff = res;
             const updatedData = data ? [...data, newStaff] : [newStaff];
             setData(updatedData);
