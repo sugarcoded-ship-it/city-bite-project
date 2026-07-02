@@ -17,6 +17,7 @@ import OrderHistory from './order-history/OrderHistory.tsx';
 import './App.css'
 import OrderSummary from "./features/customer/OrderSummary.tsx";
 import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
+import Done from "./features/customer/Done.tsx";
 
 console.log("MY ENV VAR:", import.meta.env);
 
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/order-summary" element={<OrderSummary />} />
                 <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
                 <Route path="/payment-process" element={<PaymentProcessPage />} />
+                <Route path="/done" element={<Done />} />
                 <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
             </Route>
 

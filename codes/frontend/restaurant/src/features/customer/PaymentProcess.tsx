@@ -11,8 +11,7 @@ export const PaymentProcessPage: React.FC = () => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    // Redirect to order history when time is up
-                    navigate('/history');
+                    navigate('/order-summary');
                     return 0;
                 }
                 return prev - 1;
@@ -31,7 +30,6 @@ export const PaymentProcessPage: React.FC = () => {
                 <h1 className="text-2xl font-extrabold text-[#0B1F4D] mb-8">Payment Process</h1>
 
                 <div className="flex flex-col items-center">
-                    {/* Mock QR Code Box */}
                     <div className="bg-purple-50 p-8 rounded-2xl mb-6 border-2 border-purple-100 shadow-inner">
                         <QrCode size={180} className="text-purple-600" />
                     </div>
@@ -45,14 +43,14 @@ export const PaymentProcessPage: React.FC = () => {
                     </div>
 
                     <button
-                        onClick={() => navigate('/history')}
+                        onClick={() => navigate('/done')}
                         className="w-full bg-[#2D7FF9] hover:bg-[#1a6de0] text-white font-extrabold py-3.5 rounded-2xl transition-colors shadow-md text-sm"
                     >
                         I've already paid
                     </button>
 
                     <button
-                        onClick={() => navigate('/history')}
+                        onClick={() => navigate('/')}
                         className="mt-4 text-gray-400 hover:text-gray-600 text-xs font-bold transition-colors"
                     >
                         Cancel Payment

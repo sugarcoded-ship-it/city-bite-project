@@ -231,15 +231,11 @@ const OrderSummary: React.FC = () => {
         try {
             setIsSubmitting(true);
             setSubmitError(null);
-
-            // 1. Create the order in the backend
             await apiClient('/customer/orders/create', { method: 'POST', data: orderPayload });
-
-            // 2. Check the payment method and navigate accordingly
             if (selectedMethodCode === 'QR_PROMPTPAY') {
                 navigate('/payment-process');
             } else {
-                navigate('/history');
+                navigate('/done');
             }
 
         } catch (err) {
