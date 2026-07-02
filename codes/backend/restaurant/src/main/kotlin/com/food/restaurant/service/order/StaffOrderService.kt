@@ -76,7 +76,7 @@ class StaffOrderService(
 
             StaffOrderResponse(
                 orderId = order.id,
-                status = order.orderStatus.statusName.displayName,
+                status = order.orderStatus.statusName.name,
                 customerName = customerName.ifEmpty { order.customer.username },
                 totalPrice = order.totalPrice.toDouble(),
                 createdAt = order.createdAt.toString(),

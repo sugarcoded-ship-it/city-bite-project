@@ -79,7 +79,7 @@ class OrderHistoryService(
                 orderId = order.id,
                 totalAmount = order.totalPrice.toDouble(),
                 createdAt = order.createdAt.toString(),
-                status = order.orderStatus.statusName.displayName,
+                status = order.orderStatus.statusName.name,
                 canceledBy = order.canceledBy,
                 deliveryAddress = addressString,
                 items = itemResponses

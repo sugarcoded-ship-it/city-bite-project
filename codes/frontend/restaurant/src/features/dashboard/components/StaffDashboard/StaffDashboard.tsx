@@ -66,12 +66,12 @@ export const StaffDashboard = () => {
         try {
             await apiClient(`/staff/orders/${orderId}/claim`, { method: 'POST' });
             showToast('Order successfully claimed!');
-            fetchOrders();
+            await fetchOrders();
         } catch (error: any) {
             console.error('Failed to claim order:', error);
             const msg = error.response?.data?.message || 'Failed to claim order. It might have been claimed by another staff.';
             showToast(msg, true);
-            fetchOrders(); // Refresh to see if it was claimed
+            await fetchOrders(); // Refresh to see if it was claimed
         } finally {
             setActionLoadingId(null);
         }
@@ -82,7 +82,7 @@ export const StaffDashboard = () => {
         try {
             await apiClient(`/staff/orders/${orderId}/complete`, { method: 'POST' });
             showToast('Order completed!');
-            fetchOrders();
+            await fetchOrders();
         } catch (error: any) {
             console.error('Failed to complete order:', error);
             const msg = error.response?.data?.message || 'Failed to complete order.';
@@ -97,7 +97,7 @@ export const StaffDashboard = () => {
         try {
             await apiClient(`/staff/orders/${orderId}/cancel`, { method: 'POST' });
             showToast('Order canceled.');
-            fetchOrders();
+            await fetchOrders();
         } catch (error: any) {
             console.error('Failed to cancel order:', error);
             const msg = error.response?.data?.message || 'Failed to cancel order.';
@@ -107,8 +107,8 @@ export const StaffDashboard = () => {
         }
     };
 
-    const pendingOrders = orders.filter(o => o.status.toLowerCase() === 'pending');
-    const inProgressOrders = orders.filter(o => o.status.toLowerCase() === 'in progress');
+    const pendingOrders = orders.filter(o => o.status === 'PENDING');
+    const inProgressOrders = orders.filter(o => o.status === 'IN_PROGRESS');
 
     const renderOrderCard = (order: StaffOrderResponse, isPending: boolean) => {
         const minutes = getMinutesElapsed(order.createdAt);

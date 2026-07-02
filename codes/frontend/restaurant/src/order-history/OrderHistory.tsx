@@ -38,14 +38,24 @@ interface PageResponse {
     last: boolean;
 }
 
-// Maps status display name → CSS class suffix
 function getStatusClass(status: string): string {
-    const normalized = status.toLowerCase().replace(/\s+/g, '');
-    if (normalized === 'pending') return styles.statusPending;
-    if (normalized === 'inprogress') return styles.statusInProgress;
-    if (normalized === 'delivered') return styles.statusDelivered;
-    if (normalized === 'canceled') return styles.statusCanceled;
-    return styles.statusDefault;
+    switch (status) {
+        case 'PENDING': return styles.statusPending;
+        case 'IN_PROGRESS': return styles.statusInProgress;
+        case 'DELIVERED': return styles.statusDelivered;
+        case 'CANCELED': return styles.statusCanceled;
+        default: return styles.statusDefault;
+    }
+}
+
+function formatStatus(status: string): string {
+    switch (status) {
+        case 'PENDING': return 'Pending';
+        case 'IN_PROGRESS': return 'In Progress';
+        case 'DELIVERED': return 'Delivered';
+        case 'CANCELED': return 'Canceled';
+        default: return status;
+    }
 }
 
 function formatDisplayDate(dateString: string): string {
@@ -225,7 +235,7 @@ export default function OrderHistory() {
                                 #ORD-{String(order.orderId).padStart(5, '0')}
                             </span>
                             <span className={`${styles.statusBadge} ${getStatusClass(order.status || '')}`}>
-                                {order.status}
+                                {formatStatus(order.status || '')}
                             </span>
                         </div>
 
@@ -274,7 +284,7 @@ export default function OrderHistory() {
 
                         {/* Footer: Action Buttons */}
                         <div className={styles.cardFooter}>
-                            {order.status.toLowerCase() === 'delivered' && (
+                            {order.status === 'DELIVERED' && (
                                 <button
                                     className={styles.reorderBtn}
                                     onClick={() => handleReorder(order.orderId)}
@@ -291,7 +301,7 @@ export default function OrderHistory() {
                                     {reorderingId === order.orderId ? 'Reordering…' : 'Reorder'}
                                 </button>
                             )}
-                            {order.status.toLowerCase() === 'canceled' && order.canceledBy && (
+                            {order.status === 'CANCELED' && order.canceledBy && (
                                 <span className={styles.canceledByText}>
                                     Canceled by: {order.canceledBy}
                                 </span>
