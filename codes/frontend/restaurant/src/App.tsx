@@ -15,7 +15,9 @@ import { StaffDashboard } from './features/dashboard/components/StaffDashboard/S
 // Customer pages
 import OrderHistory from './order-history/OrderHistory.tsx';
 import './App.css'
-import OrderSummaryPage from "./OrderSummaryPage.tsx";
+import OrderSummary from "./features/customer/OrderSummary.tsx";
+import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
+import Done from "./features/customer/Done.tsx";
 
 console.log("MY ENV VAR:", import.meta.env);
 
@@ -44,8 +46,10 @@ function App() {
 
             <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>
                 <Route path="/history"        element={<OrderHistory />} />
-                <Route path="/order-summary" element={<OrderSummaryPage />} />
+                <Route path="/order-summary" element={<OrderSummary />} />
                 <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
+                <Route path="/payment-process" element={<PaymentProcessPage />} />
+                <Route path="/done" element={<Done />} />
                 <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
             </Route>
 

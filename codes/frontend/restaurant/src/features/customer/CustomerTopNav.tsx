@@ -5,7 +5,7 @@ import {
     ClockArrowUp,
     User
 } from 'lucide-react';
-import keycloak from '../../../../lib/keycloak';
+import keycloak from '../../lib/keycloak.ts';
 import styles from './CustomerTopNav.module.css';
 
 interface CustomerTopNavProps {
