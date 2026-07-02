@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     CreditCard, QrCode, Store, MapPin, Edit2, Trash2,
     Plus, X, Check, ChevronRight, ShoppingBag, ArrowLeft,
-    Wallet, AlertTriangle,
+    Wallet, AlertTriangle, type LucideProps,
 } from 'lucide-react';
 import { apiClient } from "../../lib/api-client.ts";
 import keycloak from "../../lib/keycloak.ts";
@@ -64,7 +64,16 @@ const DELIVERY_FEE = 50;
 
 // ── Payment methods static UI config mapping ─────────────────────────────────
 
-const PAYMENT_UI_CONFIG: Record<string, { label: string; sub: string; icon: any; accent: string; light: string }> = {
+const PAYMENT_UI_CONFIG: Record<
+    string,
+    {
+        label: string;
+        sub: string;
+        icon: React.ComponentType<LucideProps>;
+        accent: string;
+        light: string;
+    }
+> = {
     'ONLINE_BANKING': { label: 'Online Banking', sub: 'Pay via your bank app', icon: CreditCard, accent: 'text-[#2D7FF9]', light: 'bg-blue-50' },
     'QR_PROMPTPAY': { label: 'QR PromptPay', sub: 'Scan with any banking app', icon: QrCode, accent: 'text-purple-600', light: 'bg-purple-50' },
     'TRUEMONEY': { label: 'TrueMoney Wallet', sub: 'Pay with e-wallet balance', icon: Wallet, accent: 'text-orange-500', light: 'bg-orange-50' },
