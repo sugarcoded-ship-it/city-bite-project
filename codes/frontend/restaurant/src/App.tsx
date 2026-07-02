@@ -21,21 +21,21 @@ import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
 import Done from "./features/customer/Done.tsx";
 
 function App() {
-  return (
-    <Routes>
-      {/* Root — renders the correct dashboard based on the user's role */}
-      <Route path="/" element={<HomeDispatcher />} />
+    return (
+        <Routes>
+            {/* Root — renders the correct dashboard based on the user's role */}
+            <Route path="/" element={<HomeDispatcher />} />
 
-      <Route element={<ProtectedRoute allowedRoles={['OWNER']} />}>
-        <Route path="/owner/dashboard"    element={<OwnerDashboard />} />
-        <Route path="/owner/menu"         element={<MenuConfiguration />} />
-        <Route path="/owner/staff"        element={<StaffList />} />
-        <Route path="/owner/staff/:id"    element={<StaffDetail />} />
-        <Route path="/owner/dayoff"       element={<Placeholder pageName="Day-Off Requests" />} />
-        <Route path="/owner/store-status" element={<Placeholder pageName="Store Status" />} />
-        <Route path="/owner/analytics"    element={<Placeholder pageName="Analytics" />} />
-        <Route path="/owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
-      </Route>
+            <Route element={<ProtectedRoute allowedRoles={['OWNER']} />}>
+                <Route path="/owner/dashboard"    element={<OwnerDashboard />} />
+                <Route path="/owner/menu"         element={<MenuConfiguration />} />
+                <Route path="/owner/staff"        element={<StaffList />} />
+                <Route path="/owner/staff/:id"    element={<StaffDetail />} />
+                <Route path="/owner/dayoff"       element={<Placeholder pageName="Day-Off Requests" />} />
+                <Route path="/owner/store-status" element={<Placeholder pageName="Store Status" />} />
+                <Route path="/owner/analytics"    element={<Placeholder pageName="Analytics" />} />
+                <Route path="/owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
+            </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['STAFF', 'OWNER']} />}>
         <Route path="/staff/dashboard"    element={<StaffDashboard />} />
@@ -44,18 +44,18 @@ function App() {
         <Route path="/staff/stock"    element={<StaffStock />} />
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>
-        <Route path="/history"        element={<OrderHistory />} />
-        <Route path="/order-summary" element={<OrderSummary />} />
-        <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
-        <Route path="/payment-process" element={<PaymentProcessPage />} />
-        <Route path="/done" element={<Done />} />
-        <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
-      </Route>
+            <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>
+                <Route path="/history"        element={<OrderHistory />} />
+                <Route path="/order-summary" element={<OrderSummary />} />
+                <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
+                <Route path="/payment-process" element={<PaymentProcessPage />} />
+                <Route path="/done" element={<Done />} />
+                <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
+            </Route>
 
-      {/* Wildcard fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+            {/* Wildcard fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
 }
 export default App

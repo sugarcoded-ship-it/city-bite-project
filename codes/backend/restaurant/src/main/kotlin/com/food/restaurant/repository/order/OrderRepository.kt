@@ -34,7 +34,14 @@ interface OrderRepository : JpaRepository<Order, Int> {
     )
     fun countCompletedOrdersToday(): Long
 
-    fun findByCustomerIdOrderByCreatedAtDesc(customerId: UUID): List<Order>
-
     fun findByCustomerIdOrderByCreatedAtDesc(customerId: UUID, pageable: Pageable): Page<Order>
+
+    @Query("""
+        SELECT o FROM Order o 
+        JOIN FETCH o.orderStatus os 
+        JOIN FETCH o.customer 
+        WHERE os.statusName IN :statuses 
+        ORDER BY o.createdAt ASC
+    """)
+    fun findByOrderStatusIn(statuses: List<com.food.restaurant.entity.order.orderStatusEnum>): List<Order>
 }

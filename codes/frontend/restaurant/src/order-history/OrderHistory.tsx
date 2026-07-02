@@ -23,6 +23,7 @@ interface OrderHistoryEntry {
     totalAmount: number;
     createdAt: string;
     status: string;
+    canceledBy: string | null;
     deliveryAddress: string;
     items: OrderDetailItem[];
 }
@@ -41,10 +42,9 @@ interface PageResponse {
 function getStatusClass(status: string): string {
     const normalized = status.toLowerCase().replace(/\s+/g, '');
     if (normalized === 'pending') return styles.statusPending;
-    if (normalized === 'received') return styles.statusReceived;
-    if (normalized === 'processing') return styles.statusProcessing;
-    if (normalized === 'ondelivery') return styles.statusOnDelivery;
-    if (normalized === 'shipped') return styles.statusShipped;
+    if (normalized === 'inprogress') return styles.statusInProgress;
+    if (normalized === 'delivered') return styles.statusDelivered;
+    if (normalized === 'canceled') return styles.statusCanceled;
     return styles.statusDefault;
 }
 
@@ -274,15 +274,7 @@ export default function OrderHistory() {
 
                         {/* Footer: Action Buttons */}
                         <div className={styles.cardFooter}>
-                            {order.status.toLowerCase() !== 'shipped' ? (
-                                <button
-                                    className={styles.trackBtn}
-                                    onClick={() => navigate(`/customer/tracking/${order.orderId}`)}
-                                >
-                                    <MapPin size={15} />
-                                    Track Order
-                                </button>
-                            ) : (
+                            {order.status.toLowerCase() === 'delivered' && (
                                 <button
                                     className={styles.reorderBtn}
                                     onClick={() => handleReorder(order.orderId)}
@@ -298,6 +290,11 @@ export default function OrderHistory() {
                                     />
                                     {reorderingId === order.orderId ? 'Reordering…' : 'Reorder'}
                                 </button>
+                            )}
+                            {order.status.toLowerCase() === 'canceled' && order.canceledBy && (
+                                <span className={styles.canceledByText}>
+                                    Canceled by: {order.canceledBy}
+                                </span>
                             )}
                         </div>
                     </div>

@@ -4,11 +4,9 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 enum class orderStatusEnum(val displayName: String) {
     PENDING("Pending"),
-    RECEIVED("Received"),
-    PROCESSING("Processing"),
-    ON_DELIVERY("On Delivery"),
-    SHIPPED("Shipped"),
-    CANCELED("Canceled");
+    CANCELED("Canceled"),
+    IN_PROGRESS("In Progress"),
+    DELIVERED("Delivered");
 
     // This makes Json sends the displayName in API instead of the actual enum. It looks more beautiful
     @JsonValue
