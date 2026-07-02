@@ -1,7 +1,7 @@
 package com.food.restaurant.service.order
 
 import com.food.restaurant.entity.order.orderStatusEnum
-import com.food.restaurant.repository.OrderRepository
+import com.food.restaurant.repository.order.OrderRepository
 import com.food.restaurant.repository.order.OrderStatusRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service

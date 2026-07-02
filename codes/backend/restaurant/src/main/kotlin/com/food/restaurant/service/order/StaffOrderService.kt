@@ -3,11 +3,11 @@ package com.food.restaurant.service.order
 import com.food.restaurant.dto.order.StaffOrderItemResponse
 import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.entity.order.orderStatusEnum
-import com.food.restaurant.repository.MenuRecipeRepository
+import com.food.restaurant.repository.menu.MenuRecipeRepository
 import com.food.restaurant.repository.OptionIngredientRepository
-import com.food.restaurant.repository.OrderRepository
-import com.food.restaurant.repository.StockRepository
-import com.food.restaurant.repository.UserRepository
+import com.food.restaurant.repository.order.OrderRepository
+import com.food.restaurant.repository.stock.StockRepository
+import com.food.restaurant.repository.user.UserRepository
 import com.food.restaurant.repository.order.OrderDetailRepository
 import com.food.restaurant.repository.order.OrderItemSelectionRepository
 import com.food.restaurant.repository.order.OrderStatusRepository
