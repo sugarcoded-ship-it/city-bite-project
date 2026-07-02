@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/api-client.ts';
-import { CustomerTopNav } from '../features/dashboard/components/CustomerDashboard/CustomerTopNav';
+import { CustomerTopNav } from '../features/customer/CustomerTopNav';
 import {
     ClockArrowUp, RotateCcw, ChevronLeft, ChevronRight,
     MapPin, Calendar, AlertCircle, UtensilsCrossed
