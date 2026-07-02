@@ -30,14 +30,14 @@ export const StaffList = () => {
         e.preventDefault();
         setCreateLoading(true);
         setCreateError(null);
-        apiClient(`/owner/staff`, {
+        apiClient<Staffs>(`/owner/staff`, {
             method: 'POST',
             data: {
                 ...createForm,
                 salary: parseInt(createForm.salary) || 0,
                 dayOffAmount: parseInt(createForm.dayOffAmount) || 100
             }
-        }).then((res: Staffs) => {
+        }).then((res) => {
             const newStaff = res;
             const updatedData = data ? [...data, newStaff] : [newStaff];
             setData(updatedData);
