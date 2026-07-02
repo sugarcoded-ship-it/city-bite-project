@@ -56,6 +56,7 @@ export const StaffDashboard = () => {
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchOrders();
         const interval = setInterval(fetchOrders, 15000); // Poll every 15s
         return () => clearInterval(interval);
@@ -67,9 +68,10 @@ export const StaffDashboard = () => {
             await apiClient(`/staff/orders/${orderId}/claim`, { method: 'POST' });
             showToast('Order successfully claimed!');
             await fetchOrders();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to claim order:', error);
-            const msg = error.response?.data?.message || 'Failed to claim order. It might have been claimed by another staff.';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const msg = (error as any).response?.data?.message || 'Failed to claim order. It might have been claimed by another staff.';
             showToast(msg, true);
             await fetchOrders(); // Refresh to see if it was claimed
         } finally {
@@ -83,9 +85,10 @@ export const StaffDashboard = () => {
             await apiClient(`/staff/orders/${orderId}/complete`, { method: 'POST' });
             showToast('Order completed!');
             await fetchOrders();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to complete order:', error);
-            const msg = error.response?.data?.message || 'Failed to complete order.';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const msg = (error as any).response?.data?.message || 'Failed to complete order.';
             showToast(msg, true);
         } finally {
             setActionLoadingId(null);
@@ -98,9 +101,10 @@ export const StaffDashboard = () => {
             await apiClient(`/staff/orders/${orderId}/cancel`, { method: 'POST' });
             showToast('Order canceled.');
             await fetchOrders();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to cancel order:', error);
-            const msg = error.response?.data?.message || 'Failed to cancel order.';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const msg = (error as any).response?.data?.message || 'Failed to cancel order.';
             showToast(msg, true);
         } finally {
             setActionLoadingId(null);
