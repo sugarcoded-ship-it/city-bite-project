@@ -1,6 +1,6 @@
 package com.food.restaurant.entity.stock
 
-import com.food.restaurant.entity.MeasurementUnits
+import com.food.restaurant.entity.stock.MeasurementUnits
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType

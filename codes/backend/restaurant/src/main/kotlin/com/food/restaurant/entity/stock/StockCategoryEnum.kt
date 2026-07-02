@@ -2,7 +2,7 @@ package com.food.restaurant.entity.stock
 
 import com.fasterxml.jackson.annotation.JsonValue
 
-enum class stockCategoryEnum(val displayName: String) {
+enum class StockCategoryEnum(val displayName: String) {
     MEAT_POULTRY("Meat & Poultry"),
     VEGETABLES("Vegetables"),
     FRUITS("Fruits"),
@@ -16,7 +16,7 @@ enum class stockCategoryEnum(val displayName: String) {
     fun toValue(): String = displayName
 
     companion object {
-        fun fromDisplayName(name: String): stockCategoryEnum? {
+        fun fromDisplayName(name: String): StockCategoryEnum? {
             return entries.find { it.displayName.equals(name, ignoreCase = true) }
         }
     }

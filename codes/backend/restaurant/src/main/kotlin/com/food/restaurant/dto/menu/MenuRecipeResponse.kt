@@ -1,6 +1,6 @@
 package com.food.restaurant.dto.menu
 
-import com.food.restaurant.entity.MeasurementUnits
+import com.food.restaurant.entity.stock.MeasurementUnits
 import com.food.restaurant.entity.menu.MenuRecipe
 import java.math.BigDecimal
 

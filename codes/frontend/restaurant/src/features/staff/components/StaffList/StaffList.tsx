@@ -29,7 +29,7 @@ export const StaffList = () => {
             })
             .catch((err) => {
                 console.error("staff loading failed:", err);
-                setError("Failed to load staff list.");
+                setError("      Failed to load staff list.");
                 setLoading(false);
             });
     }, []);
