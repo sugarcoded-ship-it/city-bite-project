@@ -369,3 +369,216 @@
         gap: 6px;
     }
 }
+
+/* ─── Modal ─── */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(11, 31, 77, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modalContainer {
+    background-color: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 40px rgba(11, 31, 77, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modalHeader {
+    padding: 24px 28px;
+    background-color: #0B1F4D;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+}
+
+.closeBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.modalBody {
+    padding: 28px;
+    overflow-y: auto;
+    max-height: 65vh;
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.formLabel {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0B1F4D;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.formInput {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    background-color: #f8fafc;
+    color: #0B1F4D;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.formInput:focus {
+    outline: none;
+    border-color: #2D7FF9;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(45, 127, 249, 0.15);
+}
+
+.modalFooter {
+    padding: 20px 28px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    background-color: #f8fafc;
+}
+
+.cancelBtn {
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+    background-color: #f1f5f9;
+    color: #0B1F4D;
+}
+
+.submitBtn {
+    padding: 10px 28px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #2D7FF9, #1e40af);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(45, 127, 249, 0.3);
+}
+
+.submitBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(45, 127, 249, 0.4);
+}
+
+.submitBtn:disabled {
+    background: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.errorAlert {
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ─── Header Action Buttons ─── */
+.headerActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.createBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+}
+
+.createBtn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
