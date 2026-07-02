@@ -13,7 +13,7 @@ import { OwnerDashboard } from './features/dashboard/components/OwnerDashboard/O
 import { StaffDashboard } from './features/dashboard/components/StaffDashboard/StaffDashboard.tsx';
 
 // Customer pages
-import OrderHistory from './features/customer/OrderHistory.tsx';
+import OrderHistory from './order-history/OrderHistory.tsx';
 import './App.css'
 import OrderSummary from "./features/customer/OrderSummary.tsx";
 import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
