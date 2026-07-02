@@ -39,7 +39,8 @@ interface PageResponse {
 }
 
 function getStatusClass(status: string): string {
-    switch (status) {
+    const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
+    switch (enumStatus) {
         case 'PENDING': return styles.statusPending;
         case 'IN_PROGRESS': return styles.statusInProgress;
         case 'DELIVERED': return styles.statusDelivered;
@@ -49,7 +50,8 @@ function getStatusClass(status: string): string {
 }
 
 function formatStatus(status: string): string {
-    switch (status) {
+    const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
+    switch (enumStatus) {
         case 'PENDING': return 'Pending';
         case 'IN_PROGRESS': return 'In Progress';
         case 'DELIVERED': return 'Delivered';
@@ -284,7 +286,7 @@ export default function OrderHistory() {
 
                         {/* Footer: Action Buttons */}
                         <div className={styles.cardFooter}>
-                            {order.status === 'DELIVERED' && (
+                            {(order.status || '').toUpperCase() === 'DELIVERED' && (
                                 <button
                                     className={styles.reorderBtn}
                                     onClick={() => handleReorder(order.orderId)}
@@ -301,7 +303,7 @@ export default function OrderHistory() {
                                     {reorderingId === order.orderId ? 'Reordering…' : 'Reorder'}
                                 </button>
                             )}
-                            {order.status === 'CANCELED' && order.canceledBy && (
+                            {(order.status || '').toUpperCase() === 'CANCELED' && order.canceledBy && (
                                 <span className={styles.canceledByText}>
                                     Canceled by: {order.canceledBy}
                                 </span>

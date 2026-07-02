@@ -107,8 +107,8 @@ export const StaffDashboard = () => {
         }
     };
 
-    const pendingOrders = orders.filter(o => o.status === 'PENDING');
-    const inProgressOrders = orders.filter(o => o.status === 'IN_PROGRESS');
+    const pendingOrders = orders.filter(o => (o.status || '').toUpperCase().replace(/\s+/g, '_') === 'PENDING');
+    const inProgressOrders = orders.filter(o => (o.status || '').toUpperCase().replace(/\s+/g, '_') === 'IN_PROGRESS');
 
     const renderOrderCard = (order: StaffOrderResponse, isPending: boolean) => {
         const minutes = getMinutesElapsed(order.createdAt);
