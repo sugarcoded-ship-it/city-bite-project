@@ -4,9 +4,9 @@ import com.food.restaurant.dto.menu.MenuItemResponse
 import com.food.restaurant.dto.menu.OptionGroupResponse
 import com.food.restaurant.dto.menu.OptionChoiceResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
-import com.food.restaurant.repository.MenuRepository
-import com.food.restaurant.repository.OptionGroupRepository
-import com.food.restaurant.repository.OptionChoiceRepository // Inject this new repo
+import com.food.restaurant.repository.menu.MenuRepository
+import com.food.restaurant.repository.menu.OptionGroupRepository
+import com.food.restaurant.repository.menu.OptionChoiceRepository // Inject this new repo
 import org.springframework.stereotype.Service
 
 @Service

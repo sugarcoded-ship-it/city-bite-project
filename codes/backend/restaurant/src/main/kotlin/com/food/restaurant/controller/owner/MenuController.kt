@@ -11,11 +11,11 @@ import com.food.restaurant.entity.menu.MenuRecipe
 import com.food.restaurant.entity.menu.MenuStatus
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.entity.menu.menuStatusEnum
-import com.food.restaurant.repository.MenuCategoryRepository
-import com.food.restaurant.repository.MenuRecipeRepository
-import com.food.restaurant.repository.MenuRepository
-import com.food.restaurant.repository.MenuStatusRepository
-import com.food.restaurant.repository.StockRepository
+import com.food.restaurant.repository.menu.MenuCategoryRepository
+import com.food.restaurant.repository.menu.MenuRecipeRepository
+import com.food.restaurant.repository.menu.MenuRepository
+import com.food.restaurant.repository.menu.MenuStatusRepository
+import com.food.restaurant.repository.stock.StockRepository
 import com.food.restaurant.service.MenuAvailabilityService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

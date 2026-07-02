@@ -1,7 +1,7 @@
 package com.food.restaurant.controller.owner
 
 import com.food.restaurant.dto.stock.StockResponse
-import com.food.restaurant.repository.StockRepository
+import com.food.restaurant.repository.stock.StockRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping

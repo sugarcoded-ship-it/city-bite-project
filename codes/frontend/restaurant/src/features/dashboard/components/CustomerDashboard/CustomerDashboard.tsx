@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../../../lib/api-client';
-import { CustomerTopNav } from './CustomerTopNav';
+import { CustomerTopNav } from '../../../customer/CustomerTopNav.tsx';
 import {
     Search, Plus, Minus, X, ChevronLeft, ChevronRight,
     ShoppingBag, Trash2, ChevronDown, Flame
@@ -87,6 +87,8 @@ export function CustomerDashboard() {
     }, []);
 
     useEffect(() => {
+        apiClient('/customer/').catch((err) => console.error('Failed to sync user profile:', err));
+
         apiClient<MenuItem[]>('/customer/menu')
             .then((data: MenuItem[] | { data: MenuItem[] }) => {
                 if (Array.isArray(data)) setItems(data);
@@ -557,7 +559,7 @@ export function CustomerDashboard() {
                                             </p>
                                         )}
                                         <button
-                                            onClick={() => navigate('/customer/payment-method')}
+                                            onClick={() => navigate('/order-summary')}
                                             disabled={hasUnavailableCartItem}
                                             className={`w-full font-bold py-3 rounded-xl text-sm transition-colors shadow-md ${hasUnavailableCartItem ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#2D7FF9] hover:bg-[#1a6de0] text-white'}`}
                                         >

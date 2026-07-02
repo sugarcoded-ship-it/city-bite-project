@@ -9,6 +9,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.ColumnDefault
 
 @Entity
 @Table(name = "Address")
@@ -35,5 +36,9 @@ class Address(
     var province: String,
 
     @Column(name = "postalCode", nullable = false)
-    var postalCode: String
+    var postalCode: String,
+
+    @ColumnDefault("true")
+    @Column(name = "active", nullable = false)
+    var active: Boolean = true
 )

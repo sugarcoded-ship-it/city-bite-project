@@ -6,8 +6,8 @@ import com.food.restaurant.dto.stock.StockCategoryResponse
 import com.food.restaurant.dto.stock.StockResponse
 import com.food.restaurant.entity.stock.MeasurementUnits
 import com.food.restaurant.entity.stock.Stock
-import com.food.restaurant.repository.StockCategoryRepository
-import com.food.restaurant.repository.StockRepository
+import com.food.restaurant.repository.stock.StockCategoryRepository
+import com.food.restaurant.repository.stock.StockRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal

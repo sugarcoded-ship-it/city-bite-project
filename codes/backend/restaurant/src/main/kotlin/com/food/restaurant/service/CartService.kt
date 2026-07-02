@@ -5,9 +5,9 @@ import com.food.restaurant.entity.cart.CartItem
 import com.food.restaurant.entity.cart.CartItemSelection
 import com.food.restaurant.entity.user.User
 import com.food.restaurant.repository.cart.CartItemRepository
-import com.food.restaurant.repository.MenuRepository
-import com.food.restaurant.repository.OptionChoiceRepository
-import com.food.restaurant.repository.UserRepository
+import com.food.restaurant.repository.menu.MenuRepository
+import com.food.restaurant.repository.menu.OptionChoiceRepository
+import com.food.restaurant.repository.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -132,5 +132,10 @@ class CartService(
         if (itemIndex in userCart.indices) {
             cartItemRepository.delete(userCart[itemIndex])
         }
+    }
+
+    @Transactional
+    fun clearCartForUser(userId: UUID) {
+        cartItemRepository.deleteByCustomerUuid(userId)
     }
 }

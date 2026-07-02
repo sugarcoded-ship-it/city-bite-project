@@ -3,9 +3,9 @@ package com.food.restaurant.service
 import com.food.restaurant.entity.menu.MenuItem
 import com.food.restaurant.entity.menu.MenuStatus
 import com.food.restaurant.entity.menu.menuStatusEnum
-import com.food.restaurant.repository.MenuRecipeRepository
-import com.food.restaurant.repository.MenuRepository
-import com.food.restaurant.repository.MenuStatusRepository
+import com.food.restaurant.repository.menu.MenuRecipeRepository
+import com.food.restaurant.repository.menu.MenuRepository
+import com.food.restaurant.repository.menu.MenuStatusRepository
 import org.springframework.stereotype.Service
 
 @Service

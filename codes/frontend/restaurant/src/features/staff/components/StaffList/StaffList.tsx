@@ -60,7 +60,7 @@ export const StaffList = () => {
 
     // Detail view handler
     const handleViewDetail = (id: string) => {
-        navigate(`/staff/${id}`);
+        navigate(`/owner/staff/${id}`);
     };
 
     // Save changes handler

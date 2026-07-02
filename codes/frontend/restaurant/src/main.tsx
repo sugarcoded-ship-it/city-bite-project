@@ -25,9 +25,6 @@ keycloak.init({
     pkceMethod: 'S256' // Prevent Interception attack when the provider (Google, facebook, etc.) sent an authorization code back to the app via a redirect url
 }).then((authenticated) => {
     if (authenticated) {
-        // Store token for your backend API calls
-        localStorage.setItem('access_token', keycloak.token ?? '');
-
         ReactDOM.createRoot(document.getElementById('root')!).render(
             <React.StrictMode>
                 <BrowserRouter>
