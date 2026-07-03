@@ -23,6 +23,7 @@ interface OrderHistoryEntry {
     totalAmount: number;
     createdAt: string;
     status: string;
+    canceledBy: string | null;
     deliveryAddress: string;
     items: OrderDetailItem[];
 }
@@ -37,15 +38,26 @@ interface PageResponse {
     last: boolean;
 }
 
-// Maps status display name → CSS class suffix
 function getStatusClass(status: string): string {
-    const normalized = status.toLowerCase().replace(/\s+/g, '');
-    if (normalized === 'pending') return styles.statusPending;
-    if (normalized === 'received') return styles.statusReceived;
-    if (normalized === 'processing') return styles.statusProcessing;
-    if (normalized === 'ondelivery') return styles.statusOnDelivery;
-    if (normalized === 'shipped') return styles.statusShipped;
-    return styles.statusDefault;
+    const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
+    switch (enumStatus) {
+        case 'PENDING': return styles.statusPending;
+        case 'IN_PROGRESS': return styles.statusInProgress;
+        case 'DELIVERED': return styles.statusDelivered;
+        case 'CANCELED': return styles.statusCanceled;
+        default: return styles.statusDefault;
+    }
+}
+
+function formatStatus(status: string): string {
+    const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
+    switch (enumStatus) {
+        case 'PENDING': return 'Pending';
+        case 'IN_PROGRESS': return 'In Progress';
+        case 'DELIVERED': return 'Delivered';
+        case 'CANCELED': return 'Canceled';
+        default: return status;
+    }
 }
 
 function formatDisplayDate(dateString: string): string {
@@ -225,7 +237,7 @@ export default function OrderHistory() {
                                 #ORD-{String(order.orderId).padStart(5, '0')}
                             </span>
                             <span className={`${styles.statusBadge} ${getStatusClass(order.status || '')}`}>
-                                {order.status}
+                                {formatStatus(order.status || '')}
                             </span>
                         </div>
 
@@ -274,15 +286,7 @@ export default function OrderHistory() {
 
                         {/* Footer: Action Buttons */}
                         <div className={styles.cardFooter}>
-                            {order.status.toLowerCase() !== 'shipped' ? (
-                                <button
-                                    className={styles.trackBtn}
-                                    onClick={() => navigate(`/customer/tracking/${order.orderId}`)}
-                                >
-                                    <MapPin size={15} />
-                                    Track Order
-                                </button>
-                            ) : (
+                            {(order.status || '').toUpperCase() === 'DELIVERED' && (
                                 <button
                                     className={styles.reorderBtn}
                                     onClick={() => handleReorder(order.orderId)}
@@ -298,6 +302,11 @@ export default function OrderHistory() {
                                     />
                                     {reorderingId === order.orderId ? 'Reordering…' : 'Reorder'}
                                 </button>
+                            )}
+                            {(order.status || '').toUpperCase() === 'CANCELED' && order.canceledBy && (
+                                <span className={styles.canceledByText}>
+                                    Canceled by: {order.canceledBy}
+                                </span>
                             )}
                         </div>
                     </div>

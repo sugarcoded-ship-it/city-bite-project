@@ -26,7 +26,7 @@ class WebSecurityConfig {
                 auth
                     .requestMatchers("/api/users/me").authenticated()
                     .requestMatchers("/api/owner/**").hasRole("OWNER")
-                    .requestMatchers("/api/staff/**").hasRole("STAFF")
+                    .requestMatchers("/api/staff/**").hasAnyRole("STAFF", "OWNER")
                     .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                     .anyRequest().authenticated()
             }

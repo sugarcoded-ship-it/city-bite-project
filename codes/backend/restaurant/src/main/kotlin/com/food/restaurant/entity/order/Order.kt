@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import jakarta.persistence.Version
 
 @Entity
 @Table(name = "Orders")
@@ -42,5 +43,12 @@ class Order(
     var totalPrice: BigDecimal,
 
     @Column(name = "Created_at", nullable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now()
+    var createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @Version
+    @Column(name = "version")
+    var version: Long = 0,
+
+    @Column(name = "canceled_by", nullable = true)
+    var canceledBy: String? = null
 )
