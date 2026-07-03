@@ -2,6 +2,8 @@ package com.food.restaurant.controller.staff
 
 import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.service.order.StaffOrderService
+import com.food.restaurant.service.StaffService
+import java.util.UUID
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -16,12 +18,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController("staffOrderController")
 @RequestMapping("/api/staff/orders")
 class OrderController(
-    private val staffOrderService: StaffOrderService
+    private val staffOrderService: StaffOrderService,
+    private val staffService: StaffService
 ) {
 
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
-    fun getActiveOrders(): ResponseEntity<List<StaffOrderResponse>> {
+    fun getActiveOrders(
+        @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<List<StaffOrderResponse>> {
+        if (staffService.isInactive(UUID.fromString(jwt.subject))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+        }
         val orders = staffOrderService.getActiveOrders()
         return ResponseEntity.ok(orders)
     }

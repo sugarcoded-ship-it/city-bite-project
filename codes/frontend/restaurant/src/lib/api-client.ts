@@ -25,13 +25,17 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Catches 401 errors coming back from Spring Boot
+// Catches 401 and 403 errors coming back from Spring Boot
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
             console.error("Session expired or invalid token. Redirecting to Keycloak...");
             keycloak.login(); // Redirect back to the login screen
+        } else if (error.response?.status === 403) {
+            console.error("Access forbidden. You do not have permission.");
+            alert("Your account has been deactivated or you do not have permission.");
+            keycloak.logout(); 
         }
         return Promise.reject(error);
     }
