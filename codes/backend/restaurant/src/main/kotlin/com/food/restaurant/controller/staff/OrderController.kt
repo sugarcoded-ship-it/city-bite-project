@@ -2,6 +2,7 @@ package com.food.restaurant.controller.staff
 
 import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.service.order.StaffOrderService
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -33,7 +34,7 @@ class OrderController(
     ): ResponseEntity<Map<String, String>> {
         val staffUuid = jwt.subject
         staffOrderService.claimOrder(orderId, staffUuid)
-        return ResponseEntity.ok(mapOf("message" to "Order successfully claimed"))
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Order successfully claimed"))
     }
 
     @PostMapping("/{orderId}/complete")
@@ -44,7 +45,7 @@ class OrderController(
     ): ResponseEntity<Map<String, String>> {
         val staffUuid = jwt.subject
         staffOrderService.completeOrder(orderId, staffUuid)
-        return ResponseEntity.ok(mapOf("message" to "Order completed"))
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Order completed"))
     }
 
     @PostMapping("/{orderId}/cancel")
@@ -55,6 +56,6 @@ class OrderController(
     ): ResponseEntity<Map<String, String>> {
         val staffUuid = jwt.subject
         staffOrderService.cancelOrder(orderId, staffUuid)
-        return ResponseEntity.ok(mapOf("message" to "Order canceled"))
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Order canceled"))
     }
 }
