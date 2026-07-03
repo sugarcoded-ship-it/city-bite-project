@@ -40,14 +40,6 @@
 </head>
 
 <body>
-    <!-- Back Button -->
-    <a href="#" class="cb-back-btn" id="cb-back-button">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        <span>Back</span>
-    </a>
-
     <div class="cb-login-wrapper">
         <!-- Left Brand Panel (desktop) -->
         <div class="cb-brand-panel">

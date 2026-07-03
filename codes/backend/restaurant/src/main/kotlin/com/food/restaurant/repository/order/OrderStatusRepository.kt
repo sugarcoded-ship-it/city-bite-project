@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface OrderStatusRepository: JpaRepository<OrderStatus, Int> {
-    fun findByStatusName(name: orderStatusEnum): OrderStatus
+interface OrderStatusRepository : JpaRepository<OrderStatus, Int> {
+    fun findByStatusName(statusName: orderStatusEnum): OrderStatus?
 }

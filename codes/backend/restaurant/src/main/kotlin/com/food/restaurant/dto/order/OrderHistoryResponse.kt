@@ -5,6 +5,7 @@ data class OrderHistoryResponse(
     val totalAmount: Double,
     val createdAt: String,
     val status: String,
+    val canceledBy: String?,
     val deliveryAddress: String,
     val items: List<OrderDetailItemResponse>
 )

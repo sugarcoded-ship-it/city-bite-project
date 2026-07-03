@@ -11,7 +11,7 @@ export const LogoutButton: React.FC = () => {
 
     return (
       <button onClick={handleLogout} className={styles.logoutButton}>
-          Logout &amp; Reset Session
+          Logout
       </button>
   );
 };
