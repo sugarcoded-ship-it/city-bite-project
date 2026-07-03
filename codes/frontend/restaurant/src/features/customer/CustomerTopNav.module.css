@@ -224,3 +224,32 @@
         display: none;
     }
 }
+
+/* Credit / Points Badge */
+.creditBadge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-size: 0.875rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+
+.creditBadge:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.creditValue {
+    white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+    .creditValue {
+        display: none;
+    }
+}
