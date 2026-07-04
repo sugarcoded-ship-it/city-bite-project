@@ -41,8 +41,14 @@ export default function CustomerProfile() {
         fetchProfile();
     }, [fetchProfile]);
 
+    const isPhoneValid = draftPhone.length === 0 || draftPhone.length === 10;
+
     const handleSave = async () => {
         if (!profile) return;
+        if (!isPhoneValid) {
+            setError('Phone number must be exactly 10 digits.');
+            return;
+        }
         setSaving(true);
         try {
             const updated = await apiClient<CustomerProfileResponse>('/customer/profile', {
@@ -149,7 +155,7 @@ export default function CustomerProfile() {
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    disabled={saving}
+                                    disabled={saving || !isPhoneValid}
                                     className="flex items-center gap-1 bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
                                 >
                                     <Save size={12} /> {saving ? 'Saving...' : 'Save'}
@@ -180,12 +186,29 @@ export default function CustomerProfile() {
                                 {isEditing ? (
                                     <input
                                         type="tel"
+                                        inputMode="numeric"
                                         value={draftPhone}
-                                        onChange={(e) => setDraftPhone(e.target.value)}
-                                        placeholder="e.g. 081-234-5678"
-                                        className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-sm text-[#0B1F4D] font-semibold focus:outline-none focus:border-[#2D7FF9] focus:ring-2 focus:ring-[#2D7FF9]/15 transition-all"
+                                        onChange={(e) => {
+                                            const cleanValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setDraftPhone(cleanValue);
+                                        }}
+                                        placeholder="e.g. 0812345678"
+                                        maxLength={10}
+                                        pattern="^[0-9]{10}$"
+                                        title="Please enter a valid phone number containing exactly 10 digits."
+                                        className={`w-full border rounded-xl px-3 py-1.5 text-sm text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 transition-all ${
+                                            isPhoneValid
+                                                ? 'border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15'
+                                                : 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
+                                        }`}
                                     />
-                                ) : (
+                                ) : null}
+                                {isEditing && !isPhoneValid && (
+                                    <p className="text-red-500 text-[11px] font-semibold mt-1">
+                                        Enter exactly 10 digits.
+                                    </p>
+                                )}
+                                {!isEditing && (
                                     <p className="text-[#0B1F4D] text-sm font-semibold truncate">{profile.phoneNumber || '—'}</p>
                                 )}
                             </div>
