@@ -12,6 +12,7 @@ import { OwnerDashboard } from './features/dashboard/components/OwnerDashboard/O
 // Staff pages
 import { StaffDashboard } from './features/dashboard/components/StaffDashboard/StaffDashboard.tsx';
 import { StaffStock } from './stock/StaffStock';
+import StaffProfile from './features/dashboard/components/StaffProfile/StaffProfile.tsx';
 
 // Customer pages
 import OrderHistory from './order-history/OrderHistory.tsx';
@@ -40,7 +41,7 @@ function App() {
 
       <Route element={<ProtectedRoute allowedRoles={['STAFF', 'OWNER']} />}>
         <Route path="/staff/dashboard"    element={<StaffDashboard />} />
-        <Route path="/staff/profile"      element={<Placeholder pageName="My Profile (Staff)" />} />
+        <Route path="/staff/profile"      element={<StaffProfile />} />
         <Route path="/staff/order"        element={<Placeholder pageName="Order" />} />
         <Route path="/staff/stock"    element={<StaffStock />} />
       </Route>

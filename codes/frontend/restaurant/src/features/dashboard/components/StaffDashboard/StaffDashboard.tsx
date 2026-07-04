@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import keycloak from '../../../../lib/keycloak';
-import { StaffTopNav } from '../StaffTopNav/StaffTopNav';
+import { StaffTopNav } from './StaffTopNav.tsx';
 import styles from './StaffDashboard.module.css';
 import { Clock, User, CheckCircle } from 'lucide-react';
 
@@ -209,9 +209,11 @@ export const StaffDashboard = () => {
     return (
         <div className={styles.page}>
             {/* Header Section (Full Width) */}
-            <StaffTopNav title="Staff Dashboard" />
+            <StaffTopNav />
 
             <div className={styles.container}>
+
+                <h1 className={styles.pageTitle}>Staff Dashboard</h1>
 
                 {/* Pending Section */}
                 <div className={styles.sectionHeader}>
