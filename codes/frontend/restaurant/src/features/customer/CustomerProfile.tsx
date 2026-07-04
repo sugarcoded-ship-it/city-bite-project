@@ -1,0 +1,217 @@
+import { useEffect, useState, useCallback } from 'react';
+import {
+    Edit2, Save, X, Check,
+    User, Mail, Phone, AtSign, AlertCircle,
+} from 'lucide-react';
+import { apiClient } from '../../lib/api-client.ts';
+import { CustomerTopNav } from './CustomerTopNav.tsx';
+
+interface CustomerProfileResponse {
+    firstName: string | null;
+    lastName: string | null;
+    username: string;
+    email: string;
+    phoneNumber: string | null;
+}
+
+export default function CustomerProfile() {
+    const [profile, setProfile] = useState<CustomerProfileResponse | null>(null);
+    const [draftPhone, setDraftPhone] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchProfile = useCallback(async () => {
+        try {
+            const profileData = await apiClient<CustomerProfileResponse>('/customer/profile');
+            setProfile(profileData);
+            setDraftPhone(profileData.phoneNumber || '');
+        } catch (err) {
+            console.error('Failed to load profile:', err);
+            setError('Unable to load your profile. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchProfile();
+    }, [fetchProfile]);
+
+    const handleSave = async () => {
+        if (!profile) return;
+        setSaving(true);
+        try {
+            const updated = await apiClient<CustomerProfileResponse>('/customer/profile', {
+                method: 'PATCH',
+                data: { phoneNumber: draftPhone.trim() || null },
+            });
+            setProfile(updated);
+            setDraftPhone(updated.phoneNumber || '');
+            setIsEditing(false);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2200);
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+            setError('Unable to save your changes. Please try again.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setDraftPhone(profile?.phoneNumber || '');
+        setIsEditing(false);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <CustomerTopNav />
+                <div className="max-w-xl mx-auto px-5 pt-24 pb-10 text-center text-gray-400">Loading profile...</div>
+            </div>
+        );
+    }
+
+    if (error && !profile) {
+        return (
+            <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <CustomerTopNav />
+                <div className="max-w-xl mx-auto px-5 pt-24 pb-10">
+                    <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm font-semibold px-4 py-3 rounded-2xl">
+                        <AlertCircle size={18} />
+                        <span>{error}</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!profile) return null;
+
+    const initials = (
+        (profile.firstName?.[0] || profile.username[0] || '?') +
+        (profile.lastName?.[0] || '')
+    ).toUpperCase();
+
+    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username;
+
+    const READONLY_FIELDS = [
+        { key: 'firstName', label: 'First Name', icon: User, value: profile.firstName || '—' },
+        { key: 'lastName', label: 'Last Name', icon: User, value: profile.lastName || '—' },
+        { key: 'username', label: 'Username', icon: AtSign, value: profile.username },
+        { key: 'email', label: 'Email', icon: Mail, value: profile.email },
+    ];
+
+    return (
+        <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <CustomerTopNav customerName={fullName} />
+
+            <div className="max-w-xl mx-auto px-5 pt-24 pb-10 space-y-4">
+
+                <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xl font-extrabold tracking-tight">{initials}</span>
+                    </div>
+                    <div>
+                        <h1 className="text-[#0B1F4D] text-xl font-extrabold leading-tight">{fullName}</h1>
+                        <p className="text-gray-400 text-sm">@{profile.username}</p>
+                    </div>
+                </div>
+
+                {error && (
+                    <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm font-semibold px-4 py-3 rounded-2xl">
+                        <AlertCircle size={16} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+                        <h2 className="text-[#0B1F4D] font-extrabold">Account Info</h2>
+                        {!isEditing ? (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="flex items-center gap-1.5 bg-[#f0f2f7] hover:bg-gray-200 text-[#0B1F4D] text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
+                            >
+                                <Edit2 size={12} /> Edit
+                            </button>
+                        ) : (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleCancel}
+                                    className="flex items-center gap-1 text-gray-400 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+                                >
+                                    <X size={12} /> Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="flex items-center gap-1 bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                    <Save size={12} /> {saving ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="divide-y divide-gray-50">
+                        {READONLY_FIELDS.map(({ key, label, icon: Icon, value }) => (
+                            <div key={key} className="flex items-center gap-4 px-5 py-4">
+                                <div className="w-8 h-8 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
+                                    <Icon size={14} className="text-gray-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-gray-400 text-[11px] font-semibold mb-0.5">{label}</p>
+                                    <p className="text-[#0B1F4D] text-sm font-semibold truncate">{value}</p>
+                                </div>
+                            </div>
+                        ))}
+
+                        <div className="flex items-center gap-4 px-5 py-4">
+                            <div className="w-8 h-8 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
+                                <Phone size={14} className="text-gray-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-gray-400 text-[11px] font-semibold mb-0.5">Phone</p>
+                                {isEditing ? (
+                                    <input
+                                        type="tel"
+                                        value={draftPhone}
+                                        onChange={(e) => setDraftPhone(e.target.value)}
+                                        placeholder="e.g. 081-234-5678"
+                                        className="w-full border border-gray-200 rounded-xl px-3 py-1.5 text-sm text-[#0B1F4D] font-semibold focus:outline-none focus:border-[#2D7FF9] focus:ring-2 focus:ring-[#2D7FF9]/15 transition-all"
+                                    />
+                                ) : (
+                                    <p className="text-[#0B1F4D] text-sm font-semibold truncate">{profile.phoneNumber || '—'}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {saved && (
+                <div
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap"
+                    style={{ animation: 'fadeUp 0.3s ease' }}
+                >
+                    <span className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Check size={10} strokeWidth={3} className="text-white" />
+                    </span>
+                    Profile saved
+                </div>
+            )}
+
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+                    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+                }
+            `}</style>
+        </div>
+    );
+}

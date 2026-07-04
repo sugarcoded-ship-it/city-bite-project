@@ -19,6 +19,7 @@ import './App.css'
 import OrderSummary from "./features/customer/OrderSummary.tsx";
 import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
 import Done from "./features/customer/Done.tsx";
+import CustomerProfile from "./features/customer/CustomerProfile.tsx";
 
 function App() {
     return (
@@ -50,7 +51,7 @@ function App() {
                 <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
                 <Route path="/payment-process" element={<PaymentProcessPage />} />
                 <Route path="/done" element={<Done />} />
-                <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
+                <Route path="/profile"        element={<CustomerProfile />} />
             </Route>
 
             {/* Wildcard fallback */}
