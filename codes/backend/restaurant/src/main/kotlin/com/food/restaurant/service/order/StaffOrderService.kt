@@ -72,7 +72,7 @@ class StaffOrderService(
                     quantity = detail.amount,
                     price = detail.price.toDouble(),
                     specialRequest = detail.specialRequest,
-                    selectedOptions = selections.map { it.optionChoice.choiceName }
+                    selectedOptions = selections.map { "${it.optionChoice.optionGroup.groupName}: ${it.optionChoice.choiceName}" }
                 )
             }
 
@@ -151,12 +151,24 @@ class StaffOrderService(
         val order = orderRepository.findById(orderId)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found") }
 
-        if (order.orderStatus.statusName != orderStatusEnum.PENDING) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending orders can be canceled")
+        val currentStatus = order.orderStatus.statusName
+        if (currentStatus != orderStatusEnum.PENDING && currentStatus != orderStatusEnum.IN_PROGRESS) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending or in-progress orders can be canceled")
         }
 
-        val staff = userRepository.findById(UUID.fromString(staffUuid))
+        val staffUuidObj = UUID.fromString(staffUuid)
+        val staff = userRepository.findById(staffUuidObj)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Staff not found") }
+
+        // Only the assigned staff can cancel an in-progress order
+        if (currentStatus == orderStatusEnum.IN_PROGRESS && order.staff?.id != staffUuidObj) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Only the assigned staff can cancel this order")
+        }
+
+        // Restore stock if it was already deducted (IN_PROGRESS)
+        if (currentStatus == orderStatusEnum.IN_PROGRESS) {
+            restoreStock(orderId)
+        }
 
         val canceledStatus = orderStatusRepository.findByStatusName(orderStatusEnum.CANCELED)
             ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "CANCELED status not found in DB")
@@ -219,6 +231,53 @@ class StaffOrderService(
                 throw Exception("Not enough ${stock.name} (Requires $requiredAmount ${stock.measureUnit}, has ${stock.amount})")
             }
             stock.amount = stock.amount.subtract(requiredAmount)
+        }
+
+        stockRepository.saveAll(stocks)
+    }
+
+    private fun restoreStock(orderId: Int) {
+        val details = orderDetailRepository.findByOrderId(orderId)
+        if (details.isEmpty()) return
+
+        val detailIds = details.map { it.id }
+        val allSelections = orderItemSelectionRepository.findByOrderDetailIdIn(detailIds)
+        val selectionsByDetailId = allSelections.groupBy { it.orderDetail.id }
+
+        val stockRequirements = mutableMapOf<Int, java.math.BigDecimal>()
+
+        for (detail in details) {
+            val amountMultiplier = java.math.BigDecimal(detail.amount)
+
+            // Menu recipes
+            val recipes = menuRecipeRepository.findByMenuItem_Id(detail.menuItem.id)
+            for (recipe in recipes) {
+                val stockId = recipe.stock.id
+                val requiredAmount = recipe.amount.multiply(amountMultiplier)
+                stockRequirements[stockId] = stockRequirements.getOrDefault(stockId, java.math.BigDecimal.ZERO).add(requiredAmount)
+            }
+
+            // Option ingredients
+            val selections = selectionsByDetailId[detail.id] ?: emptyList()
+            if (selections.isNotEmpty()) {
+                val choiceIds = selections.map { it.optionChoice.id }
+                val ingredients = optionIngredientRepository.findByOptionChoiceIdIn(choiceIds)
+                for (ingredient in ingredients) {
+                    val stockId = ingredient.stock.id
+                    val requiredAmount = ingredient.amount.multiply(amountMultiplier)
+                    stockRequirements[stockId] = stockRequirements.getOrDefault(stockId, java.math.BigDecimal.ZERO).add(requiredAmount)
+                }
+            }
+        }
+
+        // Restore stock
+        val stockIds = stockRequirements.keys.toList()
+        val stocks = stockRepository.findAllById(stockIds)
+        val stocksMap = stocks.associateBy { it.id }
+
+        for ((stockId, amount) in stockRequirements) {
+            val stock = stocksMap[stockId] ?: continue
+            stock.amount = stock.amount.add(amount)
         }
 
         stockRepository.saveAll(stocks)

@@ -143,7 +143,11 @@ export const StaffDashboard = () => {
                                     <span className={styles.itemQty}>x{item.quantity}</span>
                                 </div>
                                 {item.selectedOptions.length > 0 && (
-                                    <div className={styles.itemOptions}>{item.selectedOptions.join(', ')}</div>
+                                    <div className={styles.itemOptions}>
+                                        {item.selectedOptions.map((opt, optIdx) => (
+                                            <div key={optIdx}>• {opt}</div>
+                                        ))}
+                                    </div>
                                 )}
                                 {item.specialRequest && (
                                     <div className={styles.specialRequest}>Note: {item.specialRequest}</div>
@@ -191,15 +195,33 @@ export const StaffDashboard = () => {
                             </button>
                         </div>
                     ) : (
-                        <button
-                            className={`${styles.actionBtn} ${styles.completeBtn}`}
-                            onClick={() => handleCompleteOrder(order.orderId)}
-                            disabled={actionLoadingId === order.orderId || !isMine}
-                            title={!isMine ? 'Only the assigned staff can complete this order' : ''}
-                        >
-                            <CheckCircle size={18} />
-                            {actionLoadingId === order.orderId ? 'Processing...' : 'Mark as Complete'}
-                        </button>
+                        <div className={styles.buttonGroup}>
+                            <button
+                                className={`${styles.actionBtn} ${styles.completeBtn}`}
+                                onClick={() => handleCompleteOrder(order.orderId)}
+                                disabled={actionLoadingId === order.orderId || !isMine}
+                                title={!isMine ? 'Only the assigned staff can complete this order' : ''}
+                            >
+                                <CheckCircle size={18} />
+                                {actionLoadingId === order.orderId ? 'Processing...' : 'Complete'}
+                            </button>
+                            <button
+                                className={`${styles.actionBtn} ${styles.cancelBtn}`}
+                                onClick={() => {
+                                    if (confirmCancelId === order.orderId) {
+                                        handleCancelOrder(order.orderId);
+                                        setConfirmCancelId(null);
+                                    } else {
+                                        setConfirmCancelId(order.orderId);
+                                        setTimeout(() => setConfirmCancelId(null), 3000);
+                                    }
+                                }}
+                                disabled={actionLoadingId === order.orderId || !isMine}
+                                title={!isMine ? 'Only the assigned staff can cancel this order' : ''}
+                            >
+                                {actionLoadingId === order.orderId ? 'Canceling...' : (confirmCancelId === order.orderId ? 'Confirm?' : 'Cancel')}
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

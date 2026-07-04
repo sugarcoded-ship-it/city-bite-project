@@ -18,6 +18,7 @@ interface CartItemResponse {
     quantity: number;
     specialRequest: string | null;
     selectedCustomizations: string[];
+    selectedChoiceIds: number[];
     status: string;
 }
 
@@ -118,7 +119,7 @@ const OrderSummary: React.FC = () => {
             unitPrice: ci.price,
             lineTotal: ci.price * ci.quantity,
             selectedOptions: ci.selectedCustomizations.map(name => ({ choiceName: name, extraPrice: 0 })),
-            selectedChoiceIds: [],
+            selectedChoiceIds: ci.selectedChoiceIds,
         })),
         totalPrice: cart.reduce((sum, ci) => sum + ci.price * ci.quantity, 0),
     });
