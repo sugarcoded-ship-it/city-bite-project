@@ -77,7 +77,7 @@ export default function CustomerProfile() {
         return (
             <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
                 <CustomerTopNav />
-                <div className="max-w-xl mx-auto px-5 pt-24 pb-10 text-center text-gray-400">Loading profile...</div>
+                <div className="max-w-3xl mx-auto px-5 pt-24 pb-10 text-center text-gray-400">Loading profile...</div>
             </div>
         );
     }
@@ -86,7 +86,7 @@ export default function CustomerProfile() {
         return (
             <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
                 <CustomerTopNav />
-                <div className="max-w-xl mx-auto px-5 pt-24 pb-10">
+                <div className="max-w-3xl mx-auto px-5 pt-24 pb-10">
                     <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm font-semibold px-4 py-3 rounded-2xl">
                         <AlertCircle size={18} />
                         <span>{error}</span>
@@ -116,15 +116,15 @@ export default function CustomerProfile() {
         <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
             <CustomerTopNav customerName={fullName} />
 
-            <div className="max-w-xl mx-auto px-5 pt-24 pb-10 space-y-4">
+            <div className="max-w-3xl mx-auto px-5 md:px-8 pt-24 pb-10 space-y-4">
 
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xl font-extrabold tracking-tight">{initials}</span>
+                <div className="flex items-center gap-4 md:gap-5">
+                    <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xl md:text-2xl font-extrabold tracking-tight">{initials}</span>
                     </div>
                     <div>
-                        <h1 className="text-[#0B1F4D] text-xl font-extrabold leading-tight">{fullName}</h1>
-                        <p className="text-gray-400 text-sm">@{profile.username}</p>
+                        <h1 className="text-[#0B1F4D] text-xl md:text-3xl font-extrabold leading-tight">{fullName}</h1>
+                        <p className="text-gray-400 text-sm md:text-base">@{profile.username}</p>
                     </div>
                 </div>
 
@@ -136,8 +136,8 @@ export default function CustomerProfile() {
                 )}
 
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-                        <h2 className="text-[#0B1F4D] font-extrabold">Account Info</h2>
+                    <div className="flex items-center justify-between px-5 md:px-8 py-4 md:py-5 border-b border-gray-50">
+                        <h2 className="text-[#0B1F4D] font-extrabold md:text-lg">Account Info</h2>
                         {!isEditing ? (
                             <button
                                 onClick={() => setIsEditing(true)}
@@ -166,19 +166,19 @@ export default function CustomerProfile() {
 
                     <div className="divide-y divide-gray-50">
                         {READONLY_FIELDS.map(({ key, label, icon: Icon, value }) => (
-                            <div key={key} className="flex items-center gap-4 px-5 py-4">
-                                <div className="w-8 h-8 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
+                            <div key={key} className="flex items-center gap-4 px-5 md:px-8 py-4 md:py-5">
+                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
                                     <Icon size={14} className="text-gray-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-gray-400 text-[11px] font-semibold mb-0.5">{label}</p>
-                                    <p className="text-[#0B1F4D] text-sm font-semibold truncate">{value}</p>
+                                    <p className="text-[#0B1F4D] text-sm md:text-base font-semibold truncate">{value}</p>
                                 </div>
                             </div>
                         ))}
 
-                        <div className="flex items-center gap-4 px-5 py-4">
-                            <div className="w-8 h-8 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
+                        <div className="flex items-center gap-4 px-5 md:px-8 py-4 md:py-5">
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
                                 <Phone size={14} className="text-gray-400" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -196,7 +196,7 @@ export default function CustomerProfile() {
                                         maxLength={10}
                                         pattern="^[0-9]{10}$"
                                         title="Please enter a valid phone number containing exactly 10 digits."
-                                        className={`w-full border rounded-xl px-3 py-1.5 text-sm text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 transition-all ${
+                                        className={`w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 transition-all ${
                                             isPhoneValid
                                                 ? 'border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15'
                                                 : 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
