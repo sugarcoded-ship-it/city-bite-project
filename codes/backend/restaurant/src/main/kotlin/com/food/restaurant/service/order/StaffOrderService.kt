@@ -11,6 +11,9 @@ import com.food.restaurant.repository.user.UserRepository
 import com.food.restaurant.repository.order.OrderDetailRepository
 import com.food.restaurant.repository.order.OrderItemSelectionRepository
 import com.food.restaurant.repository.order.OrderStatusRepository
+import com.food.restaurant.entity.payment.RefundCredit
+import com.food.restaurant.repository.payment.RefundCreditRepository
+import java.math.BigDecimal
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,7 +31,9 @@ class StaffOrderService(
     private val menuRecipeRepository: MenuRecipeRepository,
     private val optionIngredientRepository: OptionIngredientRepository,
     private val stockRepository: StockRepository,
-    private val orderCancellationService: OrderCancellationService
+    private val orderCancellationService: OrderCancellationService,
+    private val refundCreditRepository: RefundCreditRepository
+
 ) {
 
     fun getActiveOrders(): List<StaffOrderResponse> {
@@ -159,6 +164,13 @@ class StaffOrderService(
         order.orderStatus = canceledStatus
         order.canceledBy = "${staff.firstName ?: ""} ${staff.lastName ?: ""}".trim().ifEmpty { staff.username }
         orderRepository.save(order)
+
+        val customer = order.customer
+        val refundAmount = order.totalPrice
+        val wallet = refundCreditRepository.findByCustomer_Id(customer.id)
+            ?: RefundCredit(customer = customer, amount = BigDecimal.ZERO)
+        wallet.amount = wallet.amount.add(refundAmount)
+        refundCreditRepository.save(wallet)
     }
 
     private fun validateAndDeductStock(orderId: Int) {
