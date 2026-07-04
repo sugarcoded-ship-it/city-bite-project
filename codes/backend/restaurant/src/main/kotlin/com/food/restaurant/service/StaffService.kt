@@ -28,7 +28,8 @@ class StaffService(
 ) {
 
     fun isInactive(id: UUID): Boolean {
-        val staff = staffRepository.findById(id).get()
+        val staff = staffRepository.findById(id).orElse(null)
+            ?: return false
         return staff.status == StaffStatus.INACTIVE
     }
 

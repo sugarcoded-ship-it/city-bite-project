@@ -99,6 +99,7 @@ class CartService(
                 quantity = item.quantity,
                 specialRequest = item.specialRequest,
                 selectedCustomizations = databaseChoices.map { it.choiceName },
+                selectedChoiceIds = choiceIds,
                 status = resolvedMenuItem.status.name.name
             )
         }

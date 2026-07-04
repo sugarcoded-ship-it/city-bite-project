@@ -135,7 +135,7 @@ class OrderSummaryService(
                 order = savedOrder,
                 menuItem = menuItemEntity,
                 amount = cartItem.amount,
-                specialRequest = null,
+                specialRequest = cartItem.specialRequest.ifBlank { null },
                 price = calculatedLinePrice
             )
             val savedDetail = orderDetailRepository.save(detailToSave)
