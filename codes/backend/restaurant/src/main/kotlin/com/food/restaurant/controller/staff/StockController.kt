@@ -44,4 +44,11 @@ class StockController(
     @PatchMapping("/adjust")
     fun batchAdjust(@RequestBody body: BatchAdjustRequest): ResponseEntity<List<StockResponse>> =
         ResponseEntity.ok(stockService.applyAdjustments(body.adjustments))
+
+
+    @DeleteMapping("/items/{id}")
+    fun deleteItem(@PathVariable id: Int): ResponseEntity<Void> {
+        stockService.deleteItem(id)
+        return ResponseEntity.noContent().build()
+    }
 }

@@ -63,6 +63,13 @@ class StockService(
         return stockRepository.save(stock).toResponse()
     }
 
+    @Transactional
+    fun deleteItem(id: Int) {
+        val stock = stockRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Stock $id not found") }
+        stockRepository.delete(stock)
+    }
+
     private fun Stock.toResponse(): StockResponse = StockResponse(
         id = id,
         name = name,
