@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { apiClient } from "../lib/api-client";
-import keycloak from "../lib/keycloak";
+import { StaffTopNav } from "../features/dashboard/components/StaffDashboard/StaffTopNav.tsx";
 import {
-  ArrowLeft, PackagePlus, Plus, Minus, Search,
-  AlertTriangle, Package, ArrowUpDown, ChevronDown, LogOut, X, Trash2
+  PackagePlus, Plus, Minus, Search,
+  AlertTriangle, Package, ArrowUpDown, ChevronDown, X, Trash2
 } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -60,8 +59,6 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 export const StaffStock = () => {
-  const navigate = useNavigate();
-
   // ── States ─────────────────────────────────────────────────────────────────
   const [items, setItems] = useState<StockResponse[]>([]);
   const [categories, setCategories] = useState<StockCategoryResponse[]>([]);
@@ -73,7 +70,8 @@ export const StaffStock = () => {
   const [sortKey, setSortKey] = useState<SortKey>('name-asc');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<StockResponse | null>(null);
+  const [confirmDeleteItem, setConfirmDeleteItem] = useState<StockResponse | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
@@ -264,18 +262,17 @@ export const StaffStock = () => {
 
   const handleDelete = async (itemId: number) => {
     try {
+      setDeleting(true);
       await apiClient(`/staff/stocks/items/${itemId}`, { method: 'DELETE' });
       setItems((prev) => prev.filter((it) => it.id !== itemId));
-      setSelectedItem(null); // close modal if open
+      setConfirmDeleteItem(null);
       triggerToast('Item deleted!');
     } catch (err) {
       console.error('Failed to delete item:', err);
-      alert('An error occurred while deleting this item.');
+      triggerToast('Failed to delete item.');
+    } finally {
+      setDeleting(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await keycloak.logout({ redirectUri: window.location.origin });
   };
 
   // Keep active category pill scrolled into view
@@ -310,37 +307,22 @@ export const StaffStock = () => {
   return (
     <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
 
-      {/* ── Fixed Nav Header ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B1F4D] shadow-lg">
-        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/')}
-                    className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
-              <ArrowLeft size={18} />
-            </button>
-            <div>
-              <p className="text-blue-300 text-[10px] font-bold tracking-widest uppercase leading-none">Staff Portal</p>
-              <p className="text-white font-extrabold text-base leading-tight">Stock Management</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowAdd(true)}
-                    className="flex items-center gap-1.5 bg-[#2D7FF9] hover:bg-[#1a6de0] text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-md">
-              <PackagePlus size={16} />
-              <span className="hidden sm:block">Add Material</span>
-            </button>
-            <button onClick={handleLogout}
-                    className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500/20 transition-colors"
-                    title="Logout">
-              <LogOut size={17} />
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* ── Shared Staff Nav ── */}
+      <StaffTopNav />
 
       {/* ── Real-Time Stat Strip ── */}
       <div className="bg-[#0B1F4D] pt-20 pb-5 px-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-3 gap-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 mb-4">
+          <div>
+            <p className="text-white font-extrabold text-lg leading-tight mt-1">Stock Management</p>
+          </div>
+          <button onClick={() => setShowAdd(true)}
+                  className="flex items-center gap-1.5 bg-[#2D7FF9] hover:bg-[#1a6de0] text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-md flex-shrink-0">
+            <PackagePlus size={16} />
+            <span className="hidden sm:block">Add Material</span>
+          </button>
+        </div>
+        <div className="max-w-7xl mx-auto grid grid-cols-3 gap-3">
           <div className="bg-white/10 border border-white/15 rounded-2xl px-4 py-3">
             <p className="text-blue-300 text-xs font-semibold">Total Items</p>
             <p className="text-white text-2xl font-extrabold">{items.length}</p>
@@ -350,7 +332,7 @@ export const StaffStock = () => {
             <p className="text-white text-2xl font-extrabold">{lowCount}</p>
           </div>
           <div className={`rounded-2xl px-4 py-3 border transition-colors ${criticalCount > 0 ? 'bg-red-500/20 border-red-400/30' : 'bg-white/10 border-white/15'}`}>
-            <p className={`text-xs font-semibold ${criticalCount > 0 ? 'text-red-300' : 'text-blue-300'}`}>Critical</p>
+            <p className={`text-xs font-semibold ${criticalCount > 0 ? 'text-red-300' : 'text-blue-300'}`}>Need to restock</p>
             <p className="text-white text-2xl font-extrabold">{criticalCount}</p>
           </div>
         </div>
@@ -358,7 +340,7 @@ export const StaffStock = () => {
 
       {/* ── Sticky Filter / Search Bar ── */}
       <div className="sticky top-16 z-40 bg-[#f0f2f7] border-b border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-5 pt-3 pb-2 space-y-2">
+        <div className="max-w-7xl mx-auto px-5 pt-3 pb-2 space-y-2">
 
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -442,7 +424,7 @@ export const StaffStock = () => {
       </div>
 
       {/* ── Table & Data Sections ── */}
-      <div className="max-w-6xl mx-auto px-5 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-5 py-6 space-y-8">
 
         {grouped.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center shadow-sm">
@@ -495,12 +477,9 @@ export const StaffStock = () => {
                           level === 'critical' ? 'bg-red-50/30' : level === 'low' ? 'bg-amber-50/20' : ''
                         }`}
                       >
-                        {/* Item Identity and Description - Added onClick to open Details Modal */}
-                        <td
-                          className="px-5 py-3.5 cursor-pointer group"
-                          onClick={() => setSelectedItem(item)}
-                        >
-                          <p className="font-semibold text-[#0B1F4D] leading-snug group-hover:text-[#2D7FF9] transition-colors">{item.name}</p>
+                        {/* Item Identity and Description */}
+                        <td className="px-5 py-3.5">
+                          <p className="font-semibold text-[#0B1F4D] leading-snug">{item.name}</p>
                           {item.description && (
                             <p className="text-gray-400 text-xs mt-0.5 line-clamp-1">{item.description}</p>
                           )}
@@ -563,6 +542,14 @@ export const StaffStock = () => {
                             >
                               <Plus size={13} />
                             </button>
+                            <button
+                              onClick={() => setConfirmDeleteItem(item)}
+                              disabled={isSaving}
+                              title="Delete item"
+                              className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 transition-colors disabled:opacity-30 flex-shrink-0 ml-1"
+                            >
+                              <Trash2 size={13} />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -576,50 +563,44 @@ export const StaffStock = () => {
         })}
       </div>
 
-      {/* Added Item Detail / Delete Modal */}
-      {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setSelectedItem(null)}>
+      {/* Confirm Delete Modal */}
+      {confirmDeleteItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => !deleting && setConfirmDeleteItem(null)}
+        >
           <div
-            className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl transition-all"
+            className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl transition-all"
             onClick={(e) => e.stopPropagation()}
             style={{ animation: 'modalIn 0.3s cubic-bezier(0.16,1,0.3,1)' }}
           >
-            <div className="bg-[#0B1F4D] px-6 py-5 flex items-center justify-between">
-              <div>
-                <p className="text-blue-300 text-[10px] font-bold uppercase tracking-widest">Item Details</p>
-                <h2 className="text-white text-xl font-extrabold">{selectedItem.name}</h2>
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <Trash2 size={24} className="text-red-500" />
               </div>
-              <button className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition-colors" onClick={() => setSelectedItem(null)}>
-                <X size={16} />
-              </button>
+              <h2 className="text-[#0B1F4D] text-lg font-extrabold mb-1.5">Delete this item?</h2>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                <span className="font-semibold text-gray-700">{confirmDeleteItem.name}</span> will be permanently removed from your stock. This cannot be undone.
+              </p>
             </div>
-            <div className="p-6 space-y-5">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-500 mb-1">Description</h3>
-                  <p className="text-gray-800 text-sm bg-gray-50 p-3 rounded-xl border border-gray-100">{selectedItem.description || 'No description provided.'}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-500 mb-1">Current Stock</h3>
-                    <p className="text-[#0B1F4D] font-extrabold text-lg">{selectedItem.amount} <span className="text-sm text-gray-400 font-normal">{selectedItem.measureUnit.toLowerCase()}</span></p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-500 mb-1">Category</h3>
-                    <p className="text-[#0B1F4D] font-bold">{categoryMap[selectedItem.categoryId] || 'Unknown'}</p>
-                  </div>
-                </div>
-              </div>
 
-              <div className="pt-4 border-t border-gray-100 mt-2">
-                <button
-                  className="w-full py-3 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
-                  onClick={() => handleDelete(selectedItem.id)}
-                >
-                  <Trash2 size={18} />
-                  Delete Item
-                </button>
-              </div>
+            <div className="flex gap-3 p-6 pt-0">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteItem(null)}
+                disabled={deleting}
+                className="flex-1 py-3 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDelete(confirmDeleteItem.id)}
+                disabled={deleting}
+                className="flex-1 py-3 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold rounded-xl transition-colors shadow-sm disabled:opacity-60"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
             </div>
           </div>
         </div>
