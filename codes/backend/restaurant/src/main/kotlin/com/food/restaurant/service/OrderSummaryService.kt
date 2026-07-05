@@ -26,7 +26,9 @@ import com.food.restaurant.repository.payment.RefundCreditLogRepository
 import com.food.restaurant.repository.payment.RefundCreditRepository
 import com.food.restaurant.repository.user.UserRepository
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -44,7 +46,8 @@ class OrderSummaryService(
     private val paymentTransactionRepository: PaymentTransactionRepository,
     private val refundCreditRepository: RefundCreditRepository,
     private val refundCreditLogRepository: RefundCreditLogRepository,
-    private val cartItemRepository: CartItemRepository
+    private val cartItemRepository: CartItemRepository,
+    private val storeService: StoreService
 ) {
     fun summarizeCartBeforePayment(requestedItems: List<CartItemRequest>): CartSummaryResponse {
 
@@ -94,6 +97,10 @@ class OrderSummaryService(
 
     @Transactional
     fun processCheckout(request: CreateOrderRequest): Order {
+        if (!storeService.isStoreOpen()) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Store is currently closed. Please try again later.")
+        }
+
         val customerEntity = userRepository.findById(request.customerUuid)
             .orElseThrow { IllegalArgumentException("Customer not found") }
 
