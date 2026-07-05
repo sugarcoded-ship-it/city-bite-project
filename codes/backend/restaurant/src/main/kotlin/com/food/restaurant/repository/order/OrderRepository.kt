@@ -13,7 +13,11 @@ import java.util.UUID
 interface OrderRepository : JpaRepository<Order, Int> {
 
     @Query(
-        value = "SELECT COALESCE(SUM(total_price), 0) FROM orders WHERE DATE(created_at) = CURRENT_DATE",
+        value = """
+            SELECT COALESCE(SUM(o.total_price), 0) FROM orders o
+            JOIN order_status os ON o.order_status_id = os.order_status_id
+            WHERE DATE(o.created_at) = CURRENT_DATE AND os.status_name = 'DELIVERED'
+        """,
         nativeQuery = true
     )
     fun sumRevenueToday(): BigDecimal
@@ -26,9 +30,9 @@ interface OrderRepository : JpaRepository<Order, Int> {
 
     @Query(
         value = """
-            SELECT COUNT(*) FROM orders o 
-            JOIN order_status os ON o.order_status_id = os.order_status_id 
-            WHERE DATE(o.created_at) = CURRENT_DATE AND os.status_name = 'Completed'
+            SELECT COUNT(*) FROM orders o
+            JOIN order_status os ON o.order_status_id = os.order_status_id
+            WHERE DATE(o.created_at) = CURRENT_DATE AND os.status_name = 'DELIVERED'
         """,
         nativeQuery = true
     )
