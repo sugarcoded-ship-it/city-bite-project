@@ -12,6 +12,7 @@ import com.food.restaurant.repository.user.UserRepository
 import com.food.restaurant.repository.order.OrderDetailRepository
 import com.food.restaurant.repository.order.OrderItemSelectionRepository
 import com.food.restaurant.repository.order.OrderStatusRepository
+import com.food.restaurant.repository.payment.PaymentTransactionRepository
 import com.food.restaurant.service.RefundCreditService
 import java.math.BigDecimal
 import org.springframework.http.HttpStatus
@@ -31,6 +32,7 @@ class StaffOrderService(
     private val menuRecipeRepository: MenuRecipeRepository,
     private val optionIngredientRepository: OptionIngredientRepository,
     private val stockRepository: StockRepository,
+    private val paymentTransactionRepository: PaymentTransactionRepository,
     private val orderCancellationService: OrderCancellationService,
     private val refundCreditService: RefundCreditService
 
@@ -123,7 +125,9 @@ class StaffOrderService(
             val refundAmount = canceledDetails.fold(BigDecimal.ZERO) { acc, detail -> acc.add(detail.price) }
             order.totalPrice = order.totalPrice.subtract(refundAmount)
             val itemNames = canceledDetails.joinToString(", ") { it.menuItem.name }
-            refundCreditService.creditRefund(order.customer, refundAmount, order, "Order #$orderId: removed due to insufficient stock ($itemNames)")
+            val transaction = paymentTransactionRepository.findByOrderId(orderId)
+                ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Payment transaction not found for order #$orderId")
+            refundCreditService.creditRefund(order.customer, refundAmount, transaction, order, "Order #$orderId: removed due to insufficient stock ($itemNames)")
         }
 
         val inProgressStatus = orderStatusRepository.findByStatusName(orderStatusEnum.IN_PROGRESS)
@@ -192,7 +196,9 @@ class StaffOrderService(
         order.canceledBy = "${staff.firstName ?: ""} ${staff.lastName ?: ""}".trim().ifEmpty { staff.username }
         orderRepository.save(order)
 
-        refundCreditService.creditRefund(order.customer, order.totalPrice, order, "Order #$orderId canceled by staff")
+        val transaction = paymentTransactionRepository.findByOrderId(orderId)
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Payment transaction not found for order #$orderId")
+        refundCreditService.creditRefund(order.customer, order.totalPrice, transaction, order, "Order #$orderId canceled by staff")
     }
 
     @Transactional
@@ -247,7 +253,9 @@ class StaffOrderService(
         order.totalPrice = order.totalPrice.subtract(detail.price)
         orderRepository.save(order)
 
-        refundCreditService.creditRefund(order.customer, detail.price, order, "Order #$orderId: '${detail.menuItem.name}' canceled by staff")
+        val transaction = paymentTransactionRepository.findByOrderId(orderId)
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Payment transaction not found for order #$orderId")
+        refundCreditService.creditRefund(order.customer, detail.price, transaction, order, "Order #$orderId: '${detail.menuItem.name}' canceled by staff")
     }
 
     private fun computeStockRequirementsPerDetail(details: List<OrderDetail>): Map<Int, Map<Int, BigDecimal>> {

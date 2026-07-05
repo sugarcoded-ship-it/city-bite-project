@@ -120,8 +120,18 @@ class OrderSummaryService(
         )
         val savedOrder = orderRepository.save(orderToSave)
 
+        val transactionMock = PaymentTransaction(
+            order = savedOrder,
+            paymentMethod = paymentMethodEntity,
+            amount = savedOrder.totalPrice.subtract(savedOrder.creditApplied),
+            currency = "THB",
+            referenceId = "MOCK-TXN-${UUID.randomUUID()}",
+            description = "Successful payment for Order #${savedOrder.id}"
+        )
+        val savedTransaction = paymentTransactionRepository.save(transactionMock)
+
         if (request.creditUsed > BigDecimal.ZERO) {
-            val applied = refundCreditService.spendCredit(customerEntity, request.creditUsed, savedOrder, "Applied to order #${savedOrder.id}")
+            val applied = refundCreditService.spendCredit(customerEntity, request.creditUsed, savedTransaction, savedOrder, "Applied to order #${savedOrder.id}")
             if (!applied) {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient credit balance")
             }
@@ -166,16 +176,6 @@ class OrderSummaryService(
             }
         }
 
-        val transactionMock = PaymentTransaction(
-            order = savedOrder,
-            paymentMethod = paymentMethodEntity,
-            amount = savedOrder.totalPrice.subtract(savedOrder.creditApplied),
-            currency = "THB",
-            referenceId = "MOCK-TXN-${UUID.randomUUID()}",
-            description = "Successful payment for Order #${savedOrder.id}"
-        )
-        paymentTransactionRepository.save(transactionMock)
-
         cartItemRepository.deleteByCustomerUuid(request.customerUuid)
 
         return savedOrder
@@ -191,8 +191,8 @@ class OrderSummaryService(
         orderEntity.orderStatus = canceledStatus
         orderRepository.save(orderEntity)
 
-        paymentTransactionRepository.findByOrderId(orderId) ?: return
+        val transaction = paymentTransactionRepository.findByOrderId(orderId) ?: return
 
-        refundCreditService.creditRefund(orderEntity.customer, orderEntity.totalPrice, orderEntity, "Order #$orderId canceled by customer")
+        refundCreditService.creditRefund(orderEntity.customer, orderEntity.totalPrice, transaction, orderEntity, "Order #$orderId canceled by customer")
     }
 }

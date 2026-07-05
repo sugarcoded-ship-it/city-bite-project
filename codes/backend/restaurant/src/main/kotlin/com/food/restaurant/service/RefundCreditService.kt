@@ -1,6 +1,7 @@
 package com.food.restaurant.service
 
 import com.food.restaurant.entity.order.Order
+import com.food.restaurant.entity.payment.PaymentTransaction
 import com.food.restaurant.entity.payment.RefundCredit
 import com.food.restaurant.entity.payment.RefundCreditLog
 import com.food.restaurant.entity.payment.RefundCreditLogType
@@ -29,29 +30,16 @@ class RefundCreditService(
         refundCreditLogRepository.findByCustomer_IdOrderByCreatedAtDesc(customerUuid, pageable)
 
     @Transactional
-    fun addCredit(user: User, amount: BigDecimal) {
-        creditToWallet(user, amount)
-        refundCreditLogRepository.save(
-            RefundCreditLog(customer = user, amount = amount, type = RefundCreditLogType.EARNED)
-        )
-    }
-
-    @Transactional
-    fun useCredit(user: User, amountToUse: BigDecimal): Boolean {
-        return spendCredit(user, amountToUse, order = null, description = null)
-    }
-
-    @Transactional
-    fun creditRefund(customer: User, amount: BigDecimal, order: Order? = null, description: String? = null) {
+    fun creditRefund(customer: User, amount: BigDecimal, paymentTransaction: PaymentTransaction, order: Order? = null, description: String? = null) {
         if (amount <= BigDecimal.ZERO) return
         creditToWallet(customer, amount)
         refundCreditLogRepository.save(
-            RefundCreditLog(customer = customer, amount = amount, type = RefundCreditLogType.EARNED, order = order, description = description)
+            RefundCreditLog(customer = customer, paymentTransaction = paymentTransaction, amount = amount, type = RefundCreditLogType.EARNED, order = order, description = description)
         )
     }
 
     @Transactional
-    fun spendCredit(customer: User, amount: BigDecimal, order: Order? = null, description: String? = null): Boolean {
+    fun spendCredit(customer: User, amount: BigDecimal, paymentTransaction: PaymentTransaction, order: Order? = null, description: String? = null): Boolean {
         if (amount <= BigDecimal.ZERO) return true
         val credit = refundCreditRepository.findByCustomer_Id(customer.id) ?: return false
         if (credit.amount < amount) return false
@@ -59,7 +47,7 @@ class RefundCreditService(
         credit.amount = credit.amount.subtract(amount)
         refundCreditRepository.save(credit)
         refundCreditLogRepository.save(
-            RefundCreditLog(customer = customer, amount = amount, type = RefundCreditLogType.SPENT, order = order, description = description)
+            RefundCreditLog(customer = customer, paymentTransaction = paymentTransaction, amount = amount, type = RefundCreditLogType.SPENT, order = order, description = description)
         )
         return true
     }

@@ -28,6 +28,10 @@ class RefundCreditLog(
     @JoinColumn(name = "keycloak_uuid", nullable = false)
     var customer: User,
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_transaction_id", nullable = false)
+    var paymentTransaction: PaymentTransaction,
+
     @Column(name = "Amount", nullable = false)
     val amount: BigDecimal,
 
