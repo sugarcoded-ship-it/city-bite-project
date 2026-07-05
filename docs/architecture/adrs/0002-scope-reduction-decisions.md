@@ -1,6 +1,6 @@
 # ADR 002: Scope Reduction Decisions for MVP Delivery
 
-**Status:** Accepted
+**Status:** Accepted (ADR 002-B partially superseded by ADR 002-D below)
 
 ---
 
@@ -91,3 +91,38 @@ The team will **retain Keycloak** as the identity provider. The frontend will co
 **Negative / Tradeoffs**
 - Keycloak must be running as a separate Docker service during development and in any demo environment, adding infrastructure overhead.
 - Team members unfamiliar with Keycloak realm configuration may find it harder to debug auth issues compared to a simpler custom system.
+
+---
+
+## ADR 002-D: Reinstate Automatic Stock Deduction and a Narrow Refund-Credit Ledger (Supersedes part of 002-B)
+
+### Context
+
+ADR 002-B (above) deferred both automatic ingredient deduction and any financial/refund feature, on the basis that neither prerequisite workflow (stable order placement, active payment processing) was ready as of Sprint 3.
+
+By the end of Sprint 4 (Issues #44 and #49, merged 2026-07-01 through 2026-07-05), the team found time to build both features after all, ahead of the original estimate:
+
+- **Automatic stock deduction** is implemented in `StaffOrderService.validateAndDeductStock()`. When staff accept a pending order, the service resolves each order line's ingredient requirements via `MenuRecipeRepository` (menu item → stock) and `OptionIngredientRepository` (selected option choice → stock), checks each required `Stock` row has sufficient `amount`, and deducts it. If stock is insufficient, the order is automatically canceled (`OrderCancellationService.cancelDueToInsufficientStock`). Canceling an `IN_PROGRESS` order restores the previously deducted stock (`restoreStock()`).
+- **`RefundCreditController`** exposes `/balance`, `/add`, and `/use` endpoints backed by `RefundCreditService`. When staff cancel an in-progress order, the customer's refund-credit balance is credited; the balance can be spent toward a future order at checkout. This is a store-credit ledger scoped to order cancellations — it is not a payment gateway integration and does not touch real money.
+
+### Decision
+
+ADR 002-B's exclusion is **superseded for these two specific features only**:
+
+- Automatic, recipe-based stock deduction/restoration tied to the order lifecycle is now **in scope and active** (not merely "staff manually toggle availability" as originally decided). The manual availability toggle described in ADR 002-B remains available as a secondary/manual control staff can still use for items whose stock isn't modeled in the recipe system.
+- A narrow, order-cancellation-triggered `RefundCredit` ledger is **in scope and active**.
+
+Everything else in ADR 002-B remains unchanged and still deferred:
+- No Stripe or other payment-gateway integration (ADR 002-A still applies).
+- No `FinancialRecord` reporting/dashboard — the table exists but is not connected to any service or API.
+- No low-stock alerts, supplier reordering, or purchasing workflow — deduction only decrements existing `Stock.amount`.
+
+### Consequences
+
+**Positive**
+- Staff no longer need to manually catch every ingredient shortfall — the system prevents an order from being accepted when required stock is insufficient, directly addressing the case brief's "item was unavailable but still requested" problem.
+- The refund-credit flow gives customers a concrete, checkable outcome when staff cancel their order, rather than an informal offline refund.
+
+**Negative / Tradeoffs**
+- The product brief, architecture page, and known-issues gap table (all written against the original ADR 002-B) understated what was actually built and needed a documentation-sync pass (this ADR, plus the linked doc updates) to stay accurate.
+- Stock deduction depends on `MenuRecipe` / `OptionIngredient` data being correctly populated per menu item; a menu item with no recipe rows mapped will deduct nothing, silently falling back to the manual-toggle behavior ADR 002-B originally assumed for everything.

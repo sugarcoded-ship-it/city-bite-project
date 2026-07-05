@@ -90,6 +90,32 @@ Each section corresponds to a sprint. Dates reflect the sprint meeting or review
 
 ---
 
+## Sprint 4 (continued) / Final Week — 1–5 July 2026
+
+### Added
+- **Staff pending order management (Issue #64):** Full claim → complete → cancel lifecycle implemented in `StaffOrderService.kt` and the Staff Dashboard UI, closing out the Pending Order Page item carried over from earlier in Sprint 4.
+- **Automatic stock deduction and restoration (Issue #64, #44):** Accepting an order now deducts required ingredients via `MenuRecipeRepository` / `OptionIngredientRepository`; canceling an in-progress order restores that stock. Orders are auto-canceled if required stock is insufficient. This reinstates a feature originally deferred by ADR 002-B — recorded in new ADR 002-D.
+- **Refund credit ledger (Issue #49):** `RefundCreditController` / `RefundCreditService` implemented (`/balance`, `/add`, `/use`). Canceling an in-progress order credits the customer's balance, redeemable at a future checkout. Also recorded in ADR 002-D.
+- **Cancel button for in-progress orders (Issue #76, PR #79):** Added to the Staff Dashboard for the assigned staff member, restoring previously deducted stock on cancellation.
+- **Staff account creation (Issue #69):** Owner can create new staff accounts with dual persistence into the application database and Keycloak.
+- **Staff stock management UI overhaul (Issue #48):** Rebuilt as a table view with a stock bar and manual quantity adjustment.
+- **Staff profile page (Issue #77):** Staff can view and edit their own account info; new shared top nav applied across all staff-side pages.
+- **Customer profile page (Issue #73):** Customers can view/edit account info; added 10-digit phone number validation.
+- **Order Summary / Done page (Issue #65, #66):** Order summary with address customization, mock QR code, and a completion page shown after checkout.
+- **Delete menu item feature (Issue #44).**
+
+### Fixed
+- **Selected options and special requests not shown to staff (Issue #76):** Cart now passes selected option-choice IDs through to checkout so staff can see exactly what was picked; special requests were previously saved as `null` due to a mapping bug.
+- **`NoSuchElementException` in `StaffService.isInactive` (Issue #76).**
+- **Inactive staff access to active orders (Issue #64).**
+- Order-state-change endpoints corrected to return `201 Created`.
+- Resolved several merge conflicts and route/DTO mismatches surfaced while wiring the pending-order, stock, and order-summary features together in parallel.
+
+### Documentation
+- Product brief, architecture page, and known-issues.md updated to match the above (stock deduction and refund credit moved from "out of scope" to "in scope"); see ADR 002-D.
+
+---
+
 ## Deferred / Out of Scope (recorded in ADR 002)
 
 The following items were descoped during Sprint 3 to protect delivery of the core order flow:

@@ -1,4 +1,6 @@
-# Product Brief v06 — Team 03 (Revised)
+# Product Brief v07 — Team 03 (Documentation Sync — 2026-07-05)
+
+> **Revision note:** This pass reconciles the brief with the actual implementation as of the final week (see ADR 002-D). Two "out of scope" items from v06 — automatic stock deduction and a refund-credit ledger — were built after all and are now marked in scope below. No other MVP boundaries changed.
 
 ## Problem Statement
 
@@ -46,14 +48,15 @@ A single web-based system where customers submit orders and staff manage them fr
 - **Order status updates:** Staff can advance an order through the defined lifecycle: **Pending → In Kitchen → Ready**. Each transition is recorded with a timestamp.
 - **Menu item availability toggle:** Staff can mark individual menu items as available or unavailable. Unavailable items cannot be added to a customer's cart and are displayed separately on the menu page.
 - **Store open/closed control:** Staff can toggle the store's operational state to prevent new orders from being submitted outside of business hours.
+- **Stock/ingredient management:** Staff can view, add, and adjust stock quantities by category. When an order is accepted, the system automatically deducts the ingredients required by each ordered item (and its selected options) from stock, and restores that stock if the order is later canceled. If required stock is insufficient, the order is automatically rejected rather than accepted. See ADR 002-D.
 
 ---
 
 ## Out-of-Scope Functionality
 
 - **Payment processing (Stripe or any gateway):** No financial transaction is initiated or verified by the system. Customers place orders without paying through the application. Payment on pickup or delivery is handled offline. This decision is recorded in ADR 002-A.
-- **Automatic stock management and ingredient deduction:** No inventory tracking is active in the current implementation. Staff manage ingredient availability manually through the menu item toggle. This decision is recorded in ADR 002-B.
-- **Financial records and reporting:** No revenue tracking, refund management, or financial dashboard is built. The corresponding database tables exist but are not connected to any service or API.
+- **Automatic stock management and ingredient deduction:** *(Revised — now in scope; see ADR 002-D.)* Recipe-based ingredient deduction on order acceptance and restoration on cancellation are implemented. Still excluded: low-stock alerts, automatic reordering, and supplier/purchasing workflows.
+- **Financial records and reporting:** No revenue dashboard, accounting export, or Stripe-based refund is built; `FinancialRecord` exists in the schema but is not connected to any service or API. *(A narrow exception is in scope: a `RefundCredit` store-credit ledger that credits a customer when staff cancel an in-progress order, redeemable at a future checkout. This is bookkeeping only — no real money moves. See ADR 002-D.)*
 - **Estimated time of arrival (ETA):** Calculating a meaningful ETA requires kitchen load data, per-item preparation times, and delivery logistics — none of which are modeled in the active implementation. The tracking page shows status only.
 - **Delivery and rider management:** No route optimization, rider assignment, or delivery tracking is included.
 - **Customer accounts and order history:** Customers submit orders as guests. No login, saved preferences, or order history is provided.
@@ -106,6 +109,18 @@ The MVP is successful if the following outcomes can be demonstrated end-to-end:
 - A staff member can log in, see all submitted orders in a single inbox ordered by submission time, open any order to view its full details and special requests, and advance that order through each status stage.
 - A staff member can mark a menu item as unavailable, and that item immediately becomes unorderable for customers browsing the menu.
 - The same order submitted by a customer appears in the staff inbox without any manual transfer or transcription step.
+
+---
+
+## Usefulness Evidence
+
+Beyond the pass/fail Success Criteria above, the following evidence would show the MVP is genuinely useful for CityBite's daily operations, not just functionally complete:
+
+- **A staff member can find the full contents of any order — items, options, and special requests — without asking the customer to repeat themselves or checking a phone/chat app.** This directly targets the case brief's recurring complaint that staff "did not always have one reliable place to check" an order.
+- **A staff member never has to ask "is this order paid or dine-in-only, and what did they actually pick?"** because the same reference number and order detail view are the single source of truth for both the customer and the kitchen.
+- **An item marked unavailable (either manually or automatically via stock deduction) cannot be ordered by a customer within the same session** — eliminating the specific "item was unavailable but still requested" mistake the owner described.
+- **The owner or a staff member, given a live walkthrough, can complete one full order cycle** (browse → customize → submit → staff accepts → status advances → customer checks status) **without needing a developer present**, and without the order needing to be manually re-entered anywhere.
+- **Qualitative feedback from the owner/staff during a demo** — whether the dashboard reduces the "where does this order stand" back-and-forth compared to their current phone/chat workflow — is the most direct evidence of usefulness for this specific case, and should be captured (even informally) during the final demo.
 
 ---
 

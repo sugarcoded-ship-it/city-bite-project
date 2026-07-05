@@ -1,16 +1,27 @@
 # Architecture Overview
 
+> **Note (2026-07-05):** This page originally described a larger system (Stripe payment, rider/delivery dashboard, real-time delivery map) drafted early in the project. ADR 002 descoped payment, delivery, and financial reporting, and ADR 002-D later reinstated automatic stock deduction and a narrow refund-credit ledger. This page has been rewritten to describe the system as actually built. See `docs/architecture/adrs/` for the decision history.
+
 ## Context
 
-Provide a description of the system, its purpose and its external actors (users, services). Include a simple context diagram or bullet list of external dependencies.
+CityBite Bangkok's system is a single-location, web-based ordering and order-management platform. It replaces informal order intake over walk-ins, phone calls, and chat with one shared system so customers and staff see the same order state.
+
+**External actors:**
+- **Customer** — unauthenticated guest who browses the menu, places an order, and tracks its status by reference number.
+- **Restaurant Staff** — authenticated (`STAFF` role) employee who manages the order inbox, menu availability, and stock.
+- **Owner** — authenticated (`OWNER` role) employee with the same visibility as staff, currently read-only for advanced management features.
+
+**External dependencies:**
+- **Keycloak** — identity provider for staff/owner authentication and role management. Customers are not authenticated.
+- No other third-party service is integrated. There is no payment gateway, delivery/mapping service, or SMS/email provider in the active system.
 
 ## Components / Containers
 
 Based on the system architecture, the platform is divided into three major categories: Users, Internal Processes (Apps and Databases), and External Systems. Below is a detailed breakdown of each component and its role in the system.
 
 ### 1. Users (Actors)
-- **Customer [Orderer]**: The end-user of the system who browses the menu, places orders, makes payments, and tracks order statuses. They interact directly with the Customer Web App and rely on Keycloak for secure registration and authentication.
-- **Restaurant Staff [Host]**: The operational users managing the restaurant. They use the Staff Dashboard App to view incoming orders, manage preparation workflows, coordinate with riders, and update the system. They also authenticate securely via Keycloak.
+- **Customer [Orderer]**: The end-user of the system who browses the menu, submits orders as a guest, and tracks order status. They interact directly with the Customer Web App. No account or authentication is required.
+- **Restaurant Staff / Owner [Host]**: The operational users managing the restaurant. They use the Staff Dashboard App to view incoming orders, advance preparation status, manage menu availability, and manage stock. They authenticate via Keycloak (`STAFF` or `OWNER` role).
 
 ### 2. Internal Processes (The Apps)
 These are the core software components developed and maintained internally.
@@ -20,22 +31,25 @@ These are the core software components developed and maintained internally.
   - **Tech Stack**: React, TypeScript, Vite
   - **Responsibilities**: Provides the primary interface for customers. It handles several key screens, including:
     - *Homepage*: The main landing page.
-    - *Available Menu Page*: Displays categories and available dishes.
-    - *Dish Customizing Suggestion Page*: Allows customers to add modifiers, toppings, and options to their dishes.
-    - *Payment Page*: The checkout flow integrated securely with the backend and Stripe.
-    - *Order Tracking Page*: Real-time or polled updates on the preparation and delivery status of the order.
+    - *Available Menu Page*: Displays categories, with available items shown before unavailable ones.
+    - *Item Customization*: Lets customers pick from predefined option groups (e.g., spice level, add-ons) before adding an item to the cart.
+    - *Cart / Checkout*: Collects name, phone number, and special requests, then submits the order. No payment is collected — payment happens offline (ADR 002-A).
+    - *Order Tracking Page*: Shows the current status (Pending / In Kitchen / Ready) for a submitted order, looked up by reference number.
 
 - **Staff Dashboard App (Frontend)**
   - **Type**: Single Page Application (SPA)
   - **Tech Stack**: React, TypeScript, Vite
   - **Responsibilities**: The control center for restaurant operations. Key modules include:
-    - *Order Dashboard Page*: A real-time view of all incoming, preparing, and completed orders, allowing staff to transition order states.
-    - *Rider Dashboard*: Facilitates the handoff of prepared orders to delivery riders.
+    - *Order Dashboard Page*: A view of all submitted orders sorted by submission time, letting staff open an order's full detail and advance it through Pending → In Kitchen → Ready, or cancel it.
+    - *Menu Configuration*: Add/edit menu items and toggle item availability.
+    - *Stock Management*: View, add, and adjust stock quantities by category (see Data Model below for how this ties into order acceptance).
+    - *Staff / Owner Profile & Staff List*: View and edit account details; owner can view and manage the staff roster.
+  - There is no rider/delivery-handoff module — delivery and rider management are out of scope (product brief).
 
 - **Processing the Request (Backend API)**
   - **Type**: RESTful API Application
   - **Tech Stack**: Kotlin, Spring Boot
-  - **Responsibilities**: The brain of the operation. This software implementation sits behind the web apps and coordinates all business logic. It exposes REST endpoints consumed by the frontends, validates incoming requests, enforces business rules (like menu availability or pricing), and securely communicates with both the Database and external services like Keycloak and Stripe.
+  - **Responsibilities**: The brain of the operation. This software implementation sits behind the web apps and coordinates all business logic. It exposes REST endpoints consumed by the frontends, validates incoming requests, enforces business rules (menu availability, stock sufficiency, order status transitions), and communicates with the Database and Keycloak. There is no payment gateway integration.
 
 - **Database**
   - **Type**: Relational Database Management System (RDBMS)
@@ -47,25 +61,23 @@ These are third-party services that the system integrates with to offload comple
 
 - **Keycloak (Identity & Access Management)**
   - **Type**: Open-Source Identity Provider
-  - **Responsibilities**: Provides free, secure account creation, login, and session management. Instead of building custom authentication, both the Customer Web App and Staff Dashboard App redirect to Keycloak for secure login. The backend API then verifies the Keycloak tokens to authorize requests.
+  - **Responsibilities**: Provides free, secure account creation, login, and session management. The Staff Dashboard App redirects to Keycloak for secure login. The backend API then verifies the Keycloak tokens to authorize requests. Customers do not authenticate and Keycloak is not involved in the customer-facing flow.
 
-- **Payment Gateway [Stripe Thailand]**
-  - **Type**: Financial Processing API
-  - **Responsibilities**: Handles the actual transfer of funds (such as PromptPay or credit cards). The backend API securely communicates with Stripe to initiate checkout sessions and verify successful payment transfers via webhooks, ensuring that sensitive payment data never touches the internal database.
+No payment gateway or other third-party service is active in the current implementation (ADR 002-A).
 
 
 ## Data Model
 
-The system's data model is organized into six main functional domains, representing the core operations of the restaurant platform (comprising 23 tables in total).
+The database schema (23 tables) was originally designed for a larger system than the active MVP. The domains below note which parts are actively used by the backend today.
 
 ### Domain Overview
 
-1. **Users (Blue)**: Manages authentication and authorization via Keycloak. Includes the main `Users` entity and role-specific data such as `Customers` (tracking loyalty/points), `Staff_Schedule` (managing shifts), and staff-store relationships.
-2. **Store (Red)**: The central `Store` entity holds restaurant details, location, and operating hours. It links to an `Owner_User_ID`.
-3. **Menu Items (Yellow)**: A comprehensive catalog system. `Menu_Items` belong to a `Menu_Category` and have a `Menu_Status`. Complex customizations are handled via `Option_Groups` (e.g., Size, Toppings) and `Option_Choices`. `Menu_Recipe` and `Option_Ingredients` map items and choices to actual physical inventory.
-4. **Orders and Cart (Purple)**: Tracks customer purchases. An `Order` contains multiple `Order_Detail` lines. Each detail can have specific `Order_Item_Selections` (mapping to option choices). Order lifecycle is tracked via `Order_Status_Log` and an `Order_Status_Dictionary`.
-5. **Payment and Transaction (Green)**: Handles financial transactions. `Payment_Transaction` records payments against orders using a `Payment_Method`. It also includes a robust `Refund_Credit` system and `Financial_Record` for store accounting.
-6. **Stocks (Pink)**: Manages physical inventory. `Stocks` are categorized by `Stock_Category` and represent raw ingredients that are consumed via menu recipes and option ingredients.
+1. **Users**: Manages authentication and authorization via Keycloak. Includes the main `Users` entity and role-specific data such as `Staff` and staff-store relationships. `Staff_Schedule` / `LeaveDay` exist in schema but have no active service or UI (out of scope).
+2. **Store**: The central `Store` entity holds restaurant details and open/closed state, controlled by staff/owner. It links to an `Owner_User_ID`.
+3. **Menu Items**: `Menu_Items` belong to a `Menu_Category` and have a `Menu_Status` (available/unavailable). Customizations are handled via `Option_Groups` (e.g., spice level, add-ons) and `Option_Choices`. `Menu_Recipe` and `Option_Ingredients` map items and choices to `Stock` rows and are **actively used** to compute and deduct ingredient requirements (see Key Flows).
+4. **Orders and Cart**: Tracks customer purchases. An `Order` contains multiple `Order_Detail` lines. Each detail can have specific `Order_Item_Selections` (mapping to option choices). Order lifecycle (Pending → In Kitchen → Ready, or Canceled) is tracked via `Order_Status_Log` and an `Order_Status_Dictionary`.
+5. **Payment and Transaction**: `Payment_Transaction`, `Payment_Method`, and `Financial_Record` exist in the schema but are **not connected to any active service or API** (ADR 002-B) — no real payment is processed and there is no financial reporting. The exception is `Refund_Credit` / `Refund_Credit_Log`, which **is** active: staff-initiated order cancellation credits the customer's balance, redeemable at a later checkout (ADR 002-D).
+6. **Stocks**: `Stocks` are categorized by `Stock_Category` and represent raw ingredients. **Actively consumed** on order acceptance via menu recipes and option ingredients, and restored on cancellation (ADR 002-D). Staff can also add/adjust stock quantities directly through the Stock Management UI.
 
 ## Key Flows
 
@@ -78,8 +90,8 @@ The system relies on several core end-to-end flows to ensure a seamless experien
 - **Session**: The web app stores the token and includes it in the `Authorization` header of all subsequent API requests made to the **Backend API**.
 - **Validation**: The Backend API validates the Keycloak token before processing any request, ensuring secure data access.
 
-### 2. Order Placement and Payment Flow
-This is the core customer journey from selecting a dish to successfully completing a transaction.
+### 2. Order Placement Flow
+This is the core customer journey from browsing the menu to receiving an order reference number. There is no payment step — payment happens offline, outside the system.
 
 ```mermaid
 sequenceDiagram
@@ -87,49 +99,38 @@ sequenceDiagram
     participant WebApp as Customer Web App
     participant API as Backend API
     participant DB as Database
-    participant Stripe as Payment Gateway
 
     Customer->>WebApp: Browses menu & adds items to cart
     WebApp->>API: GET /menu (fetches available dishes)
-    API->>DB: Query menu items & current stock
+    API->>DB: Query menu items & status
     DB-->>API: Return menu data
     API-->>WebApp: Display menu to Customer
-    
-    Customer->>WebApp: Clicks "Checkout"
-    WebApp->>API: POST /orders (creates pending order)
-    API->>DB: Save Order & Order_Detail (Status: Pending)
-    API->>Stripe: Request Payment Intent (amount, currency)
-    Stripe-->>API: Return Payment Session/Intent URL
-    API-->>WebApp: Return checkout URL
-    
-    WebApp-->>Customer: Redirect to Stripe Checkout
-    Customer->>Stripe: Completes Payment (e.g., PromptPay)
-    
-    Stripe--)API: Webhook event (payment_success)
-    API->>DB: Update Payment_Transaction & Order Status (To: Received)
-    API->>DB: Deduct ingredient inventory from Stocks
-    API-->>WebApp: Status update (Order confirmed)
-    WebApp-->>Customer: Show "Order Successful" tracking page
+
+    Customer->>WebApp: Selects options, adds to cart, clicks "Checkout"
+    WebApp->>API: POST /orders (name, phone, special requests, cart)
+    API->>DB: Save Order & Order_Detail & Order_Item_Selections (Status: Pending)
+    DB-->>API: Order reference number
+    API-->>WebApp: Return order reference number
+    WebApp-->>Customer: Show reference number and tracking page
 ```
 
 ### 3. Order Fulfillment Flow (Staff Operations)
-- **Order Display**: The **Staff Dashboard App** requests the latest orders from the **Backend API** and displays incoming paid orders.
-- **Preparation**: A Staff member accepts the order. The app sends a request to the backend to update the status from `Received` to `Preparing`.
-- **Database Update**: The backend logs the status change in the `Order_Status_Log` table and updates the core `Orders` table.
-- **Customer Tracking**: The Customer Web App retrieves the updated status, allowing the customer to track their food in real-time.
-- **Delivery/Handoff**: Once the food is ready, the Staff marks it as `Delivered` or `Completed` on the Rider Dashboard, finalizing the lifecycle of the order.
+- **Order Display**: The **Staff Dashboard App** requests all submitted orders from the **Backend API** and displays them sorted by submission time (Pending first).
+- **Acceptance**: A staff member claims a pending order. The backend attempts to deduct the required stock (via `Menu_Recipe` / `Option_Ingredients`) and, only if sufficient stock exists, advances the order to **In Kitchen**. If stock is insufficient, the order is automatically canceled instead.
+- **Completion**: Staff advance the order from **In Kitchen** to **Ready**.
+- **Cancellation**: Staff can cancel an order that is Pending or In Kitchen. Canceling an In Kitchen order restores any stock already deducted and credits the customer's `Refund_Credit` balance.
+- **Database Update**: Every transition is logged in `Order_Status_Log` and the `Orders` table is updated.
+- **Customer Tracking**: The Customer Web App polls the order status by reference number, so the customer sees the same Pending / In Kitchen / Ready state staff see. There is no delivery or rider hand-off step in the active system.
 
 ## External Dependencies
 
-The system architecture explicitly depends on two external gray-box systems to handle specialized responsibilities securely:
+The system architecture depends on one external gray-box system:
 
 1. **Keycloak (Identity & Access Management)**:
-   - **Role**: Free secure open-source system that allows users to create accounts and connect to the app.
-   - **Interaction**: Both the Customer and the Restaurant Staff rely on Keycloak for registration and login help. It sits outside the core app process but integrates directly with "Processing the Request" (the backend) to ensure all API calls are properly authenticated.
-   
-2. **Payment Gateway [Stripe Thailand]**:
-   - **Role**: External service to process financial transactions like PromptPay or other payment methods.
-   - **Interaction**: The backend "Processing the Request" component uses Stripe to check and verify payment transfers. This abstracts the security complexities of payment processing away from our internal application and database, reducing liability while handling customer funds.
+   - **Role**: Free secure open-source system that allows staff/owner accounts to be created (via the Admin Console — no self-registration) and to log in.
+   - **Interaction**: The Staff Dashboard App relies on Keycloak for login. It sits outside the core app process but integrates directly with "Processing the Request" (the backend) to ensure all protected API calls are properly authenticated. Customers do not interact with Keycloak.
+
+There is no payment gateway or delivery/mapping service integrated (ADR 002-A; product brief out-of-scope list).
 
 ## Decisions and Trade‑offs
 
@@ -143,10 +144,16 @@ Our architectural decisions focus on delivering a functional Minimum Viable Prod
 - **Decision**: Instead of building custom authentication and password storage, we are using Keycloak as our Identity Provider.
 - **Trade-offs**: This dramatically improves system security and reduces development time by offloading session management and role-based access control. The trade-off is introducing a significant infrastructural dependency that must be hosted, configured, and maintained separately from our core application code.
 
-### 3. Offloading Payment Processing to Stripe
-- **Decision**: Using the Stripe Thailand API to process all financial transactions (e.g., PromptPay, cards).
-- **Trade-offs**: This keeps our backend out of PCI-compliance scope and shifts the liability of handling raw financial data to a trusted third party. The trade-offs include paying per-transaction fees and being forced to design our checkout flows to handle asynchronous webhook events (e.g., dealing with network delays or payment processing failures idempotently).
+### 3. Deferring Payment Processing (See [ADR 002-A](adrs/0002-scope-reduction-decisions.md))
+- **Decision**: An earlier draft of this architecture planned to integrate Stripe Thailand for PromptPay/card payments. This was deferred entirely for the MVP — orders are recorded without any financial transaction, and payment is handled offline between customer and staff.
+- **Trade-offs**: This keeps the team focused on the core order-intake and staff-review workflow within the remaining timeline, at the cost of the MVP not being usable for real commercial transactions yet.
+
+### 4. Reinstating Recipe-Based Stock Deduction (See [ADR 002-D](adrs/0002-scope-reduction-decisions.md))
+- **Decision**: Automatic stock deduction (originally deferred) was implemented after all once the order-acceptance flow stabilized. Accepting an order deducts the stock required by `Menu_Recipe` / `Option_Ingredients`; canceling an in-progress order restores it and credits the customer's `Refund_Credit` balance.
+- **Trade-offs**: This directly addresses the case's "item was unavailable but still requested" problem, but makes order acceptance depend on recipe data being correctly maintained — a menu item with no recipe rows will deduct nothing.
 
 ## C4 Diagrams
 
 ![C4 Diagram](image.png)
+
+> **Note:** This diagram was drawn early in the project and may still show the originally-planned Stripe payment gateway and rider/delivery components described above. The text sections above are the authoritative description of the current system; the diagram is scheduled to be redrawn to match ADR 002 / 002-D before final submission.
