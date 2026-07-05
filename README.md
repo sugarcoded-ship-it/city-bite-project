@@ -1,105 +1,69 @@
-# ICCS 372 Repository Template
+# CityBite Bangkok — Digital Ordering System (Team 03)
 
-This repository provides a starting point for team projects in the **ICCS 372 – Software Engineering (Practical Agile Delivery)** course. It defines the folder structure, documentation templates, and workflow files that every team should use. By standardising the layout, the course makes it easier for instructors to grade deliverables and for teams to collaborate effectively.
+A web-based ordering and order-management MVP for CityBite Bangkok, a single-location food business currently juggling walk-in, phone, and chat orders. Customers browse the menu and submit orders as guests; staff manage all incoming orders from one dashboard instead of reconciling multiple channels by hand.
 
----
-
-## Overview
-
-After you create your own project repository from this template (via the **Use this template** button on GitHub or by copying its contents), fill out each document with information specific to your chosen scenario.
-
-The goal is to maintain a clear, traceable record of your:
-
-* project brief
-* backlog
-* design decisions
-* risks
-* quality practices
-* handover artifacts
-
-The `.github` folder contains issue and pull‑request templates to ensure disciplined workflows, while the CI configuration provides a placeholder for your continuous integration pipeline.
+**Team 03 — ICCS 372 (Software Engineering: Practical Agile Delivery)**
+Chawinthorn Kittivacharaphong · Suppapoo Ekpipattana · Natthakul Yikusung · Pakawun Jindawat · Nattapas Nunthameteesuk · Matteo Ramdani
 
 ---
 
-## File Structure
+## Start here
+
+| I want to... | Go to |
+|---|---|
+| Run the system locally | [`docs/handover/runbook.md`](docs/handover/runbook.md) |
+| Understand the project scope and what's in/out of the MVP | [`docs/brief/product_brief_v05_team03.md`](docs/brief/product_brief_v05_team03.md) |
+| See the system design and key flows | [`docs/architecture/architecture-page-team3.md`](docs/architecture/architecture-page-team3.md) |
+| See why a major technical decision was made | [`docs/architecture/adrs/`](docs/architecture/adrs/) |
+| See the backlog / user stories | [`docs/planning/user_stories_team03.md`](docs/planning/user_stories_team03.md) |
+| Check what's broken or deliberately out of scope | [`docs/handover/known-issues.md`](docs/handover/known-issues.md) |
+| See what shipped each sprint | [`docs/handover/release-notes.md`](docs/handover/release-notes.md) |
+
+---
+
+## What's built
+
+- **Customer:** browse the menu by category, customize items with option groups, manage a cart, submit an order as a guest, and track its status (Pending → In Kitchen → Ready) by reference number.
+- **Staff:** a single order inbox sorted by submission time, full order detail (items, options, special requests), claim/complete/cancel an order, toggle menu item availability, and manage stock — accepting an order automatically deducts the ingredients it requires and restores them if the order is canceled.
+- **Owner:** everything staff can do, plus managing the staff roster and store open/closed state.
+
+Payment processing, delivery/rider tracking, and financial reporting are explicitly out of scope for this MVP — see the product brief and [ADR 002](docs/architecture/adrs/0002-scope-reduction-decisions.md) for why.
+
+---
+
+## Tech stack
+
+- **Frontend:** React + TypeScript (Vite) — `codes/frontend/restaurant`
+- **Backend:** Kotlin + Spring Boot (REST API) — `codes/backend/restaurant`
+- **Database:** PostgreSQL
+- **Auth:** Keycloak (`STAFF` / `OWNER` roles; customers are unauthenticated guests)
+- **Infra:** Docker Compose + NGINX reverse proxy
+
+Full setup and troubleshooting steps are in the [runbook](docs/handover/runbook.md).
+
+---
+
+## Repository layout
 
 ```plaintext
 .
-├── .github
-│   ├── ISSUE_TEMPLATE
-│   │   └── user_story.md          # Issue template for creating user stories
-│   ├── pull_request_template.md  # Checklist for pull requests
-│   └── workflows
-│       └── ci.yml                # Placeholder CI workflow
-└── docs
-    ├── architecture
-    │   ├── architecture-page.md  # High-level architecture overview
-    │   └── adrs
-    │       └── adr-template.md   # Template for Architecture Decision Records (ADRs)
-    ├── brief
-    │   └── project-brief.md      # Project brief (formerly called product brief)
-    ├── handover
-    │   ├── runbook.md            # Operational guide for running the system
-    │   ├── known-issues.md       # List of known defects and limitations
-    │   └── release-notes.md      # Notes on features and fixes per release/iteration
-    └── planning
-        ├── definition-of-done.md # Team’s Definition of Done checklist
-        ├── risk-list.md          # Identified risks and mitigation strategies
-        └── user-stories.md       # Backlog of user stories with acceptance criteria
-
-README.md (this file)
+├── codes/                        # Application source (monorepo)
+│   ├── frontend/restaurant/      # React/TypeScript SPA
+│   ├── backend/restaurant/       # Kotlin/Spring Boot API
+│   ├── docker-compose*.yml       # Local dev / standard / db-only stacks
+│   └── realm-config.json         # Keycloak realm import
+├── docs/
+│   ├── brief/                    # Product brief
+│   ├── architecture/             # Architecture page + ADRs + C4 diagram
+│   ├── planning/                 # Backlog, DoD, risk list
+│   ├── handover/                 # Runbook, known issues, release notes
+│   ├── sprint-meetings/          # Per-sprint notes and individual logs
+│   └── presentations/            # Kickoff deck
+└── .github/                      # Issue/PR templates, CI workflow
 ```
 
 ---
 
-## How to Use This Template
+## Contributing (team workflow)
 
-1. **Create your repository**
-   In your GitHub organisation, click **Use this template** and create a new repository for your team project (e.g. `team1-clinic`).
-
-2. **Populate the project brief**
-   Edit `docs/brief/project-brief.md` to describe your project’s problem statement, target users, scope (in and out), success criteria and assumptions. Throughout this course, we refer to this as the *project brief*.
-
-3. **Build your backlog**
-   Use `docs/planning/user-stories.md` as a living backlog. Write your user stories in the recommended format:
-
-   > As a…, I want…, so that…
-
-   Include acceptance criteria, priority and estimates. Link each story to its GitHub issue.
-
-4. **Define your quality bar**
-   In `docs/planning/definition-of-done.md`, record the criteria that must be met before any work is considered done (e.g. code reviewed, CI passes, tests added, documentation updated).
-
-5. **Identify risks**
-   Document technical or process risks in `docs/planning/risk-list.md` and update it during retrospectives.
-
-6. **Capture architecture and decisions**
-   Sketch your system in `docs/architecture/architecture-page.md`, using a C4-lite or UML-lite diagram and text. For each significant design decision, create an ADR file in `docs/architecture/adrs/` using `adr-template.md` as a starting point.
-
-7. **Maintain the handover pack**
-   Throughout the project, keep the runbook, known issues and release notes up to date under `docs/handover/`. This collection of documents will form your handover pack in Week 9.
-
-8. **Use disciplined workflows**
-   Create an issue for each story, branch off `main`, open a pull request using the template in `.github/pull_request_template.md`, and ensure your CI workflow (`.github/workflows/ci.yml`) runs successfully before merging. Update the backlog and documentation as you go.
-
----
-
-## Notes on Naming
-
-The original course specification referred to a *product brief*. In this template, the document is named `project-brief.md` to emphasise that you are defining the scope of your project rather than marketing a product.
-
-If you see references to *product brief* in older materials, treat them as synonymous with *project brief*.
-
----
-
-## Contributing to the Template
-
-If you discover improvements that could help other teams (e.g. clearer templates, better CI commands), please suggest changes to the instructor.
-
-However, do **not** modify this template directly in your project repo; instead, customise your copies while keeping the folder structure intact for grading.
-
----
-
-## Final Note
-
-This template aims to support a disciplined, lightweight engineering process. By following the structure and guidelines provided here, your team will produce the artifacts required by the course and make it easy for graders to assess your work.
+Create an issue → branch off `main` → open a PR using [`.github/pull_request_template.md`](.github/pull_request_template.md) → CI (`.github/workflows/ci.yml`) must pass → at least one teammate reviews before merge. Full criteria in [`docs/planning/definition-of-done.md`](docs/planning/definition-of-done.md).
