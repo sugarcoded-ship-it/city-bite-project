@@ -16,6 +16,7 @@ interface OrderDetailItem {
     price: number;
     specialRequest: string | null;
     selectedChoiceIds: number[];
+    isCanceled: boolean;
 }
 
 interface OrderHistoryEntry {
@@ -274,9 +275,19 @@ export default function OrderHistory() {
                                     <div className={styles.itemsLabel}>Items ordered</div>
                                     <div className={styles.itemsList}>
                                         {order.items.map((item, idx) => (
-                                            <span key={idx} className={styles.itemChip}>
+                                            <span
+                                                key={idx}
+                                                className={styles.itemChip}
+                                                style={item.isCanceled ? { opacity: 0.55, textDecoration: 'line-through' } : undefined}
+                                                title={item.isCanceled ? 'Removed due to insufficient stock and refunded' : undefined}
+                                            >
                                                 {item.menuName}
                                                 <span className={styles.itemChipQty}>×{item.quantity}</span>
+                                                {item.isCanceled && (
+                                                    <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 700, color: '#ef4444' }}>
+                                                        Refunded
+                                                    </span>
+                                                )}
                                             </span>
                                         ))}
                                     </div>

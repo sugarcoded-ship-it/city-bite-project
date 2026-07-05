@@ -10,6 +10,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.ColumnDefault
 import java.math.BigDecimal
 
 @Entity
@@ -35,5 +36,9 @@ class OrderDetail(
     var specialRequest: String? = null,
 
     @Column(name = "price", nullable = false)
-    var price: BigDecimal
+    var price: BigDecimal,
+
+    @ColumnDefault("false")
+    @Column(name = "is_canceled", nullable = false)
+    var isCanceled: Boolean = false
 )

@@ -8,8 +8,10 @@ import com.food.restaurant.repository.cart.CartItemRepository
 import com.food.restaurant.repository.menu.MenuRepository
 import com.food.restaurant.repository.menu.OptionChoiceRepository
 import com.food.restaurant.repository.user.UserRepository
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 
 @Service
@@ -19,7 +21,8 @@ class CartService(
     private val menuRepository: MenuRepository,
     private val optionChoiceRepository: OptionChoiceRepository,
     private val userRepository: UserRepository,
-    private val menuAvailabilityService: MenuAvailabilityService
+    private val menuAvailabilityService: MenuAvailabilityService,
+    private val storeService: StoreService
 ) {
 
     fun addItem(
@@ -29,6 +32,10 @@ class CartService(
         selectedChoices: Map<String, List<Int>>?,
         quantity: Int = 1
     ) {
+        if (!storeService.isStoreOpen()) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Store is currently closed. Please try again later.")
+        }
+
         val userUuid = UUID.fromString(userId)
 
         if (!userRepository.existsById(userUuid)) {

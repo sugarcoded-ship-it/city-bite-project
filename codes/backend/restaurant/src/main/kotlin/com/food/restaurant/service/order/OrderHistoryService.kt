@@ -71,13 +71,15 @@ class OrderHistoryService(
                     quantity = detail.amount,
                     price = detail.price.toDouble(),
                     specialRequest = detail.specialRequest,
-                    selectedChoiceIds = selections.map { it.optionChoice.id }
+                    selectedChoiceIds = selections.map { it.optionChoice.id },
+                    isCanceled = detail.isCanceled
                 )
             }
 
             OrderHistoryResponse(
                 orderId = order.id,
                 totalAmount = order.totalPrice.toDouble(),
+                creditApplied = order.creditApplied.toDouble(),
                 createdAt = order.createdAt.toString(),
                 status = order.orderStatus.statusName.name,
                 canceledBy = order.canceledBy,

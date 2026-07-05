@@ -6,11 +6,13 @@ import styles from './StaffDashboard.module.css';
 import { Clock, User, CheckCircle } from 'lucide-react';
 
 interface StaffOrderItemResponse {
+    detailId: number;
     menuName: string;
     quantity: number;
     price: number;
     specialRequest: string | null;
     selectedOptions: string[];
+    isCanceled: boolean;
 }
 
 interface StaffOrderResponse {
@@ -29,8 +31,9 @@ export const StaffDashboard = () => {
     const [orders, setOrders] = useState<StaffOrderResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
-    const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
     const [toast, setToast] = useState<{ msg: string; isError: boolean } | null>(null);
+    const [cancelModalOrder, setCancelModalOrder] = useState<StaffOrderResponse | null>(null);
+    const [selectedCancelIds, setSelectedCancelIds] = useState<Set<number>>(new Set());
 
 
     // Function to calculate minutes ago
@@ -65,8 +68,8 @@ export const StaffDashboard = () => {
     const handleClaimOrder = async (orderId: number) => {
         setActionLoadingId(orderId);
         try {
-            await apiClient(`/staff/orders/${orderId}/claim`, { method: 'POST' });
-            showToast('Order successfully claimed!');
+            const result = await apiClient<{ message: string; removedItems: string[] }>(`/staff/orders/${orderId}/claim`, { method: 'POST' });
+            showToast(result?.message || 'Order successfully claimed!', (result?.removedItems?.length ?? 0) > 0);
             await fetchOrders();
         } catch (error: unknown) {
             console.error('Failed to claim order:', error);
@@ -95,16 +98,48 @@ export const StaffDashboard = () => {
         }
     };
 
-    const handleCancelOrder = async (orderId: number) => {
-        setActionLoadingId(orderId);
+    const openCancelModal = (order: StaffOrderResponse) => {
+        const activeIds = order.items.filter(i => !i.isCanceled).map(i => i.detailId);
+        setSelectedCancelIds(new Set(activeIds));
+        setCancelModalOrder(order);
+    };
+
+    const toggleCancelSelection = (detailId: number) => {
+        setSelectedCancelIds(prev => {
+            const next = new Set(prev);
+            if (next.has(detailId)) next.delete(detailId); else next.add(detailId);
+            return next;
+        });
+    };
+
+    const confirmCancelSelection = async () => {
+        if (!cancelModalOrder) return;
+        const order = cancelModalOrder;
+        const activeIds = order.items.filter(i => !i.isCanceled).map(i => i.detailId);
+        const selected = activeIds.filter(id => selectedCancelIds.has(id));
+
+        if (selected.length === 0) {
+            showToast('Select at least one item to cancel.', true);
+            return;
+        }
+
+        setActionLoadingId(order.orderId);
         try {
-            await apiClient(`/staff/orders/${orderId}/cancel`, { method: 'POST' });
-            showToast('Order canceled.');
+            if (selected.length === activeIds.length) {
+                await apiClient(`/staff/orders/${order.orderId}/cancel`, { method: 'POST' });
+                showToast('Order canceled.');
+            } else {
+                for (const detailId of selected) {
+                    await apiClient(`/staff/orders/${order.orderId}/items/${detailId}/cancel`, { method: 'POST' });
+                }
+                showToast(`${selected.length} item(s) canceled and refunded.`);
+            }
+            setCancelModalOrder(null);
             await fetchOrders();
         } catch (error: unknown) {
-            console.error('Failed to cancel order:', error);
+            console.error('Failed to cancel:', error);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const msg = (error as any).response?.data?.message || 'Failed to cancel order.';
+            const msg = (error as any).response?.data?.message || 'Failed to cancel.';
             showToast(msg, true);
         } finally {
             setActionLoadingId(null);
@@ -137,10 +172,13 @@ export const StaffDashboard = () => {
 
                     <div className={styles.itemList}>
                         {order.items.map((item, idx) => (
-                            <div key={idx}>
+                            <div key={idx} style={item.isCanceled ? { opacity: 0.5, textDecoration: 'line-through' } : undefined}>
                                 <div className={styles.itemRow}>
                                     <span className={styles.itemName}>{item.menuName}</span>
                                     <span className={styles.itemQty}>x{item.quantity}</span>
+                                    {item.isCanceled && (
+                                        <span className={styles.badge} style={{ background: '#ef4444', marginLeft: 8 }}>Canceled</span>
+                                    )}
                                 </div>
                                 {item.selectedOptions.length > 0 && (
                                     <div className={styles.itemOptions}>
@@ -180,18 +218,10 @@ export const StaffDashboard = () => {
                             </button>
                             <button
                                 className={`${styles.actionBtn} ${styles.cancelBtn}`}
-                                onClick={() => {
-                                    if (confirmCancelId === order.orderId) {
-                                        handleCancelOrder(order.orderId);
-                                        setConfirmCancelId(null);
-                                    } else {
-                                        setConfirmCancelId(order.orderId);
-                                        setTimeout(() => setConfirmCancelId(null), 3000);
-                                    }
-                                }}
+                                onClick={() => openCancelModal(order)}
                                 disabled={actionLoadingId === order.orderId}
                             >
-                                {actionLoadingId === order.orderId ? 'Canceling...' : (confirmCancelId === order.orderId ? 'Confirm?' : 'Cancel Order')}
+                                Cancel Order
                             </button>
                         </div>
                     ) : (
@@ -207,19 +237,11 @@ export const StaffDashboard = () => {
                             </button>
                             <button
                                 className={`${styles.actionBtn} ${styles.cancelBtn}`}
-                                onClick={() => {
-                                    if (confirmCancelId === order.orderId) {
-                                        handleCancelOrder(order.orderId);
-                                        setConfirmCancelId(null);
-                                    } else {
-                                        setConfirmCancelId(order.orderId);
-                                        setTimeout(() => setConfirmCancelId(null), 3000);
-                                    }
-                                }}
+                                onClick={() => openCancelModal(order)}
                                 disabled={actionLoadingId === order.orderId || !isMine}
                                 title={!isMine ? 'Only the assigned staff can cancel this order' : ''}
                             >
-                                {actionLoadingId === order.orderId ? 'Canceling...' : (confirmCancelId === order.orderId ? 'Confirm?' : 'Cancel')}
+                                Cancel
                             </button>
                         </div>
                     )}
@@ -274,6 +296,80 @@ export const StaffDashboard = () => {
                     {toast.msg}
                 </div>
             )}
+
+            {cancelModalOrder && (() => {
+                const activeItems = cancelModalOrder.items.filter(i => !i.isCanceled);
+                const selectedCount = activeItems.filter(i => selectedCancelIds.has(i.detailId)).length;
+                const isWholeOrder = selectedCount === activeItems.length;
+                const isLoading = actionLoadingId === cancelModalOrder.orderId;
+
+                return (
+                    <div
+                        className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+                        onClick={() => !isLoading && setCancelModalOrder(null)}
+                    >
+                        <div
+                            className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-5 border-b border-gray-100">
+                                <h3 className="text-lg font-extrabold text-gray-900">
+                                    Cancel Order #ORD-{String(cancelModalOrder.orderId).padStart(5, '0')}
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    Select which items to cancel and refund. Leave everything selected to cancel the whole order.
+                                </p>
+                            </div>
+
+                            <div className="overflow-y-auto flex-1 p-5 space-y-2">
+                                {activeItems.map((item) => (
+                                    <label
+                                        key={item.detailId}
+                                        className="flex items-center justify-between p-3 rounded-xl border border-gray-200 cursor-pointer hover:border-red-300"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCancelIds.has(item.detailId)}
+                                                onChange={() => toggleCancelSelection(item.detailId)}
+                                                className="w-4 h-4 accent-red-500"
+                                            />
+                                            <div>
+                                                <div className="text-sm font-semibold text-gray-800">{item.menuName} x{item.quantity}</div>
+                                                {item.specialRequest && (
+                                                    <div className="text-xs text-gray-400">Note: {item.specialRequest}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span className="text-sm font-bold text-gray-700">฿{item.price.toFixed(2)}</span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            <div className="p-5 border-t border-gray-100 flex gap-3">
+                                <button
+                                    onClick={() => setCancelModalOrder(null)}
+                                    disabled={isLoading}
+                                    className="flex-1 py-3 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    onClick={confirmCancelSelection}
+                                    disabled={isLoading || selectedCount === 0}
+                                    className="flex-1 py-3 rounded-xl text-sm font-bold bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+                                >
+                                    {isLoading
+                                        ? 'Canceling...'
+                                        : isWholeOrder
+                                            ? 'Cancel Whole Order'
+                                            : `Cancel ${selectedCount} Item(s)`}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 };

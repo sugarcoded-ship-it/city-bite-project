@@ -14,6 +14,7 @@ import jakarta.persistence.Table
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import jakarta.persistence.Version
+import org.hibernate.annotations.ColumnDefault
 
 @Entity
 @Table(name = "Orders")
@@ -50,5 +51,9 @@ class Order(
     var version: Long = 0,
 
     @Column(name = "canceled_by", nullable = true)
-    var canceledBy: String? = null
+    var canceledBy: String? = null,
+
+    @ColumnDefault("0")
+    @Column(name = "credit_applied", nullable = false)
+    var creditApplied: BigDecimal = BigDecimal.ZERO
 )

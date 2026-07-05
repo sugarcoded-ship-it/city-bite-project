@@ -10,8 +10,6 @@ import com.food.restaurant.entity.order.OrderDetail
 import com.food.restaurant.entity.order.OrderItemSelection
 import com.food.restaurant.entity.order.orderStatusEnum
 import com.food.restaurant.entity.payment.PaymentTransaction
-import com.food.restaurant.entity.payment.RefundCredit
-import com.food.restaurant.entity.payment.RefundCreditLog
 import com.food.restaurant.repository.cart.CartItemRepository
 import com.food.restaurant.repository.user.AddressRepository
 import com.food.restaurant.repository.menu.MenuRepository
@@ -22,11 +20,11 @@ import com.food.restaurant.repository.order.OrderStatusRepository
 import com.food.restaurant.repository.order.OrderSummaryRepository
 import com.food.restaurant.repository.payment.PaymentMethodRepository
 import com.food.restaurant.repository.payment.PaymentTransactionRepository
-import com.food.restaurant.repository.payment.RefundCreditLogRepository
-import com.food.restaurant.repository.payment.RefundCreditRepository
 import com.food.restaurant.repository.user.UserRepository
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -42,9 +40,9 @@ class OrderSummaryService(
     private val orderItemSelectionRepository: OrderItemSelectionRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
     private val paymentTransactionRepository: PaymentTransactionRepository,
-    private val refundCreditRepository: RefundCreditRepository,
-    private val refundCreditLogRepository: RefundCreditLogRepository,
-    private val cartItemRepository: CartItemRepository
+    private val refundCreditService: RefundCreditService,
+    private val cartItemRepository: CartItemRepository,
+    private val storeService: StoreService
 ) {
     fun summarizeCartBeforePayment(requestedItems: List<CartItemRequest>): CartSummaryResponse {
 
@@ -94,6 +92,10 @@ class OrderSummaryService(
 
     @Transactional
     fun processCheckout(request: CreateOrderRequest): Order {
+        if (!storeService.isStoreOpen()) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Store is currently closed. Please try again later.")
+        }
+
         val customerEntity = userRepository.findById(request.customerUuid)
             .orElseThrow { IllegalArgumentException("Customer not found") }
 
@@ -105,13 +107,35 @@ class OrderSummaryService(
         val paymentMethodEntity = paymentMethodRepository.findById(request.paymentMethodId)
             .orElseThrow { IllegalArgumentException("Payment method not found") }
 
+        if (request.creditUsed < BigDecimal.ZERO || request.creditUsed > request.totalPrice) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credit amount")
+        }
+
         val orderToSave = Order(
             customer = customerEntity,
             address = addressEntity,
             orderStatus = pendingStatus,
-            totalPrice = request.totalPrice
+            totalPrice = request.totalPrice,
+            creditApplied = request.creditUsed
         )
         val savedOrder = orderRepository.save(orderToSave)
+
+        val transactionMock = PaymentTransaction(
+            order = savedOrder,
+            paymentMethod = paymentMethodEntity,
+            amount = savedOrder.totalPrice.subtract(savedOrder.creditApplied),
+            currency = "THB",
+            referenceId = "MOCK-TXN-${UUID.randomUUID()}",
+            description = "Successful payment for Order #${savedOrder.id}"
+        )
+        val savedTransaction = paymentTransactionRepository.save(transactionMock)
+
+        if (request.creditUsed > BigDecimal.ZERO) {
+            val applied = refundCreditService.spendCredit(customerEntity, request.creditUsed, savedTransaction, savedOrder, "Applied to order #${savedOrder.id}")
+            if (!applied) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient credit balance")
+            }
+        }
 
         request.items.forEach { cartItem ->
             val menuItemEntity = menuRepository.findById(cartItem.menuId)
@@ -152,16 +176,6 @@ class OrderSummaryService(
             }
         }
 
-        val transactionMock = PaymentTransaction(
-            order = savedOrder,
-            paymentMethod = paymentMethodEntity,
-            amount = savedOrder.totalPrice,
-            currency = "THB",
-            referenceId = "MOCK-TXN-${UUID.randomUUID()}",
-            description = "Successful payment for Order #${savedOrder.id}"
-        )
-        paymentTransactionRepository.save(transactionMock)
-
         cartItemRepository.deleteByCustomerUuid(request.customerUuid)
 
         return savedOrder
@@ -177,22 +191,8 @@ class OrderSummaryService(
         orderEntity.orderStatus = canceledStatus
         orderRepository.save(orderEntity)
 
-        val originalTransaction = paymentTransactionRepository.findByOrderId(orderId)
-            ?: return
+        val transaction = paymentTransactionRepository.findByOrderId(orderId) ?: return
 
-        val customer = orderEntity.customer
-
-        val refundLog = RefundCreditLog(
-            paymentTransaction = originalTransaction,
-            customer = customer,
-            amount = originalTransaction.amount
-        )
-        refundCreditLogRepository.save(refundLog)
-
-        val wallet = refundCreditRepository.findByCustomer_Id(customer.id)
-            ?: RefundCredit(customer = customer, amount = BigDecimal.ZERO)
-
-        wallet.amount = wallet.amount.add(originalTransaction.amount)
-        refundCreditRepository.save(wallet)
+        refundCreditService.creditRefund(orderEntity.customer, orderEntity.totalPrice, transaction, orderEntity, "Order #$orderId canceled by customer")
     }
 }

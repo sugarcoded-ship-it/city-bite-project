@@ -58,6 +58,10 @@ export function CustomerDashboard() {
     const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const hasUnavailableCartItem = cartItems.some((item) => item.status !== 'ACTIVE');
 
+    // --- Store Status ---
+    const [storeOpen, setStoreOpen] = useState<boolean>(true);
+    const [showClosedPopup, setShowClosedPopup] = useState<boolean>(false);
+
     // --- UI States ---
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -88,6 +92,13 @@ export function CustomerDashboard() {
 
     useEffect(() => {
         apiClient('/customer/').catch((err) => console.error('Failed to sync user profile:', err));
+
+        apiClient<{ isOpen: boolean }>('/customer/store-status')
+            .then((data) => {
+                setStoreOpen(data.isOpen);
+                if (!data.isOpen) setShowClosedPopup(true);
+            })
+            .catch((err) => console.error('Failed to fetch store status:', err));
 
         apiClient<MenuItem[]>('/customer/menu')
             .then((data: MenuItem[] | { data: MenuItem[] }) => {
@@ -163,6 +174,10 @@ export function CustomerDashboard() {
 
     // --- Handlers ---
     const openMenuModal = async (item: MenuItem) => {
+        if (!storeOpen) {
+            setShowClosedPopup(true);
+            return;
+        }
         if (item.status !== 'ACTIVE') return;
         setSelectedItem(item);
         setSelectedChoices(new Map());
@@ -231,7 +246,8 @@ export function CustomerDashboard() {
             fetchCartSnapshot();
         } catch (err) {
             console.error('Network request failed adding payload to cart:', err);
-            showToast('Failed to append item to cart.');
+            const e = err as { response?: { data?: { message?: string } } };
+            showToast(e.response?.data?.message ?? 'Failed to append item to cart.');
         }
     };
 
@@ -408,7 +424,7 @@ export function CustomerDashboard() {
                         ) : (
                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                 {displayedItems.map((item) => {
-                                    const isAvailable = item.status === 'ACTIVE';
+                                    const isAvailable = item.status === 'ACTIVE' && storeOpen;
                                     return (
                                         <div
                                             key={item.id}
@@ -430,7 +446,7 @@ export function CustomerDashboard() {
                       </span>
                                                 {!isAvailable && (
                                                     <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-xs font-bold uppercase tracking-wide">
-                                                    {item.status === 'OUT_OF_ORDER' ? 'Out of Stock' : 'Unavailable'}
+                                                    {!storeOpen ? 'Store Closed' : item.status === 'OUT_OF_ORDER' ? 'Out of Stock' : 'Unavailable'}
                                                 </span>
                                                 )}
                                             </div>
@@ -573,6 +589,27 @@ export function CustomerDashboard() {
                 </div>
             </div>
 
+            {/* ── STORE CLOSED POPUP ── */}
+            {showClosedPopup && (
+                <div className="fixed inset-0 bg-[#0B1F4D]/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-sm p-7 text-center shadow-2xl" style={{ animation: 'modalIn 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
+                        <div className="w-14 h-14 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                            !
+                        </div>
+                        <h2 className="text-[#0B1F4D] text-lg font-extrabold mb-2">We're Currently Closed</h2>
+                        <p className="text-gray-500 text-sm mb-6">
+                            Sorry, we're not accepting orders right now. Please check back during our opening hours.
+                        </p>
+                        <button
+                            onClick={() => setShowClosedPopup(false)}
+                            className="w-full bg-[#0B1F4D] hover:bg-[#1a3a7a] text-white font-bold py-3 rounded-xl text-sm transition-colors"
+                        >
+                            Got it
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* ── ADD TO CART MODAL ── */}
             {selectedItem && (
                 <div className="fixed inset-0 bg-[#0B1F4D]/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={closeMenuModal}>
@@ -685,7 +722,7 @@ export function CustomerDashboard() {
 
             {/* ── TOAST ALERT ── */}
             {toastMessage && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-60 whitespace-nowrap flex items-center gap-2 animate-toast">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-[60] whitespace-nowrap flex items-center gap-2 animate-toast">
           <span className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center shrink-0">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

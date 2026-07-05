@@ -7,6 +7,7 @@ import com.food.restaurant.dto.menu.OptionGroupResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.service.CartService
 import com.food.restaurant.service.MenuService
+import com.food.restaurant.service.StoreService
 import com.food.restaurant.service.UserSyncService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,13 +22,20 @@ import org.springframework.web.server.ResponseStatusException
 class HomeController(
     private val userSyncService: UserSyncService,
     private val menuService: MenuService,
-    private val cartService: CartService
+    private val cartService: CartService,
+    private val storeService: StoreService
 ) {
 
     @GetMapping("/")
     @PreAuthorize("isAuthenticated()")
     fun customerHome(@AuthenticationPrincipal jwt: Jwt) {
         userSyncService.syncFromToken(jwt)
+    }
+
+    @GetMapping("/store-status")
+    @PreAuthorize("isAuthenticated()")
+    fun getStoreStatus(): Map<String, Boolean> {
+        return mapOf("isOpen" to storeService.isStoreOpen())
     }
 
     @GetMapping("/menu")
