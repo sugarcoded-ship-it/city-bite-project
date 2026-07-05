@@ -90,7 +90,8 @@ const OrderSummary: React.FC = () => {
 
     // API State
     const [cartSummary, setCartSummary] = useState<CartSummaryResponse | null>(null);
-    const [, setRefundCredit] = useState<number>(0);
+    const [refundCredit, setRefundCredit] = useState<number>(0);
+    const [creditToApply, setCreditToApply] = useState<number>(0);
     const [userAddresses, setUserAddresses] = useState<AddressDto[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethodResponse[]>([]);
 
@@ -221,6 +222,7 @@ const OrderSummary: React.FC = () => {
             orderStatusId: 1,
             paymentMethodId: Number(paymentMethodId),
             totalPrice: finalTotal,
+            creditUsed: creditApplied,
             items: cartSummary.items.map(item => ({
                 menuId: item.menuId,
                 amount: item.amount,
@@ -254,6 +256,9 @@ const OrderSummary: React.FC = () => {
 
     const subtotal = cartSummary?.totalPrice || 0;
     const total = subtotal + DELIVERY_FEE;
+    const maxApplicableCredit = Math.min(refundCredit, total);
+    const creditApplied = Math.min(Math.max(creditToApply, 0), maxApplicableCredit);
+    const payableTotal = total - creditApplied;
     const cartCount = cartSummary?.items.reduce((sum, item) => sum + item.amount, 0) || 0;
     const selectedMethodObj = paymentMethods.find(p => p.id === paymentMethodId);
     const selectedMethodCode = selectedMethodObj?.methodCode.toUpperCase() || '';
@@ -510,11 +515,50 @@ const OrderSummary: React.FC = () => {
                                         <span className="text-gray-500">Delivery</span>
                                         <span className="text-gray-700 font-semibold">฿{DELIVERY_FEE}</span>
                                     </div>
+                                    {creditApplied > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-green-600">Credit applied</span>
+                                            <span className="text-green-600 font-semibold">-฿{creditApplied.toFixed(2)}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between font-extrabold text-[#0B1F4D] border-t border-gray-100 pt-2">
                                         <span>Total</span>
-                                        <span>฿{total}</span>
+                                        <span>฿{payableTotal.toFixed(2)}</span>
                                     </div>
                                 </div>
+
+                                {refundCredit > 0 && (
+                                    <div className="bg-[#f0f2f7] rounded-2xl p-3 space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-[#0B1F4D] text-xs font-bold flex items-center gap-1.5">
+                                                <Wallet size={13} /> Store Credit
+                                            </p>
+                                            <p className="text-gray-400 text-[11px]">Balance: ฿{refundCredit.toFixed(2)}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 text-sm">฿</span>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                max={maxApplicableCredit}
+                                                step="0.01"
+                                                value={creditToApply === 0 ? '' : creditToApply}
+                                                onChange={(e) => {
+                                                    const val = Number(e.target.value);
+                                                    setCreditToApply(Number.isFinite(val) ? Math.min(Math.max(val, 0), maxApplicableCredit) : 0);
+                                                }}
+                                                placeholder="0.00"
+                                                className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#2D7FF9] focus:ring-2 focus:ring-[#2D7FF9]/20"
+                                            />
+                                            <button
+                                                onClick={() => setCreditToApply(maxApplicableCredit)}
+                                                className="text-[#2D7FF9] text-xs font-bold hover:underline flex-shrink-0"
+                                            >
+                                                Max
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {selectedAddress && (
                                     <div className="bg-[#f0f2f7] rounded-2xl p-3 mt-1">

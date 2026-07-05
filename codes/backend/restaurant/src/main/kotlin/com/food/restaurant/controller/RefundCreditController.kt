@@ -1,9 +1,12 @@
 package com.food.restaurant.controller
 
+import com.food.restaurant.dto.CreditHistoryEntryResponse
 import com.food.restaurant.dto.CreditRequest
 import com.food.restaurant.dto.RefundCreditResponse
 import com.food.restaurant.service.RefundCreditService
 import com.food.restaurant.service.UserSyncService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -15,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
 import java.util.UUID
 
 @RestController
@@ -25,10 +27,6 @@ class RefundCreditController(
     private val userSyncService: UserSyncService
 ) {
 
-    /**
-     * URL: GET http://localhost:8080/api/credits/balance?keycloakUuid=1234-5678
-     * Used by the Home Page to display the user's available refund credits.
-     */
     @GetMapping("/balance")
     @PreAuthorize("isAuthenticated()")
     fun getUserBalance(
@@ -37,6 +35,27 @@ class RefundCreditController(
 
         val balance = refundCreditService.getBalance(UUID.fromString(jwt.subject))
         return ResponseEntity.ok(RefundCreditResponse(balance))
+    }
+
+    @GetMapping("/history")
+    @PreAuthorize("isAuthenticated()")
+    fun getCreditHistory(
+        @AuthenticationPrincipal jwt: Jwt,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
+    ): ResponseEntity<Page<CreditHistoryEntryResponse>> {
+        val pageable = PageRequest.of(page, size)
+        val historyPage = refundCreditService.getHistory(UUID.fromString(jwt.subject), pageable)
+            .map { log ->
+                CreditHistoryEntryResponse(
+                    type = log.type.name,
+                    amount = log.amount,
+                    orderId = log.order?.id,
+                    description = log.description,
+                    createdAt = log.createdAt.toString()
+                )
+            }
+        return ResponseEntity.ok(historyPage)
     }
 
     @PostMapping("/add")

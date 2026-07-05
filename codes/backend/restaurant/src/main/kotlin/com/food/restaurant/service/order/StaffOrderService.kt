@@ -4,8 +4,6 @@ import com.food.restaurant.dto.order.StaffOrderItemResponse
 import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.entity.order.OrderDetail
 import com.food.restaurant.entity.order.orderStatusEnum
-import com.food.restaurant.entity.payment.RefundCredit
-import com.food.restaurant.entity.user.User
 import com.food.restaurant.repository.menu.MenuRecipeRepository
 import com.food.restaurant.repository.OptionIngredientRepository
 import com.food.restaurant.repository.order.OrderRepository
@@ -14,7 +12,7 @@ import com.food.restaurant.repository.user.UserRepository
 import com.food.restaurant.repository.order.OrderDetailRepository
 import com.food.restaurant.repository.order.OrderItemSelectionRepository
 import com.food.restaurant.repository.order.OrderStatusRepository
-import com.food.restaurant.repository.payment.RefundCreditRepository
+import com.food.restaurant.service.RefundCreditService
 import java.math.BigDecimal
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -34,7 +32,7 @@ class StaffOrderService(
     private val optionIngredientRepository: OptionIngredientRepository,
     private val stockRepository: StockRepository,
     private val orderCancellationService: OrderCancellationService,
-    private val refundCreditRepository: RefundCreditRepository
+    private val refundCreditService: RefundCreditService
 
 ) {
 
@@ -124,7 +122,8 @@ class StaffOrderService(
         if (canceledDetails.isNotEmpty()) {
             val refundAmount = canceledDetails.fold(BigDecimal.ZERO) { acc, detail -> acc.add(detail.price) }
             order.totalPrice = order.totalPrice.subtract(refundAmount)
-            creditRefund(order.customer, refundAmount)
+            val itemNames = canceledDetails.joinToString(", ") { it.menuItem.name }
+            refundCreditService.creditRefund(order.customer, refundAmount, order, "Order #$orderId: removed due to insufficient stock ($itemNames)")
         }
 
         val inProgressStatus = orderStatusRepository.findByStatusName(orderStatusEnum.IN_PROGRESS)
@@ -193,7 +192,7 @@ class StaffOrderService(
         order.canceledBy = "${staff.firstName ?: ""} ${staff.lastName ?: ""}".trim().ifEmpty { staff.username }
         orderRepository.save(order)
 
-        creditRefund(order.customer, order.totalPrice)
+        refundCreditService.creditRefund(order.customer, order.totalPrice, order, "Order #$orderId canceled by staff")
     }
 
     @Transactional
@@ -248,18 +247,9 @@ class StaffOrderService(
         order.totalPrice = order.totalPrice.subtract(detail.price)
         orderRepository.save(order)
 
-        creditRefund(order.customer, detail.price)
+        refundCreditService.creditRefund(order.customer, detail.price, order, "Order #$orderId: '${detail.menuItem.name}' canceled by staff")
     }
 
-    private fun creditRefund(customer: User, amount: BigDecimal) {
-        if (amount <= BigDecimal.ZERO) return
-        val wallet = refundCreditRepository.findByCustomer_Id(customer.id)
-            ?: RefundCredit(customer = customer, amount = BigDecimal.ZERO)
-        wallet.amount = wallet.amount.add(amount)
-        refundCreditRepository.save(wallet)
-    }
-
-    /** Per-detail ingredient/stock requirements, keyed by order detail id, then stock id. */
     private fun computeStockRequirementsPerDetail(details: List<OrderDetail>): Map<Int, Map<Int, BigDecimal>> {
         if (details.isEmpty()) return emptyMap()
 
@@ -304,11 +294,6 @@ class StaffOrderService(
         return totals
     }
 
-    /**
-     * Deducts stock for each non-canceled order detail independently. A detail whose
-     * requirements can't be met by what's left in stock is marked canceled instead of
-     * failing the whole order; everything else deducts normally.
-     */
     private fun deductStockPerItem(orderId: Int): List<OrderDetail> {
         val details = orderDetailRepository.findByOrderId(orderId).filter { !it.isCanceled }
         if (details.isEmpty()) return emptyList()
