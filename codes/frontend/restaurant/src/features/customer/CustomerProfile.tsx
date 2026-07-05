@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
     Edit2, Save, X, Check,
     User, Mail, Phone, AtSign, AlertCircle,
+    Wallet, ArrowDownCircle, ArrowUpCircle,
 } from 'lucide-react';
 import { apiClient } from '../../lib/api-client.ts';
 import { CustomerTopNav } from './CustomerTopNav.tsx';
@@ -14,6 +15,18 @@ interface CustomerProfileResponse {
     phoneNumber: string | null;
 }
 
+interface CreditHistoryEntry {
+    type: 'EARNED' | 'SPENT';
+    amount: number;
+    orderId: number | null;
+    description: string | null;
+    createdAt: string;
+}
+
+interface CreditHistoryPage {
+    content: CreditHistoryEntry[];
+}
+
 export default function CustomerProfile() {
     const [profile, setProfile] = useState<CustomerProfileResponse | null>(null);
     const [draftPhone, setDraftPhone] = useState('');
@@ -22,6 +35,10 @@ export default function CustomerProfile() {
     const [saved, setSaved] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [creditBalance, setCreditBalance] = useState<number>(0);
+    const [creditHistory, setCreditHistory] = useState<CreditHistoryEntry[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -36,10 +53,27 @@ export default function CustomerProfile() {
         }
     }, []);
 
+    const fetchCredit = useCallback(async () => {
+        try {
+            const [balanceData, historyData] = await Promise.all([
+                apiClient<{ currentBalance: number }>('/customer/credits/balance'),
+                apiClient<CreditHistoryPage>('/customer/credits/history?page=0&size=20'),
+            ]);
+            setCreditBalance(balanceData.currentBalance);
+            setCreditHistory(historyData.content);
+        } catch (err) {
+            console.error('Failed to load credit history:', err);
+        } finally {
+            setHistoryLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchProfile();
-    }, [fetchProfile]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchCredit();
+    }, [fetchProfile, fetchCredit]);
 
     const isPhoneValid = draftPhone.length === 0 || draftPhone.length === 10;
 
@@ -214,6 +248,53 @@ export default function CustomerProfile() {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-5 md:px-8 py-4 md:py-5 border-b border-gray-50">
+                        <div className="flex items-center gap-2">
+                            <Wallet size={16} className="text-[#0B1F4D]" />
+                            <h2 className="text-[#0B1F4D] font-extrabold md:text-lg">Store Credit</h2>
+                        </div>
+                        <p className="text-[#0B1F4D] font-extrabold text-lg">฿{creditBalance.toFixed(2)}</p>
+                    </div>
+
+                    {historyLoading ? (
+                        <div className="px-5 md:px-8 py-6 text-center text-gray-400 text-sm">Loading history...</div>
+                    ) : creditHistory.length === 0 ? (
+                        <div className="px-5 md:px-8 py-6 text-center text-gray-400 text-sm">No credit activity yet.</div>
+                    ) : (
+                        <div className="divide-y divide-gray-50">
+                            {creditHistory.map((entry, idx) => {
+                                const isEarned = entry.type === 'EARNED';
+                                return (
+                                    <div key={idx} className="flex items-center gap-4 px-5 md:px-8 py-3.5 md:py-4">
+                                        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isEarned ? 'bg-green-50' : 'bg-red-50'}`}>
+                                            {isEarned ? (
+                                                <ArrowDownCircle size={16} className="text-green-500" />
+                                            ) : (
+                                                <ArrowUpCircle size={16} className="text-red-500" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[#0B1F4D] text-sm font-semibold truncate">
+                                                {entry.description ?? (isEarned ? 'Credit received' : 'Credit used')}
+                                                {entry.orderId != null && (
+                                                    <span className="text-gray-400 font-normal"> · Order #{entry.orderId}</span>
+                                                )}
+                                            </p>
+                                            <p className="text-gray-400 text-[11px]">
+                                                {new Date(entry.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
+                                        <p className={`font-extrabold text-sm flex-shrink-0 ${isEarned ? 'text-green-600' : 'text-red-500'}`}>
+                                            {isEarned ? '+' : '-'}฿{entry.amount.toFixed(2)}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
