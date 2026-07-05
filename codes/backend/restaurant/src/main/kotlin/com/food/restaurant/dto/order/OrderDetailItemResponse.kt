@@ -6,5 +6,6 @@ data class OrderDetailItemResponse(
     val quantity: Int,
     val price: Double,
     val specialRequest: String?,
-    val selectedChoiceIds: List<Int>
+    val selectedChoiceIds: List<Int>,
+    val isCanceled: Boolean
 )

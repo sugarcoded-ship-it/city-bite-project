@@ -13,9 +13,11 @@ data class StaffOrderResponse(
 )
 
 data class StaffOrderItemResponse(
+    val detailId: Int,
     val menuName: String,
     val quantity: Int,
     val price: Double,
     val specialRequest: String?,
-    val selectedOptions: List<String>
+    val selectedOptions: List<String>,
+    val isCanceled: Boolean
 )

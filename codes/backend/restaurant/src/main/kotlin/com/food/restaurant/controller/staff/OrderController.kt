@@ -39,10 +39,27 @@ class OrderController(
     fun claimOrder(
         @PathVariable orderId: Int,
         @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<Map<String, Any>> {
+        val staffUuid = jwt.subject
+        val removedItems = staffOrderService.claimOrder(orderId, staffUuid)
+        val message = if (removedItems.isEmpty()) {
+            "Order successfully claimed"
+        } else {
+            "Order claimed. Removed due to insufficient stock: ${removedItems.joinToString(", ")}"
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to message, "removedItems" to removedItems))
+    }
+
+    @PostMapping("/{orderId}/items/{detailId}/cancel")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
+    fun cancelOrderItem(
+        @PathVariable orderId: Int,
+        @PathVariable detailId: Int,
+        @AuthenticationPrincipal jwt: Jwt
     ): ResponseEntity<Map<String, String>> {
         val staffUuid = jwt.subject
-        staffOrderService.claimOrder(orderId, staffUuid)
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Order successfully claimed"))
+        staffOrderService.cancelOrderItem(orderId, detailId, staffUuid)
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Item canceled and refunded"))
     }
 
     @PostMapping("/{orderId}/complete")

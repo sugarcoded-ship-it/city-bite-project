@@ -71,7 +71,8 @@ class OrderHistoryService(
                     quantity = detail.amount,
                     price = detail.price.toDouble(),
                     specialRequest = detail.specialRequest,
-                    selectedChoiceIds = selections.map { it.optionChoice.id }
+                    selectedChoiceIds = selections.map { it.optionChoice.id },
+                    isCanceled = detail.isCanceled
                 )
             }
 
