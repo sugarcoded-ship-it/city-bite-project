@@ -95,20 +95,33 @@ export function CustomerDashboard() {
     }, []);
 
     useEffect(() => {
-        apiClient<StoreData>('/customer/')
-            .then((data) => {
-                setItems(data.menuItems || []);
-                setStoreStatus(data.status || 'OPEN');
-                setStoreName(data.storeName || 'Restaurant');
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error('Error fetching dashboard data:', err);
-                setError('Failed to load dashboard data');
-                setLoading(false);
-            });
+        const fetchDashboardData = () => {
+            apiClient<StoreData>('/customer/')
+                .then((data) => {
+                    setItems(data.menuItems || []);
+                    setStoreStatus(data.status || 'OPEN');
+                    setStoreName(data.storeName || 'Restaurant');
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.error('Error fetching dashboard data:', err);
+                    setError('Failed to load dashboard data');
+                    setLoading(false);
+                });
+        };
 
+        fetchDashboardData();
         fetchCartSnapshot();
+
+        const intervalId = setInterval(() => {
+            apiClient<{ isOpen: boolean }>('/customer/store-status')
+                .then((data) => {
+                    setStoreStatus(data.isOpen ? 'OPEN' : 'CLOSED');
+                })
+                .catch(err => console.error('Error fetching store status:', err));
+        }, 5000);
+
+        return () => clearInterval(intervalId);
     }, [fetchCartSnapshot]);
 
     const showToast = (msg: string) => {
