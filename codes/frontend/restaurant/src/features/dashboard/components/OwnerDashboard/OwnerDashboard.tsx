@@ -6,7 +6,7 @@ import { LogoutButton } from '../../../auth/components/LogoutButton.tsx';
 import styles from './OwnerDashboard.module.css';
 import {
     UtensilsCrossed, Users, CalendarOff, Store,
-    BarChart3, User, Crown, TrendingUp, AlertCircle, ChevronRight
+    BarChart3, User, Crown, TrendingUp, AlertCircle, ChevronRight, ClipboardList
 } from 'lucide-react';
 
 interface OwnerDashboardData {
@@ -106,6 +106,14 @@ export function OwnerDashboard() {
             url: '/owner/staff',
             accent: '#22c55e',
             badge: `${data.activeStaffCount} active`,
+        },
+        {
+            title: 'Orders',
+            desc: 'View and manage staff pending orders',
+            icon: ClipboardList,
+            url: '/staff/dashboard',
+            accent: '#ef4444',
+            badge: 'Pending',
         },
         {
             title: 'Store Status',

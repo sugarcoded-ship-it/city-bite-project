@@ -32,6 +32,8 @@ dependencies {
 	implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("com.nimbusds:nimbus-jose-jwt:10.9")
 	compileOnly("org.projectlombok:lombok")
+    implementation(platform("software.amazon.awssdk:bom:2.21.1"))
+    implementation("software.amazon.awssdk:s3")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	runtimeOnly("org.postgresql:postgresql")

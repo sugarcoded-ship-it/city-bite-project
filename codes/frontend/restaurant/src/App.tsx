@@ -39,12 +39,11 @@ function App() {
                 <Route path="/owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
             </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={['STAFF', 'OWNER']} />}>
-        <Route path="/staff/dashboard"    element={<StaffDashboard />} />
-        <Route path="/staff/profile"      element={<StaffProfile />} />
-        <Route path="/staff/order"        element={<Placeholder pageName="Order" />} />
-        <Route path="/staff/stock"    element={<StaffStock />} />
-      </Route>
+            <Route element={<ProtectedRoute allowedRoles={['STAFF', 'OWNER']} />}>
+                <Route path="/staff/dashboard"    element={<StaffDashboard />} />
+                <Route path="/staff/profile"      element={<StaffProfile />} />
+                <Route path="/staff/stock"    element={<StaffStock />} />
+            </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>
                 <Route path="/history"        element={<OrderHistory />} />
