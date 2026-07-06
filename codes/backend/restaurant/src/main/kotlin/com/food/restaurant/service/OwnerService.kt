@@ -25,12 +25,7 @@ class OwnerService(
     @Transactional(readOnly = true)
     fun getDashboardMetrics(ownerUuid: UUID): OwnerDashboardDto {
 
-        val revenueToday = try {
-            orderRepository.sumRevenueToday() ?: BigDecimal.ZERO
-        } catch (e: Exception) {
-            BigDecimal.ZERO
-        }
-
+        val revenueToday = try { orderRepository.sumRevenueToday() } catch (e: Exception) { BigDecimal.ZERO }
         val totalOrdersToday = try { orderRepository.countOrdersToday() } catch (e: Exception) { 0L }
         val completedOrdersToday = try { orderRepository.countCompletedOrdersToday() } catch (e: Exception) { 0L }
 
@@ -45,12 +40,18 @@ class OwnerService(
         val totalMenuItems = try { menuRepository.count() } catch (e: Exception) { 0L }
         val availableMenuItems = try { menuRepository.countByStatus_Name(menuStatusEnum.ACTIVE) } catch (e: Exception) { 0L }
 
+
         val store = try {
-            storeRepository.findByOwner_Id(ownerUuid).orElse(null)
+            storeRepository
+                .findByOwnerId(ownerUuid)
         } catch (e: Exception) {
             null
         }
+
+        // TODO: Check with real time whether it is actually open or close
+        // TODO: Get store name from database as well
         val isStoreOpen = store?.isOpen ?: false
+        val storeName = store?.storeName ?: ""
 
         return OwnerDashboardDto(
             revenueToday = revenueToday,
@@ -60,7 +61,8 @@ class OwnerService(
             pendingLeaveRequests = pendingLeaveRequests,
             totalMenuItems = totalMenuItems,
             availableMenuItems = availableMenuItems,
-            isStoreOpen = isStoreOpen
+            isStoreOpen = isStoreOpen,
+            storeName = storeName
         )
     }
 }

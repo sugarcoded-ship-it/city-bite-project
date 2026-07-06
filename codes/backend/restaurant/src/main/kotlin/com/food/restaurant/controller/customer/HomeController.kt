@@ -4,6 +4,7 @@ import com.food.restaurant.dto.cart.AddToCartRequest
 import com.food.restaurant.dto.cart.CartItemResponse
 import com.food.restaurant.dto.menu.MenuItemResponse
 import com.food.restaurant.dto.menu.OptionGroupResponse
+import com.food.restaurant.dto.user.customer.CustomerDashboardResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.service.CartService
 import com.food.restaurant.service.MenuService
@@ -28,8 +29,15 @@ class HomeController(
 
     @GetMapping("/")
     @PreAuthorize("isAuthenticated()")
-    fun customerHome(@AuthenticationPrincipal jwt: Jwt) {
+    fun customerHome(@AuthenticationPrincipal jwt: Jwt): CustomerDashboardResponse {
         userSyncService.syncFromToken(jwt)
+        val store = storeService.getGlobalStore()
+        val menuItems = menuService.getAvailableMenu(null)
+        return CustomerDashboardResponse(
+            menuItems = menuItems,
+            status = if (store?.isOpen == true) "OPEN" else "CLOSED",
+            storeName = store?.storeName ?: "Restaurant"
+        )
     }
 
     @GetMapping("/store-status")
