@@ -42,6 +42,12 @@ interface CartItem {
     status: string;
 }
 
+interface StoreData {
+    menuItems: MenuItem[];
+    status: string;
+    storeName: string;
+}
+
 type SortOption = 'default' | 'price-asc' | 'price-desc';
 
 export function CustomerDashboard() {
@@ -49,6 +55,8 @@ export function CustomerDashboard() {
 
     // --- Data States ---
     const [items, setItems] = useState<MenuItem[]>([]);
+    const [storeStatus, setStoreStatus] = useState<string>('OPEN');
+    const [storeName, setStoreName] = useState<string>('Restaurant');
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -57,10 +65,6 @@ export function CustomerDashboard() {
     const [cartCount, setCartCount] = useState<number>(0);
     const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const hasUnavailableCartItem = cartItems.some((item) => item.status !== 'ACTIVE');
-
-    // --- Store Status ---
-    const [storeOpen, setStoreOpen] = useState<boolean>(true);
-    const [showClosedPopup, setShowClosedPopup] = useState<boolean>(false);
 
     // --- UI States ---
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -91,25 +95,16 @@ export function CustomerDashboard() {
     }, []);
 
     useEffect(() => {
-        apiClient('/customer/').catch((err) => console.error('Failed to sync user profile:', err));
-
-        apiClient<{ isOpen: boolean }>('/customer/store-status')
+        apiClient<StoreData>('/customer/')
             .then((data) => {
-                setStoreOpen(data.isOpen);
-                if (!data.isOpen) setShowClosedPopup(true);
-            })
-            .catch((err) => console.error('Failed to fetch store status:', err));
-
-        apiClient<MenuItem[]>('/customer/menu')
-            .then((data: MenuItem[] | { data: MenuItem[] }) => {
-                if (Array.isArray(data)) setItems(data);
-                else if (data && Array.isArray((data as { data: MenuItem[] }).data)) setItems((data as { data: MenuItem[] }).data);
-                else setItems([]);
+                setItems(data.menuItems || []);
+                setStoreStatus(data.status || 'OPEN');
+                setStoreName(data.storeName || 'Restaurant');
                 setLoading(false);
             })
             .catch((err) => {
-                console.error('Error fetching menu items:', err);
-                setError('Failed to load menu items');
+                console.error('Error fetching dashboard data:', err);
+                setError('Failed to load dashboard data');
                 setLoading(false);
             });
 
@@ -174,10 +169,6 @@ export function CustomerDashboard() {
 
     // --- Handlers ---
     const openMenuModal = async (item: MenuItem) => {
-        if (!storeOpen) {
-            setShowClosedPopup(true);
-            return;
-        }
         if (item.status !== 'ACTIVE') return;
         setSelectedItem(item);
         setSelectedChoices(new Map());
@@ -305,6 +296,13 @@ export function CustomerDashboard() {
             {/* Page body — offset for fixed nav */}
             <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
+                {storeStatus !== 'OPEN' && (
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r-lg shadow-sm flex items-center">
+                        <span className="font-bold mr-2">Notice:</span>
+                        {storeName} is currently closed. You can browse the menu but ordering is disabled.
+                    </div>
+                )}
+
                 {/* ── HERO CAROUSEL ── */}
                 {FEATURED.length > 0 && (
                     <div className="relative w-full h-64 sm:h-80 rounded-3xl overflow-hidden mb-8 shadow-xl group select-none bg-gray-200">
@@ -335,9 +333,10 @@ export function CustomerDashboard() {
                                         <span className="text-white font-extrabold text-xl">฿{f.item.price.toFixed(2)}</span>
                                         <button
                                             onClick={() => openMenuModal(f.item)}
-                                            className="bg-white text-[#0B1F4D] text-sm font-bold px-5 py-2 rounded-full hover:bg-[#2D7FF9] hover:text-white transition-colors"
+                                            className={`bg-white text-[#0B1F4D] text-sm font-bold px-5 py-2 rounded-full transition-colors ${storeStatus === 'OPEN' ? 'hover:bg-[#2D7FF9] hover:text-white' : 'opacity-50 cursor-not-allowed'}`}
+                                            disabled={storeStatus !== 'OPEN'}
                                         >
-                                            Order
+                                            {storeStatus === 'OPEN' ? 'Order' : 'Closed'}
                                         </button>
                                     </div>
                                 </div>
@@ -424,12 +423,18 @@ export function CustomerDashboard() {
                         ) : (
                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                 {displayedItems.map((item) => {
-                                    const isAvailable = item.status === 'ACTIVE' && storeOpen;
+                                    const isAvailable = item.status === 'ACTIVE';
                                     return (
                                         <div
                                             key={item.id}
-                                            className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'}`}
-                                            onClick={() => openMenuModal(item)}
+                                            className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable && storeStatus === 'OPEN' ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'}`}
+                                            onClick={() => {
+                                                if (storeStatus !== 'OPEN') {
+                                                    showToast('Store is currently closed.');
+                                                    return;
+                                                }
+                                                openMenuModal(item);
+                                            }}
                                         >
                                             <div className="relative w-full h-36 bg-gray-100 overflow-hidden">
                                                 {item.menuPic ? (
@@ -446,7 +451,7 @@ export function CustomerDashboard() {
                       </span>
                                                 {!isAvailable && (
                                                     <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-xs font-bold uppercase tracking-wide">
-                                                    {!storeOpen ? 'Store Closed' : item.status === 'OUT_OF_ORDER' ? 'Out of Stock' : 'Unavailable'}
+                                                    {item.status === 'OUT_OF_ORDER' ? 'Out of Stock' : 'Unavailable'}
                                                 </span>
                                                 )}
                                             </div>
@@ -574,10 +579,15 @@ export function CustomerDashboard() {
                                                 Remove unavailable items before checking out.
                                             </p>
                                         )}
+                                        {storeStatus !== 'OPEN' && (
+                                            <p className="text-[11px] text-red-500 font-semibold mb-2 text-center">
+                                                The store is currently closed. You cannot checkout.
+                                            </p>
+                                        )}
                                         <button
                                             onClick={() => navigate('/order-summary')}
-                                            disabled={hasUnavailableCartItem}
-                                            className={`w-full font-bold py-3 rounded-xl text-sm transition-colors shadow-md ${hasUnavailableCartItem ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#2D7FF9] hover:bg-[#1a6de0] text-white'}`}
+                                            disabled={hasUnavailableCartItem || storeStatus !== 'OPEN'}
+                                            className={`w-full font-bold py-3 rounded-xl text-sm transition-colors shadow-md ${hasUnavailableCartItem || storeStatus !== 'OPEN' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#2D7FF9] hover:bg-[#1a6de0] text-white'}`}
                                         >
                                             Checkout →
                                         </button>
@@ -588,27 +598,6 @@ export function CustomerDashboard() {
                     </aside>
                 </div>
             </div>
-
-            {/* ── STORE CLOSED POPUP ── */}
-            {showClosedPopup && (
-                <div className="fixed inset-0 bg-[#0B1F4D]/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-sm p-7 text-center shadow-2xl" style={{ animation: 'modalIn 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
-                        <div className="w-14 h-14 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                            !
-                        </div>
-                        <h2 className="text-[#0B1F4D] text-lg font-extrabold mb-2">We're Currently Closed</h2>
-                        <p className="text-gray-500 text-sm mb-6">
-                            Sorry, we're not accepting orders right now. Please check back during our opening hours.
-                        </p>
-                        <button
-                            onClick={() => setShowClosedPopup(false)}
-                            className="w-full bg-[#0B1F4D] hover:bg-[#1a3a7a] text-white font-bold py-3 rounded-xl text-sm transition-colors"
-                        >
-                            Got it
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {/* ── ADD TO CART MODAL ── */}
             {selectedItem && (
@@ -722,7 +711,7 @@ export function CustomerDashboard() {
 
             {/* ── TOAST ALERT ── */}
             {toastMessage && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-[60] whitespace-nowrap flex items-center gap-2 animate-toast">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-60 whitespace-nowrap flex items-center gap-2 animate-toast">
           <span className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center shrink-0">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
