@@ -111,7 +111,7 @@ export function OwnerDashboard() {
             title: 'Store Status',
             desc: 'Open or close the store and manage operating hours',
             icon: Store,
-            url: '/owner/store-status',
+            url: '/owner/store',
             accent: '#f97316',
             badge: data.isStoreOpen ? 'Now Open' : 'Closed',
         },
