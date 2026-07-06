@@ -48,7 +48,8 @@ class StaffService(
             phone = user.phoneNumber,
             leaveDayAmount = staff.dayOffAmount,
             salary = staff.salary,
-            address = staff.address
+            address = staff.address,
+            profilePic = user.profilePic
         )
     }
 
@@ -140,7 +141,8 @@ class StaffService(
                 id = staff.id,
                 username = user.username,
                 fullName = "${user.firstName ?: ""} ${user.lastName ?: ""}".trim(),
-                status = staff.status
+                status = staff.status,
+                profilePic = null
             )
         } catch (e: Exception) {
             keycloak.realm(realm).users().get(userIdString).remove()

@@ -16,7 +16,8 @@ interface StaffRepository : JpaRepository<Staff, UUID> {
             s.id,
             u.username,
             concat(u.firstName, ' ', u.lastName),
-            s.status
+            s.status,
+            u.profilePic
         )
         FROM Staff s
         JOIN s.user u
