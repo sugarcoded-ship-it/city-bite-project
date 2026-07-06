@@ -9,5 +9,6 @@ data class OwnerStaffDetailResponse (
     val phone: String?,
     val leaveDayAmount: Int,
     val salary: Int,
-    val address: String?
+    val address: String?,
+    val profilePic: String?
 )

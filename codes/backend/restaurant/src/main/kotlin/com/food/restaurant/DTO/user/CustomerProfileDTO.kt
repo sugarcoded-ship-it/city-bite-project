@@ -5,9 +5,11 @@ data class CustomerProfileResponse(
     val lastName: String?,
     val username: String,
     val email: String,
-    val phoneNumber: String?
+    val phoneNumber: String?,
+    val profilePic: String?
 )
 
 data class UpdateCustomerProfileRequest(
-    val phoneNumber: String?
+    val phoneNumber: String?,
+    val profilePic: String? = null
 )

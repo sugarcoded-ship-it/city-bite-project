@@ -34,6 +34,9 @@ class User(
     var phoneNumber: String? = null,
 
     @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var staff: Staff? = null
+    var staff: Staff? = null,
+
+    @Column(name = "profile_pic")
+    var profilePic: String? = null
 
 )

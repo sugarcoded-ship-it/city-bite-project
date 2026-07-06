@@ -17,6 +17,7 @@ interface OwnerStaffDetail {
     leaveDayAmount: number;
     salary: number;
     address: string | null;
+    profilePic: string | null;
 }
 
 export const StaffDetail = () => {
@@ -83,7 +84,11 @@ export const StaffDetail = () => {
 
                     <div className={styles.profileHeader}>
                         <div className={styles.avatarLarge}>
-                            {initials}
+                            {data.profilePic ? (
+                                <img src={data.profilePic} alt={data.fullName} className={styles.avatarImage} />
+                            ) : (
+                                initials
+                            )}
                         </div>
                         <div className={styles.profileInfo}>
                             <span className={styles.headerLabel}>Staff Member</span>

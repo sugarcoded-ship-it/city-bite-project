@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Plus, Trash2, X, Search, UtensilsCrossed, EyeClosed, Check, AlertTriangle, Filter } from 'lucide-react';
+import { Plus, Trash2, X, Search, UtensilsCrossed, EyeClosed, Check, AlertTriangle, Filter, Upload, Image as ImageIcon } from 'lucide-react';
 import { Dialog } from '../../../../ui/Dialog';
 import { OwnerTopNav } from './OwnerTopNav';
 import { apiClient } from '../../../../lib/api-client';
@@ -84,6 +84,10 @@ export function MenuConfiguration() {
     const emptyForm = { name: '', price: '', category: '', description: '', menuPic: '', recipe: [] as RecipeFormLine[] };
     const [form, setForm] = useState(emptyForm);
 
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     const [stockSearch, setStockSearch] = useState('');
     const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
     const stockDropdownRef = useRef<HTMLDivElement>(null);
@@ -148,6 +152,8 @@ export function MenuConfiguration() {
         resetForm();
         setIsStockDropdownOpen(false);
         setStockSearch('');
+        setSelectedImage(null);
+        setImagePreview('');
     };
 
     const handleEdit = (item: MenuItem) => {
@@ -162,6 +168,8 @@ export function MenuConfiguration() {
                 ? item.recipe.map((r) => ({ stockId: String(r.stockId), amount: String(r.amount) }))
                 : []
         });
+        setSelectedImage(null);
+        setImagePreview(item.menuPic || '');
     };
 
     const toggleStockSelection = (stockId: number) => {
@@ -197,10 +205,39 @@ export function MenuConfiguration() {
             .filter((r) => r.available < r.amount);
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedImage(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async () => {
         const recipe = form.recipe
             .filter((r) => r.stockId !== '' && r.amount.trim())
             .map((r) => ({ stockId: Number(r.stockId), amount: parseFloat(r.amount) }));
+
+        let uploadedImageUrl = form.menuPic || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400';
+        
+        if (selectedImage) {
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedImage);
+                const result = await apiClient<{ url: string }>('/owner/menu/upload-image', {
+                    method: 'POST',
+                    data: formData,
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                uploadedImageUrl = result.url;
+            } catch (err) {
+                console.error("Image upload failed", err);
+                alert("Failed to upload image. Please try again.");
+                return;
+            }
+        }
 
         const payload = {
             id: editingMenu?.id,
@@ -208,7 +245,7 @@ export function MenuConfiguration() {
             price: parseFloat(form.price),
             category: form.category,
             description: form.description,
-            menuPic: form.menuPic || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400',
+            menuPic: uploadedImageUrl,
             recipe,
         };
 
@@ -424,10 +461,40 @@ export function MenuConfiguration() {
                         </div>
 
                         <div className={`${styles.modalBody} ${styles.modalBodyFixed}`}>
+                            <div className={styles.imageUploadSection}>
+                                <label className={styles.formLabel}>Menu Image *</label>
+                                <div 
+                                    className={styles.imageUploadArea}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        ref={fileInputRef}
+                                        onChange={handleImageChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                    {imagePreview ? (
+                                        <div className={styles.imagePreviewContainer}>
+                                            <img src={imagePreview} alt="Preview" className={styles.imagePreview} />
+                                            <div className={styles.imagePreviewOverlay}>
+                                                <Upload size={24} color="white" />
+                                                <span style={{ color: 'white', marginTop: '8px', fontWeight: 600 }}>Change Image</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.imageUploadPlaceholder}>
+                                            <ImageIcon size={48} color="#9ca3af" />
+                                            <p style={{ marginTop: '12px', fontWeight: 600, color: '#4b5563' }}>Click to upload image</p>
+                                            <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>PNG, JPG, WEBP up to 5MB</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {[
                                 { label: 'Name *', key: 'name', placeholder: 'Pad Thai' },
                                 { label: 'Price (฿) *', key: 'price', placeholder: '99', type: 'number', min: 0, step: 0.01 },
-                                { label: 'Image URL', key: 'menuPic', placeholder: 'https://...' },
                             ].map(({ label, key, placeholder, type, min, step }) => (
                                 <div key={key} className={styles.formGroup}>
                                     <label className={styles.formLabel}>{label}</label>

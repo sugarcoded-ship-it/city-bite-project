@@ -14,11 +14,17 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+import com.food.restaurant.service.StorageService
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.multipart.MultipartFile
+
 @RestController("customerProfileController")
 @RequestMapping("/api/customer/profile")
 class ProfileController(
     private val customerProfileService: CustomerProfileService,
-    private val userSyncService: UserSyncService
+    private val userSyncService: UserSyncService,
+    private val storageService: StorageService
 ) {
 
     @GetMapping
@@ -35,7 +41,14 @@ class ProfileController(
         @RequestBody request: UpdateCustomerProfileRequest
     ): ResponseEntity<CustomerProfileResponse> {
         val user = userSyncService.syncFromToken(jwt)
-        val updated = customerProfileService.updatePhoneNumber(user, request.phoneNumber)
+        val updated = customerProfileService.updateProfile(user, request.phoneNumber, request.profilePic)
         return ResponseEntity.ok(updated)
+    }
+
+    @PostMapping("/upload-avatar")
+    @PreAuthorize("isAuthenticated()")
+    fun uploadAvatar(@RequestParam("file") file: MultipartFile): ResponseEntity<Map<String, String>> {
+        val url = storageService.uploadFile(file, "avatars")
+        return ResponseEntity.ok(mapOf("url" to url))
     }
 }

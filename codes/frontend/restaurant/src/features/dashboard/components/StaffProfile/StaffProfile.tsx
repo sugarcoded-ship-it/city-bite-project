@@ -12,6 +12,7 @@ interface StaffProfileResponse {
     username: string;
     email: string;
     phoneNumber: string | null;
+    profilePic: string | null;
 }
 
 export default function StaffProfile() {
@@ -22,6 +23,9 @@ export default function StaffProfile() {
     const [saved, setSaved] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -43,6 +47,14 @@ export default function StaffProfile() {
 
     const isPhoneValid = draftPhone.length === 0 || draftPhone.length === 10;
 
+    const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedAvatar(file);
+            setAvatarPreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSave = async () => {
         if (!profile) return;
         if (!isPhoneValid) {
@@ -51,12 +63,29 @@ export default function StaffProfile() {
         }
         setSaving(true);
         try {
+            let profilePicUrl = profile.profilePic || null;
+            if (selectedAvatar) {
+                const formData = new FormData();
+                formData.append('file', selectedAvatar);
+                const result = await apiClient<{ url: string }>('/staff/profile/upload-avatar', {
+                    method: 'POST',
+                    data: formData,
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                profilePicUrl = result.url;
+            }
+
             const updated = await apiClient<StaffProfileResponse>('/staff/profile', {
                 method: 'PATCH',
-                data: { phoneNumber: draftPhone.trim() || null },
+                data: { 
+                    phoneNumber: draftPhone.trim() || null,
+                    profilePic: profilePicUrl
+                },
             });
             setProfile(updated);
             setDraftPhone(updated.phoneNumber || '');
+            setSelectedAvatar(null);
+            setAvatarPreview(null);
             setIsEditing(false);
             setSaved(true);
             setTimeout(() => setSaved(false), 2200);
@@ -70,6 +99,8 @@ export default function StaffProfile() {
 
     const handleCancel = () => {
         setDraftPhone(profile?.phoneNumber || '');
+        setSelectedAvatar(null);
+        setAvatarPreview(null);
         setIsEditing(false);
     };
 
@@ -119,8 +150,21 @@ export default function StaffProfile() {
             <div className="max-w-3xl mx-auto px-5 md:px-8 pt-20 pb-10 space-y-4">
 
                 <div className="flex items-center gap-4 md:gap-5">
-                    <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xl md:text-2xl font-extrabold tracking-tight">{initials}</span>
+                    <div 
+                        className={`relative w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0 overflow-hidden ${isEditing ? 'cursor-pointer group' : ''}`}
+                        onClick={() => isEditing && document.getElementById('avatar-upload')?.click()}
+                    >
+                        {avatarPreview || profile.profilePic ? (
+                            <img src={avatarPreview || profile.profilePic || ''} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-white text-xl md:text-2xl font-extrabold tracking-tight">{initials}</span>
+                        )}
+                        {isEditing && (
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
+                                <span className="text-white text-xs font-bold mt-1">Upload</span>
+                            </div>
+                        )}
+                        <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} />
                     </div>
                     <div>
                         <h1 className="text-[#0B1F4D] text-xl md:text-3xl font-extrabold leading-tight">{fullName}</h1>

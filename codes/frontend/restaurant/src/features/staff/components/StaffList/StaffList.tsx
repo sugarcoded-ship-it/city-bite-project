@@ -9,6 +9,7 @@ interface Staffs {
     username: string;
     fullName: string;
     status: string;
+    profilePic: string | null;
 }
 export const StaffList = () => {
     const navigate = useNavigate();
@@ -212,7 +213,11 @@ export const StaffList = () => {
                                     {/* Employee Column */}
                                     <div className={styles.colUser}>
                                         <div className={styles.avatar}>
-                                            {staff.fullName.charAt(0)}
+                                            {staff.profilePic ? (
+                                                <img src={staff.profilePic} alt={staff.fullName} className={styles.avatarImage} />
+                                            ) : (
+                                                staff.fullName.charAt(0)
+                                            )}
                                         </div>
                                         <div className={styles.userInfo}>
                                             <span className={styles.fullName}>{staff.fullName}</span>

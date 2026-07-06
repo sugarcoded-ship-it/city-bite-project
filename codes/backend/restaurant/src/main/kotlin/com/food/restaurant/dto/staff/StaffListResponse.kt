@@ -7,5 +7,6 @@ data class StaffListResponse (
     val id: UUID,
     val username: String,
     val fullName: String,
-    val status: StaffStatus
+    val status: StaffStatus,
+    val profilePic: String?
 )
