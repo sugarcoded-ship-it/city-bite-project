@@ -26,7 +26,6 @@ export default function StaffProfile() {
 
     const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const fileInputRef = import('react').then(m => m.useRef<HTMLInputElement>(null)); // wait I can just add it to imports
 
     const fetchProfile = useCallback(async () => {
         try {

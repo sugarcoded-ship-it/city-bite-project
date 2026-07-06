@@ -71,7 +71,6 @@ export default function CustomerProfile() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchProfile();
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchCredit();
     }, [fetchProfile, fetchCredit]);
 
