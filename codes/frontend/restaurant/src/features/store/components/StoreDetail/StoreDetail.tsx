@@ -23,38 +23,36 @@ export const StoreDetail = () => {
     const [isToggling, setIsToggling] = useState<boolean>(false);
     const [isNewStore, setIsNewStore] = useState<boolean>(false);
 
-    const fetchStoreDetail = async () => {
-        try {
-            const res = await apiClient<StoreDetail>('/owner/store/detail');
-            if (!res || typeof res === 'string') {
-                const emptyStore = {
-                    storeName: '',
-                    storeAddress: '',
-                    logoUrl: '',
-                    phone: '',
-                    openTime: '09:00:00',
-                    closeTime: '17:00:00',
-                    isOpen: false
-                };
-                setData(emptyStore);
-                setOriginalData(emptyStore);
-                setIsNewStore(true);
-            } else {
-                setData(res);
-                setOriginalData(JSON.parse(JSON.stringify(res)));
-                setIsNewStore(false);
-            }
-            setError(null);
-        } catch (err) {
-            console.error("Failed to load store detail:", err);
-            setError("Failed to load store detail. Please try again later.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchStoreDetail();
+        (async () => {
+            try {
+                const res = await apiClient<StoreDetail>('/owner/store/detail');
+                if (!res || typeof res === 'string') {
+                    const emptyStore = {
+                        storeName: '',
+                        storeAddress: '',
+                        logoUrl: '',
+                        phone: '',
+                        openTime: '09:00:00',
+                        closeTime: '17:00:00',
+                        isOpen: false
+                    };
+                    setData(emptyStore);
+                    setOriginalData(emptyStore);
+                    setIsNewStore(true);
+                } else {
+                    setData(res);
+                    setOriginalData(JSON.parse(JSON.stringify(res)));
+                    setIsNewStore(false);
+                }
+                setError(null);
+            } catch (err) {
+                console.error("Failed to load store detail:", err);
+                setError("Failed to load store detail. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, []);
 
     const handleToggleStatus = async () => {
