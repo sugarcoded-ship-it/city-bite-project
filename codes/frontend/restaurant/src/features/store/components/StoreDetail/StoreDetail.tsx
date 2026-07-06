@@ -23,10 +23,6 @@ export const StoreDetail = () => {
     const [isToggling, setIsToggling] = useState<boolean>(false);
     const [isNewStore, setIsNewStore] = useState<boolean>(false);
 
-    useEffect(() => {
-        fetchStoreDetail();
-    }, []);
-
     const fetchStoreDetail = async () => {
         try {
             const res = await apiClient<StoreDetail>('/owner/store/detail');
@@ -56,6 +52,10 @@ export const StoreDetail = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchStoreDetail();
+    }, []);
 
     const handleToggleStatus = async () => {
         if (!data) return;
