@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.LocalTime
@@ -35,13 +34,7 @@ class Store (
     var logo_url: String,
 
     @Column(name = "phone", nullable = false)
-    val phone: String,
-
-    @Column(name = "city", nullable = false)
-    var city: String,
-
-    @Column(name = "postal_code", nullable = false)
-    var postalCode: String,
+    var phone: String,
 
     @Column(name = "open_time", nullable = false)
     var openTime: LocalTime,

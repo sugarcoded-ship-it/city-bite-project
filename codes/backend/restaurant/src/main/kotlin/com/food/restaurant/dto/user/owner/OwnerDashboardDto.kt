@@ -10,5 +10,7 @@ data class OwnerDashboardDto(
     val pendingLeaveRequests: Long,
     val totalMenuItems: Long,
     val availableMenuItems: Long,
-    val isStoreOpen: Boolean
+    val isStoreOpen: Boolean,
+    val storeName: String
+
 )
