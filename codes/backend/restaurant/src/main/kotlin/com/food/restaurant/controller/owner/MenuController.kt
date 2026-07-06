@@ -17,10 +17,12 @@ import com.food.restaurant.repository.menu.MenuRepository
 import com.food.restaurant.repository.menu.MenuStatusRepository
 import com.food.restaurant.repository.stock.StockRepository
 import com.food.restaurant.service.MenuAvailabilityService
+import com.food.restaurant.service.StorageService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/owner/menu")
@@ -31,7 +33,8 @@ class MenuController(
     private val menuStatusRepository: MenuStatusRepository,
     private val menuRecipeRepository: MenuRecipeRepository,
     private val stockRepository: StockRepository,
-    private val menuAvailabilityService: MenuAvailabilityService
+    private val menuAvailabilityService: MenuAvailabilityService,
+    private val storageService: StorageService
 ) {
     @GetMapping
     fun getAllMenuItems(): ResponseEntity<List<MenuItemResponse>> {
@@ -41,6 +44,12 @@ class MenuController(
             MenuItemResponse.from(resolved, recipe)
         }
         return ResponseEntity.ok(items)
+    }
+
+    @PostMapping("/upload-image")
+    fun uploadMenuImage(@RequestParam("file") file: MultipartFile): ResponseEntity<Map<String, String>> {
+        val url = storageService.uploadFile(file, "menus")
+        return ResponseEntity.ok(mapOf("url" to url))
     }
 
     @PostMapping

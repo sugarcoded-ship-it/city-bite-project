@@ -17,13 +17,17 @@ class CustomerProfileService(
             lastName = user.lastName,
             username = user.username,
             email = user.email,
-            phoneNumber = user.phoneNumber
+            phoneNumber = user.phoneNumber,
+            profilePic = user.profilePic
         )
     }
 
     @Transactional
-    fun updatePhoneNumber(user: User, phoneNumber: String?): CustomerProfileResponse {
+    fun updateProfile(user: User, phoneNumber: String?, profilePic: String?): CustomerProfileResponse {
         user.phoneNumber = phoneNumber?.trim()?.ifEmpty { null }
+        if (profilePic != null) {
+            user.profilePic = profilePic
+        }
         val saved = userRepository.save(user)
         return toResponse(saved)
     }

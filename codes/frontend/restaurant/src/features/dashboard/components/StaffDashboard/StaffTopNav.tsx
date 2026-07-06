@@ -48,7 +48,7 @@ export function StaffTopNav() {
   const links = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/staff/dashboard', badge: activeOrders },
     { label: 'Stock', icon: Package, path: '/staff/stock', badge: lowStock },
-    { label: 'Profile', icon: User, path: '/staff/profile', badge: 0 },
+    ...(isOwner ? [] : [{ label: 'Profile', icon: User, path: '/staff/profile', badge: 0 }]),
   ];
 
   const handleLogout = () => keycloak.logout({ redirectUri: window.location.origin });
