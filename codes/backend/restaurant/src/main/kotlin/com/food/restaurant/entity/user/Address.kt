@@ -40,5 +40,11 @@ class Address(
 
     @ColumnDefault("true")
     @Column(name = "active", nullable = false)
-    var active: Boolean = true
+    var active: Boolean = true,
+
+    @Column(name = "latitude", nullable = true)
+    var latitude: Double? = null,
+
+    @Column(name = "longitude", nullable = true)
+    var longitude: Double? = null
 )

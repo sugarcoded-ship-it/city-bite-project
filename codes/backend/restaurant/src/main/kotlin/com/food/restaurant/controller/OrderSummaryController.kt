@@ -3,19 +3,28 @@ package com.food.restaurant.controller
 import com.food.restaurant.dto.CartItemRequest
 import com.food.restaurant.dto.CartSummaryResponse
 import com.food.restaurant.dto.CreateOrderRequest
+import com.food.restaurant.dto.EtaResponse
 import com.food.restaurant.entity.order.Order
+import com.food.restaurant.service.OrderETAService
 import com.food.restaurant.service.OrderSummaryService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/api/customer/orders")
-class OrderSummaryController(private val orderService: OrderSummaryService) {
+class OrderSummaryController(
+    private val orderService: OrderSummaryService,
+    private val orderETAService: OrderETAService
+) {
 
     @PostMapping("/summary")
     @PreAuthorize("isAuthenticated()")
@@ -36,6 +45,16 @@ class OrderSummaryController(private val orderService: OrderSummaryService) {
                 "status" to "PENDING"
             )
         )
+    }
+
+    @GetMapping("/{orderId}/eta")
+    @PreAuthorize("isAuthenticated()")
+    fun getOrderEta(
+        @PathVariable orderId: Int,
+        @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<EtaResponse> {
+        val eta = orderETAService.getEta(orderId, UUID.fromString(jwt.subject))
+        return ResponseEntity.ok(eta)
     }
 
     @PostMapping("/{orderId}/cancel")

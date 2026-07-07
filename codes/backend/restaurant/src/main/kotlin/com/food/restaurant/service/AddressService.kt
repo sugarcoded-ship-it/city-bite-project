@@ -12,7 +12,8 @@ import java.util.UUID
 @Service
 class AddressService(
     private val addressRepository: AddressRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val geocodingService: GeocodingService
 ) {
 
     fun getCustomerAddresses(customerUuid: UUID): List<AddressResponse> {
@@ -49,6 +50,10 @@ class AddressService(
             postalCode = request.postalCode
         )
 
+        geocodingService.geocode(
+            request.addressInfo, request.subDistrict, request.district, request.province, request.postalCode
+        )?.let { newAddr.latitude = it.lat; newAddr.longitude = it.lng }
+
         val savedAddr = addressRepository.save(newAddr)
 
         return AddressResponse(
@@ -75,6 +80,10 @@ class AddressService(
         existingAddr.district = request.district
         existingAddr.province = request.province
         existingAddr.postalCode = request.postalCode
+
+        geocodingService.geocode(
+            request.addressInfo, request.subDistrict, request.district, request.province, request.postalCode
+        )?.let { existingAddr.latitude = it.lat; existingAddr.longitude = it.lng }
 
         val updatedAddr = addressRepository.save(existingAddr)
 
