@@ -125,7 +125,6 @@ class MenuController(
     // half-saved menu item (the transaction only rolls back on a thrown exception).
     private fun validateMenuItemRequest(request: MenuItemRequest) {
         if (request.price <= BigDecimal.ZERO) badRequest("Price must be greater than 0")
-        if (request.recipe.isEmpty()) badRequest("At least one stock ingredient is required")
     }
 
     private fun badRequest(message: String): Nothing = throw ResponseStatusException(HttpStatus.BAD_REQUEST, message)
@@ -224,7 +223,6 @@ class MenuController(
             groupReq.choices.forEach { choiceReq ->
                 if (choiceReq.choiceName.isBlank()) badRequest("Choice name is required")
                 if (choiceReq.extraPrice < BigDecimal.ZERO) badRequest("Choice price cannot be negative")
-                if (choiceReq.ingredients.isEmpty()) badRequest("Choice '${choiceReq.choiceName}' must be tied to at least one stock ingredient")
 
                 val savedChoice = optionChoiceRepository.save(
                     OptionChoice(

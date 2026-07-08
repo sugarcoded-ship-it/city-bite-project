@@ -507,8 +507,7 @@ export function MenuConfiguration() {
             });
             if (hasInvalidIngredientRow) return true;
 
-            const validIngredientCount = c.ingredients.filter((i) => i.stockId !== '' && i.amount.trim() !== '').length;
-            return validIngredientCount === 0; // a choice must be tied to at least one stock ingredient
+            return false;
         });
     });
     const isValid = form.name && form.category && Number(form.price) > 0 && !hasNoIngredients && !hasInvalidRecipeAmount && !hasInvalidOptionData;
@@ -950,9 +949,9 @@ export function MenuConfiguration() {
                                                     );
                                                 })}
 
-                                                {choice.choiceName.trim() && choice.ingredients.filter((i) => i.stockId !== '' && i.amount.trim() !== '').length === 0 && (
-                                                    <span className={styles.optionValidationHint}>Tie at least one stock ingredient</span>
-                                                )}
+                                                {/*{choice.choiceName.trim() && choice.ingredients.filter((i) => i.stockId !== '' && i.amount.trim() !== '').length === 0 && (*/}
+                                                {/*    <span className={styles.optionValidationHint}>Tie at least one stock ingredient</span>*/}
+                                                {/*)}*/}
 
                                                 <button
                                                     type="button"
