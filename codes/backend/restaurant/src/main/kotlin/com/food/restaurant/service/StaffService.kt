@@ -4,8 +4,6 @@ import com.food.restaurant.dto.staff.OwnerStaffDetailResponse
 import com.food.restaurant.dto.staff.StaffListResponse
 import com.food.restaurant.dto.staff.StaffStatusUpdateRequest
 import com.food.restaurant.dto.staff.CreateStaffRequest
-import com.food.restaurant.dto.staff.StaffProfileResponse
-import com.food.restaurant.dto.staff.UpdateStaffProfileRequest
 import com.food.restaurant.entity.user.StaffStatus
 import com.food.restaurant.entity.user.Staff
 import com.food.restaurant.entity.user.User
