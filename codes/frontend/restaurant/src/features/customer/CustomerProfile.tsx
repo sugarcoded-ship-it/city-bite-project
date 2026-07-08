@@ -59,7 +59,8 @@ function PasswordChangeForm() {
             setSaved(true);
             setTimeout(() => setSaved(false), 2200);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update password.');
+            const apiError = err as { response?: { data?: { message?: string } } };
+            setError(apiError.response?.data?.message || 'Failed to update password.');
         } finally {
             setSaving(false);
         }
