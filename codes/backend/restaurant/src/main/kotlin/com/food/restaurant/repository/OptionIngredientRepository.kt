@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface OptionIngredientRepository : JpaRepository<OptionIngredient, Int> {
     fun findByOptionChoiceIdIn(choiceIds: List<Int>): List<OptionIngredient>
+    fun deleteByOptionChoiceIdIn(choiceIds: List<Int>)
 }

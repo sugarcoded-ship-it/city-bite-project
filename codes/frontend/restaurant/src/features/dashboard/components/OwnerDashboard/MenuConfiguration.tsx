@@ -44,6 +44,30 @@ export interface MenuRecipeLine {
     measureUnit: string;
 }
 
+export interface OptionIngredientLine {
+    stockId: number;
+    stockName: string;
+    amount: number;
+    measureUnit: string;
+    availableStock: number;
+}
+
+export interface OptionChoiceLine {
+    choiceId?: number;
+    choiceName: string;
+    extraPrice: number;
+    available?: boolean;
+    ingredients: OptionIngredientLine[];
+}
+
+export interface OptionGroupLine {
+    id?: number;
+    groupName: string;
+    isRequired: boolean;
+    maxChoices: number;
+    choices: OptionChoiceLine[];
+}
+
 export interface MenuItem {
     id?: number;
     name: string;
@@ -53,12 +77,13 @@ export interface MenuItem {
     menuPic: string;
     status: string;
     recipe: MenuRecipeLine[];
+    optionGroups?: OptionGroupLine[];
 }
 
 const STATUS_LABELS: Record<string, string> = {
-    ACTIVE: 'Active',
+    ACTIVE: 'Enable',
     OUT_OF_ORDER: 'Out of Stock',
-    DEACTIVATED: 'Deactivated',
+    DEACTIVATED: 'Disable',
 };
 
 const STATUS_FILTER_OPTIONS = ['All', 'ACTIVE', 'OUT_OF_ORDER', 'DEACTIVATED'];
@@ -67,6 +92,32 @@ interface RecipeFormLine {
     stockId: string;
     amount: string;
 }
+
+interface OptionIngredientForm {
+    key: string;
+    stockId: string;
+    amount: string;
+}
+
+interface OptionChoiceForm {
+    key: string;
+    choiceId?: number;
+    choiceName: string;
+    extraPrice: string;
+    ingredients: OptionIngredientForm[];
+}
+
+interface OptionGroupForm {
+    key: string;
+    id?: number;
+    groupName: string;
+    isRequired: boolean;
+    maxChoices: string;
+    choices: OptionChoiceForm[];
+}
+
+let optionKeySeed = 0;
+const nextOptionKey = () => `opt-${Date.now()}-${optionKeySeed++}`;
 
 export function MenuConfiguration() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -81,7 +132,11 @@ export function MenuConfiguration() {
     const [filterCat, setFilterCat] = useState('All');
     const [filterStatus, setFilterStatus] = useState('All');
 
-    const emptyForm = { name: '', price: '', category: '', description: '', menuPic: '', recipe: [] as RecipeFormLine[] };
+    const emptyForm = {
+        name: '', price: '', category: '', description: '', menuPic: '',
+        recipe: [] as RecipeFormLine[],
+        optionGroups: [] as OptionGroupForm[],
+    };
     const [form, setForm] = useState(emptyForm);
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -166,7 +221,27 @@ export function MenuConfiguration() {
             menuPic: item.menuPic,
             recipe: item.recipe?.length
                 ? item.recipe.map((r) => ({ stockId: String(r.stockId), amount: String(r.amount) }))
-                : []
+                : [],
+            optionGroups: item.optionGroups?.length
+                ? item.optionGroups.map((g) => ({
+                    key: nextOptionKey(),
+                    id: g.id,
+                    groupName: g.groupName,
+                    isRequired: g.isRequired,
+                    maxChoices: String(g.maxChoices),
+                    choices: g.choices.map((c) => ({
+                        key: nextOptionKey(),
+                        choiceId: c.choiceId,
+                        choiceName: c.choiceName,
+                        extraPrice: String(c.extraPrice),
+                        ingredients: c.ingredients.map((i) => ({
+                            key: nextOptionKey(),
+                            stockId: String(i.stockId),
+                            amount: String(i.amount),
+                        })),
+                    })),
+                }))
+                : [],
         });
         setSelectedImage(null);
         setImagePreview(item.menuPic || '');
@@ -189,6 +264,116 @@ export function MenuConfiguration() {
 
     const updateRecipeAmount = (stockId: string, amount: string) => {
         setForm({ ...form, recipe: form.recipe.map((r) => (r.stockId === stockId ? { ...r, amount } : r)) });
+    };
+
+    // --- Option group / choice / ingredient editing ---
+    const addOptionGroup = () => {
+        setForm({
+            ...form,
+            optionGroups: [
+                ...form.optionGroups,
+                { key: nextOptionKey(), groupName: '', isRequired: false, maxChoices: '1', choices: [] },
+            ],
+        });
+    };
+
+    const removeOptionGroup = (groupKey: string) => {
+        setForm({ ...form, optionGroups: form.optionGroups.filter((g) => g.key !== groupKey) });
+    };
+
+    const updateOptionGroup = (groupKey: string, patch: Partial<OptionGroupForm>) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) => (g.key === groupKey ? { ...g, ...patch } : g)),
+        });
+    };
+
+    const addOptionChoice = (groupKey: string) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) =>
+                g.key === groupKey
+                    ? { ...g, choices: [...g.choices, { key: nextOptionKey(), choiceName: '', extraPrice: '0', ingredients: [] }] }
+                    : g
+            ),
+        });
+    };
+
+    const removeOptionChoice = (groupKey: string, choiceKey: string) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) =>
+                g.key === groupKey ? { ...g, choices: g.choices.filter((c) => c.key !== choiceKey) } : g
+            ),
+        });
+    };
+
+    const updateOptionChoice = (groupKey: string, choiceKey: string, patch: Partial<OptionChoiceForm>) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) =>
+                g.key === groupKey
+                    ? { ...g, choices: g.choices.map((c) => (c.key === choiceKey ? { ...c, ...patch } : c)) }
+                    : g
+            ),
+        });
+    };
+
+    const addOptionIngredient = (groupKey: string, choiceKey: string) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) =>
+                g.key === groupKey
+                    ? {
+                        ...g,
+                        choices: g.choices.map((c) =>
+                            c.key === choiceKey
+                                ? { ...c, ingredients: [...c.ingredients, { key: nextOptionKey(), stockId: '', amount: '' }] }
+                                : c
+                        ),
+                    }
+                    : g
+            ),
+        });
+    };
+
+    const removeOptionIngredient = (groupKey: string, choiceKey: string, ingredientKey: string) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) =>
+                g.key === groupKey
+                    ? {
+                        ...g,
+                        choices: g.choices.map((c) =>
+                            c.key === choiceKey
+                                ? { ...c, ingredients: c.ingredients.filter((i) => i.key !== ingredientKey) }
+                                : c
+                        ),
+                    }
+                    : g
+            ),
+        });
+    };
+
+    const updateOptionIngredient = (groupKey: string, choiceKey: string, ingredientKey: string, patch: Partial<OptionIngredientForm>) => {
+        setForm({
+            ...form,
+            optionGroups: form.optionGroups.map((g) =>
+                g.key === groupKey
+                    ? {
+                        ...g,
+                        choices: g.choices.map((c) =>
+                            c.key === choiceKey
+                                ? {
+                                    ...c,
+                                    ingredients: c.ingredients.map((i) => (i.key === ingredientKey ? { ...i, ...patch } : i)),
+                                }
+                                : c
+                        ),
+                    }
+                    : g
+            ),
+        });
     };
 
     const stockLevel = (amount: number): 'High' | 'Mid' | 'Low' => {
@@ -218,8 +403,25 @@ export function MenuConfiguration() {
             .filter((r) => r.stockId !== '' && r.amount.trim())
             .map((r) => ({ stockId: Number(r.stockId), amount: parseFloat(r.amount) }));
 
+        const optionGroups = form.optionGroups
+            .filter((g) => g.groupName.trim())
+            .map((g) => ({
+                groupName: g.groupName.trim(),
+                isRequired: g.isRequired,
+                maxChoices: Math.max(1, Number(g.maxChoices) || 1),
+                choices: g.choices
+                    .filter((c) => c.choiceName.trim())
+                    .map((c) => ({
+                        choiceName: c.choiceName.trim(),
+                        extraPrice: c.extraPrice.trim() ? parseFloat(c.extraPrice) : 0,
+                        ingredients: c.ingredients
+                            .filter((i) => i.stockId !== '' && i.amount.trim())
+                            .map((i) => ({ stockId: Number(i.stockId), amount: parseFloat(i.amount) })),
+                    })),
+            }));
+
         let uploadedImageUrl = form.menuPic || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400';
-        
+
         if (selectedImage) {
             try {
                 const formData = new FormData();
@@ -247,6 +449,7 @@ export function MenuConfiguration() {
             description: form.description,
             menuPic: uploadedImageUrl,
             recipe,
+            optionGroups,
         };
 
         try {
@@ -286,8 +489,28 @@ export function MenuConfiguration() {
         }
     };
 
+    const hasNoIngredients = form.recipe.length === 0;
     const hasInvalidRecipeAmount = form.recipe.some((r) => r.amount.trim() !== '' && Number(r.amount) <= 0);
-    const isValid = form.name && form.category && Number(form.price) > 0 && !hasInvalidRecipeAmount;
+    const hasInvalidOptionData = form.optionGroups.some((g) => {
+        if (!g.groupName.trim()) return false; // empty groups are dropped on submit, not an error
+        if (Number(g.maxChoices) <= 0) return true;
+
+        const namedChoices = g.choices.filter((c) => c.choiceName.trim());
+        if (namedChoices.length === 0) return true; // a group must have at least one choice
+
+        return namedChoices.some((c) => {
+            if (c.extraPrice.trim() !== '' && Number(c.extraPrice) < 0) return true;
+
+            const hasInvalidIngredientRow = c.ingredients.some((i) => {
+                if (i.stockId === '' && i.amount.trim() === '') return false; // fully empty rows are dropped
+                return i.stockId === '' || !i.amount.trim() || Number(i.amount) <= 0;
+            });
+            if (hasInvalidIngredientRow) return true;
+
+            return false;
+        });
+    });
+    const isValid = form.name && form.category && Number(form.price) > 0 && !hasNoIngredients && !hasInvalidRecipeAmount && !hasInvalidOptionData;
 
     if (isLoading) return <div style={{ minHeight: '100vh', paddingTop: '100px', textAlign: 'center', fontWeight: 'bold' }}>Loading Menu...</div>;
 
@@ -463,13 +686,13 @@ export function MenuConfiguration() {
                         <div className={`${styles.modalBody} ${styles.modalBodyFixed}`}>
                             <div className={styles.imageUploadSection}>
                                 <label className={styles.formLabel}>Menu Image *</label>
-                                <div 
+                                <div
                                     className={styles.imageUploadArea}
                                     onClick={() => fileInputRef.current?.click()}
                                 >
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
+                                    <input
+                                        type="file"
+                                        accept="image/*"
                                         ref={fileInputRef}
                                         onChange={handleImageChange}
                                         style={{ display: 'none' }}
@@ -535,11 +758,11 @@ export function MenuConfiguration() {
 
                             {/* Recipe / ingredients section */}
                             <div>
-                                <label className={styles.formLabel}>Ingredients</label>
+                                <label className={styles.formLabel}>Ingredients *</label>
 
                                 <div className={styles.chipsRow}>
                                     {form.recipe.length === 0 ? (
-                                        <span className={styles.chipsPlaceholder}>No ingredients selected</span>
+                                        <span className={styles.chipsPlaceholder}>Select at least one stock ingredient</span>
                                     ) : (
                                         form.recipe.map((line) => {
                                             const stock = stocks.find((s) => String(s.id) === line.stockId);
@@ -615,6 +838,149 @@ export function MenuConfiguration() {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* Options section — e.g. sizes, toppings, spice level, each with its own price and stock ingredient */}
+                            <div className={styles.optionGroupsSection}>
+                                <label className={styles.formLabel}>Options</label>
+
+                                {form.optionGroups.map((group) => (
+                                    <div key={group.key} className={styles.optionGroupCard}>
+                                        <div className={styles.optionGroupHeaderRow}>
+                                            <input
+                                                type="text"
+                                                value={group.groupName}
+                                                onChange={(e) => updateOptionGroup(group.key, { groupName: e.target.value })}
+                                                placeholder="Group name (e.g. Size, Spice Level)"
+                                                className={styles.optionGroupNameInput}
+                                            />
+                                            <label className={styles.optionGroupRequiredToggle}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={group.isRequired}
+                                                    onChange={(e) => updateOptionGroup(group.key, { isRequired: e.target.checked })}
+                                                />
+                                                Required
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={group.maxChoices}
+                                                onChange={(e) => updateOptionGroup(group.key, { maxChoices: e.target.value })}
+                                                title="Max choices a customer can pick"
+                                                className={styles.optionGroupMaxInput}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeOptionGroup(group.key)}
+                                                className={styles.optionGroupRemoveBtn}
+                                                title="Remove group"
+                                            >
+                                                <X size={13} />
+                                            </button>
+                                        </div>
+
+                                        {group.choices.map((choice) => (
+                                            <div key={choice.key} className={styles.optionChoiceRow}>
+                                                <div className={styles.optionChoiceTopRow}>
+                                                    <input
+                                                        type="text"
+                                                        value={choice.choiceName}
+                                                        onChange={(e) => updateOptionChoice(group.key, choice.key, { choiceName: e.target.value })}
+                                                        placeholder="Choice name (e.g. Large)"
+                                                        className={styles.optionChoiceNameInput}
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        step={0.01}
+                                                        min={0}
+                                                        value={choice.extraPrice}
+                                                        onChange={(e) => updateOptionChoice(group.key, choice.key, { extraPrice: e.target.value })}
+                                                        placeholder="+฿0.00"
+                                                        title={Number(choice.extraPrice) < 0 ? 'Price cannot be negative' : 'Extra price for this choice'}
+                                                        className={`${styles.optionChoicePriceInput} ${Number(choice.extraPrice) < 0 ? styles.optionChoicePriceInvalid : ''}`}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeOptionChoice(group.key, choice.key)}
+                                                        className={styles.optionChoiceRemoveBtn}
+                                                        title="Remove choice"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+
+                                                {choice.ingredients.map((ingredient) => {
+                                                    const stock = stocks.find((s) => String(s.id) === ingredient.stockId);
+                                                    return (
+                                                        <div key={ingredient.key} className={styles.optionIngredientRow}>
+                                                            <select
+                                                                value={ingredient.stockId}
+                                                                onChange={(e) => updateOptionIngredient(group.key, choice.key, ingredient.key, { stockId: e.target.value })}
+                                                                className={styles.optionIngredientSelect}
+                                                            >
+                                                                <option value="" disabled>Select stock ingredient...</option>
+                                                                {stocks.map((s) => (
+                                                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                                                ))}
+                                                            </select>
+                                                            <input
+                                                                type="number"
+                                                                min={0}
+                                                                value={ingredient.amount}
+                                                                onChange={(e) => updateOptionIngredient(group.key, choice.key, ingredient.key, { amount: e.target.value })}
+                                                                placeholder="Amount"
+                                                                title={ingredient.amount.trim() !== '' && Number(ingredient.amount) <= 0 ? 'Amount must be greater than 0' : undefined}
+                                                                className={`${styles.optionIngredientAmountInput} ${ingredient.amount.trim() !== '' && Number(ingredient.amount) <= 0 ? styles.optionIngredientAmountInvalid : ''}`}
+                                                            />
+                                                            <span className={styles.optionIngredientUnit}>
+                                                                {stock ? UNIT_LABELS[stock.measureUnit] || stock.measureUnit : ''}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeOptionIngredient(group.key, choice.key, ingredient.key)}
+                                                                className={styles.chipRemoveBtn}
+                                                                style={{ background: '#f3f4f6', color: '#6b7280' }}
+                                                                title="Remove ingredient"
+                                                            >
+                                                                <X size={11} />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+
+                                                {/*{choice.choiceName.trim() && choice.ingredients.filter((i) => i.stockId !== '' && i.amount.trim() !== '').length === 0 && (*/}
+                                                {/*    <span className={styles.optionValidationHint}>Tie at least one stock ingredient</span>*/}
+                                                {/*)}*/}
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addOptionIngredient(group.key, choice.key)}
+                                                    className={styles.addIngredientBtn}
+                                                >
+                                                    + Tie to stock ingredient
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {group.groupName.trim() && group.choices.filter((c) => c.choiceName.trim()).length === 0 && (
+                                            <span className={styles.optionValidationHint}>Add at least one choice</span>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={() => addOptionChoice(group.key)}
+                                            className={styles.addChoiceBtn}
+                                        >
+                                            + Add choice
+                                        </button>
+                                    </div>
+                                ))}
+
+                                <button type="button" onClick={addOptionGroup} className={styles.addGroupBtn}>
+                                    <Plus size={12} style={{ display: 'inline', marginRight: 4 }} />
+                                    Add option group
+                                </button>
                             </div>
                         </div>
 

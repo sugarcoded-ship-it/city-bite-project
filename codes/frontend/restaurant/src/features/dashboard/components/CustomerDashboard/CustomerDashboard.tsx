@@ -22,6 +22,7 @@ interface OptionChoice {
     choiceId: number;
     choiceName: string;
     extraPrice: number;
+    available: boolean;
 }
 
 interface OptionGroup {
@@ -202,7 +203,11 @@ export function CustomerDashboard() {
         setOptionGroups([]);
     };
 
-    const handleChoiceSelection = (groupId: number, choiceId: number, maxChoices: number) => {
+    const handleChoiceSelection = (groupId: number, choiceId: number, maxChoices: number, isAvailable: boolean) => {
+        if (!isAvailable) {
+            showToast('This option is currently out of stock.');
+            return;
+        }
         const workingMap = new Map(selectedChoices);
         const currentSelections = workingMap.get(groupId) || [];
 
@@ -662,16 +667,30 @@ export function CustomerDashboard() {
                                         {group.choices.map((choice) => {
                                             const selectedArray = selectedChoices.get(group.id) || [];
                                             const isChecked = selectedArray.includes(choice.choiceId);
+                                            const isAvailable = choice.available;
                                             return (
-                                                <label key={choice.choiceId} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${isChecked ? 'bg-blue-50/50 border-[#2D7FF9]' : 'bg-white border-gray-200 hover:border-blue-300'}`}>
+                                                <label
+                                                    key={choice.choiceId}
+                                                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                                                        !isAvailable
+                                                            ? 'bg-gray-50 border-gray-200 opacity-60 cursor-not-allowed'
+                                                            : isChecked
+                                                                ? 'bg-blue-50/50 border-[#2D7FF9] cursor-pointer'
+                                                                : 'bg-white border-gray-200 hover:border-blue-300 cursor-pointer'
+                                                    }`}
+                                                >
                                                     <div className="flex items-center gap-3">
                                                         <input
                                                             type={group.maxChoices === 1 ? "radio" : "checkbox"}
                                                             checked={isChecked}
-                                                            onChange={() => handleChoiceSelection(group.id, choice.choiceId, group.maxChoices)}
-                                                            className="w-4 h-4 text-[#2D7FF9] accent-[#2D7FF9] cursor-pointer"
+                                                            disabled={!isAvailable}
+                                                            onChange={() => handleChoiceSelection(group.id, choice.choiceId, group.maxChoices, isAvailable)}
+                                                            className="w-4 h-4 text-[#2D7FF9] accent-[#2D7FF9] cursor-pointer disabled:cursor-not-allowed"
                                                         />
-                                                        <span className="text-sm font-semibold text-gray-700">{choice.choiceName}</span>
+                                                        <span className={`text-sm font-semibold ${isAvailable ? 'text-gray-700' : 'text-gray-400'}`}>{choice.choiceName}</span>
+                                                        {!isAvailable && (
+                                                            <span className="bg-red-100 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Out of Stock</span>
+                                                        )}
                                                     </div>
                                                     {choice.extraPrice > 0 && (
                                                         <span className="text-xs font-bold text-[#2D7FF9]">+฿{choice.extraPrice.toFixed(2)}</span>

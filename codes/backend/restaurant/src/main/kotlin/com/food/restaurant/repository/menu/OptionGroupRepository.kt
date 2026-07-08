@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface OptionGroupRepository : JpaRepository<OptionGroup, Int> {
     fun findByMenuItem_Id(menuId: Int): List<OptionGroup>
+    fun deleteByMenuItem_Id(menuId: Int)
 }

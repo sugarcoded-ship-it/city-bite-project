@@ -8,5 +8,6 @@ data class MenuItemRequest(
     val category: String,
     val menuPic: String? = null,
     val description: String? = null,
-    val recipe: List<MenuRecipeRequest> = emptyList()
+    val recipe: List<MenuRecipeRequest> = emptyList(),
+    val optionGroups: List<OptionGroupRequest> = emptyList()
 )
