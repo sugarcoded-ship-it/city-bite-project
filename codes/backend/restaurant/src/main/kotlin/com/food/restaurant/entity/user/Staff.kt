@@ -40,4 +40,7 @@ class Staff(
     @ColumnDefault("'INACTIVE'")
     @Column(nullable = false)
     var status: StaffStatus = StaffStatus.INACTIVE,
+
+    @Column(name = "profile_pic")
+    var profilePic: String? = null
 )
