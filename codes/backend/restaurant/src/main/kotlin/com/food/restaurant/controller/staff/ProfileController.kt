@@ -1,7 +1,7 @@
 package com.food.restaurant.controller.staff
 
-import com.food.restaurant.dto.user.CustomerProfileResponse
-import com.food.restaurant.dto.user.UpdateCustomerProfileRequest
+import com.food.restaurant.dto.user.customer.CustomerProfileResponse
+import com.food.restaurant.dto.user.customer.UpdateCustomerProfileRequest
 import com.food.restaurant.service.CustomerProfileService
 import com.food.restaurant.service.UserSyncService
 import org.springframework.http.ResponseEntity
