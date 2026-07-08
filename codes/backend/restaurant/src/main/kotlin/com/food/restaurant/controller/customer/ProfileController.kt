@@ -1,9 +1,9 @@
 package com.food.restaurant.controller.customer
 
-import com.food.restaurant.dto.user.CustomerProfileResponse
-import com.food.restaurant.dto.user.UpdateCustomerProfileRequest
+import com.food.restaurant.dto.user.customer.CustomerProfileResponse
+import com.food.restaurant.dto.user.customer.UpdateCustomerProfileRequest
+import com.food.restaurant.repository.user.UserRepository
 import com.food.restaurant.service.CustomerProfileService
-import com.food.restaurant.service.UserSyncService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -14,23 +14,22 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-import com.food.restaurant.service.StorageService
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.multipart.MultipartFile
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
+import java.util.UUID
 
 @RestController("customerProfileController")
 @RequestMapping("/api/customer/profile")
 class ProfileController(
     private val customerProfileService: CustomerProfileService,
-    private val userSyncService: UserSyncService,
-    private val storageService: StorageService
+    private val userRepository: UserRepository
 ) {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     fun getProfile(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<CustomerProfileResponse> {
-        val user = userSyncService.syncFromToken(jwt)
+        val user = userRepository.findById(UUID.fromString(jwt.subject))
+                                 .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
         return ResponseEntity.ok(customerProfileService.toResponse(user))
     }
 
@@ -40,15 +39,22 @@ class ProfileController(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody request: UpdateCustomerProfileRequest
     ): ResponseEntity<CustomerProfileResponse> {
-        val user = userSyncService.syncFromToken(jwt)
-        val updated = customerProfileService.updateProfile(user, request.phoneNumber, request.profilePic)
+        val user = userRepository.findById(UUID.fromString(jwt.subject))
+                                 .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
+        val updated = customerProfileService.updateProfile(user, request)
         return ResponseEntity.ok(updated)
     }
 
-    @PostMapping("/upload-avatar")
+    @PatchMapping("/password")
     @PreAuthorize("isAuthenticated()")
-    fun uploadAvatar(@RequestParam("file") file: MultipartFile): ResponseEntity<Map<String, String>> {
-        val url = storageService.uploadFile(file, "avatars")
-        return ResponseEntity.ok(mapOf("url" to url))
+    fun updatePassword(
+        @AuthenticationPrincipal jwt: Jwt,
+        @RequestBody request: com.food.restaurant.dto.user.customer.UpdatePasswordRequest
+    ): ResponseEntity<Void> {
+        val user = userRepository.findById(UUID.fromString(jwt.subject))
+                                 .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
+        customerProfileService.updatePassword(user, request)
+        return ResponseEntity.ok().build()
     }
+
 }
