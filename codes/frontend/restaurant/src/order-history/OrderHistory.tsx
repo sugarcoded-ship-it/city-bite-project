@@ -273,7 +273,7 @@ export default function OrderHistory() {
                                     <span className={styles.addressValue}>{order.deliveryAddress}</span>
                                 </div>
 
-                                {(order.status || '').toUpperCase().replace(/\s+/g, '_') === 'ON_DELIVERY' && order.staffName && (
+                                {['ON_DELIVERY', 'DELIVERED'].includes((order.status || '').toUpperCase().replace(/\s+/g, '_')) && order.staffName && (
                                     <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>
                                         <span className={styles.infoLabel}>
                                             Delivered by
