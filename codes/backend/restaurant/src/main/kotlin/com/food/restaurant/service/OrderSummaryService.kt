@@ -1,10 +1,10 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.dto.CartItemSummary
-import com.food.restaurant.dto.CartItemRequest
-import com.food.restaurant.dto.CartSummaryResponse
-import com.food.restaurant.dto.CreateOrderRequest
-import com.food.restaurant.dto.OptionSummaryResponse
+import com.food.restaurant.dto.order.CartItemSummary
+import com.food.restaurant.dto.order.CartItemRequest
+import com.food.restaurant.dto.order.CartSummaryResponse
+import com.food.restaurant.dto.order.CreateOrderRequest
+import com.food.restaurant.dto.order.OptionSummaryResponse
 import com.food.restaurant.entity.order.Order
 import com.food.restaurant.entity.order.OrderDetail
 import com.food.restaurant.entity.order.OrderItemSelection

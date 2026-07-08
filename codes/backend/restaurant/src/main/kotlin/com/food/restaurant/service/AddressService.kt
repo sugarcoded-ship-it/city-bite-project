@@ -1,7 +1,7 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.dto.AddressRequest
-import com.food.restaurant.dto.AddressResponse
+import com.food.restaurant.dto.user.customer.AddressResponse
+import com.food.restaurant.dto.user.customer.AddressRequest
 import com.food.restaurant.entity.user.Address
 import com.food.restaurant.repository.user.AddressRepository
 import com.food.restaurant.repository.user.UserRepository

@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, Fragment } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../lib/api-client.ts';
-import { CustomerTopNav } from '../features/customer/CustomerTopNav';
+import {useState, useEffect, useCallback, Fragment} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {apiClient} from '../lib/api-client.ts';
+import {CustomerTopNav} from '../features/customer/CustomerTopNav';
 import {
     ClockArrowUp, RotateCcw, ChevronLeft, ChevronRight,
     MapPin, Calendar, AlertCircle, UtensilsCrossed, Map
@@ -43,58 +43,71 @@ interface PageResponse {
 function getStatusClass(status: string): string {
     const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
     switch (enumStatus) {
-        case 'PENDING': return styles.statusPending;
+        case 'PENDING':
+            return styles.statusPending;
         case 'IN_PROGRESS':
-        case 'IN_PREPARATION': return styles.statusInProgress;
-        case 'ON_DELIVERY': return styles.statusPending; // Or another class if you prefer
-        case 'DELIVERED': return styles.statusDelivered;
-        case 'CANCELED': return styles.statusCanceled;
-        default: return styles.statusDefault;
+        case 'IN_PREPARATION':
+            return styles.statusInProgress;
+        case 'ON_DELIVERY':
+            return styles.statusPending; // Or another class if you prefer
+        case 'DELIVERED':
+            return styles.statusDelivered;
+        case 'CANCELED':
+            return styles.statusCanceled;
+        default:
+            return styles.statusDefault;
     }
 }
 
 function formatStatus(status: string): string {
     const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
     switch (enumStatus) {
-        case 'PENDING': return 'Pending';
-        case 'IN_PROGRESS': return 'In Progress';
-        case 'IN_PREPARATION': return 'In Preparation';
-        case 'ON_DELIVERY': return 'On Delivery';
-        case 'DELIVERED': return 'Delivered';
-        case 'CANCELED': return 'Canceled';
-        default: return status;
+        case 'PENDING':
+            return 'Pending';
+        case 'IN_PROGRESS':
+            return 'In Progress';
+        case 'IN_PREPARATION':
+            return 'In Preparation';
+        case 'ON_DELIVERY':
+            return 'On Delivery';
+        case 'DELIVERED':
+            return 'Delivered';
+        case 'CANCELED':
+            return 'Canceled';
+        default:
+            return status;
     }
 }
 
 function formatDisplayDate(dateString: string): string {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ', ' + 
-           date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return date.toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: 'numeric'}) + ', ' +
+        date.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false});
 }
 
 function getGroupLabel(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
-    
-    const isSameDay = date.getDate() === now.getDate() && 
-                      date.getMonth() === now.getMonth() && 
-                      date.getFullYear() === now.getFullYear();
+
+    const isSameDay = date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
     if (isSameDay) return 'Today';
-    
+
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
-    const isYesterday = date.getDate() === yesterday.getDate() && 
-                        date.getMonth() === yesterday.getMonth() && 
-                        date.getFullYear() === yesterday.getFullYear();
+    const isYesterday = date.getDate() === yesterday.getDate() &&
+        date.getMonth() === yesterday.getMonth() &&
+        date.getFullYear() === yesterday.getFullYear();
     if (isYesterday) return 'Yesterday';
-    
-    const isSameMonth = date.getMonth() === now.getMonth() && 
-                        date.getFullYear() === now.getFullYear();
+
+    const isSameMonth = date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
     if (isSameMonth) return 'This Month';
-    
+
     // Fallback to Month Year (e.g., "May 2026")
-    const options: Intl.DateTimeFormatOptions = { month: 'long', year: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {month: 'long', year: 'numeric'};
     return date.toLocaleDateString('en-US', options);
 }
 
@@ -124,7 +137,7 @@ export default function OrderHistory() {
             const data = await apiClient<PageResponse>(
                 `/customer/orders/history?page=${p}&size=10`
             );
-            
+
             setOrders(data?.content || []);
             setTotalPages(data?.totalPages || 0);
             setTotalElements(data?.totalElements || 0);
@@ -162,13 +175,13 @@ export default function OrderHistory() {
     const goToPage = (p: number) => {
         if (p >= 0 && p < totalPages) {
             fetchHistory(p);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
     };
 
     return (
         <div className={styles.page}>
-            <CustomerTopNav />
+            <CustomerTopNav/>
 
             <div className={styles.container}>
                 {/* Page Header */}
@@ -184,7 +197,7 @@ export default function OrderHistory() {
                 {/* Error State */}
                 {error && (
                     <div className={styles.errorBanner}>
-                        <AlertCircle size={18} />
+                        <AlertCircle size={18}/>
                         <span>{error}</span>
                     </div>
                 )}
@@ -194,10 +207,10 @@ export default function OrderHistory() {
                     <>
                         {[1, 2, 3].map((i) => (
                             <div key={i} className={styles.skeletonCard}>
-                                <div className={styles.skeletonLine} />
-                                <div className={styles.skeletonLine} />
-                                <div className={styles.skeletonLine} />
-                                <div className={styles.skeletonLine} />
+                                <div className={styles.skeletonLine}/>
+                                <div className={styles.skeletonLine}/>
+                                <div className={styles.skeletonLine}/>
+                                <div className={styles.skeletonLine}/>
                             </div>
                         ))}
                     </>
@@ -207,7 +220,7 @@ export default function OrderHistory() {
                 {!loading && !error && orders.length === 0 && (
                     <div className={styles.emptyState}>
                         <div className={styles.emptyIconWrap}>
-                            <ClockArrowUp size={36} color="#2D7FF9" />
+                            <ClockArrowUp size={36} color="#2D7FF9"/>
                         </div>
                         <h2 className={styles.emptyTitle}>No orders yet</h2>
                         <p className={styles.emptyText}>
@@ -217,7 +230,7 @@ export default function OrderHistory() {
                             className={styles.emptyBtn}
                             onClick={() => navigate('/customer/home')}
                         >
-                            <UtensilsCrossed size={16} />
+                            <UtensilsCrossed size={16}/>
                             Browse Menu
                         </button>
                     </div>
@@ -238,115 +251,133 @@ export default function OrderHistory() {
                             )}
                             <div className={styles.orderCard}>
                                 {/* Header: Order ID + Status */}
-                        <div className={styles.cardHeader}>
+                                <div className={styles.cardHeader}>
                             <span className={styles.orderId}>
                                 #ORD-{String(order.orderId).padStart(5, '0')}
                             </span>
-                            <span className={`${styles.statusBadge} ${getStatusClass(order.status || '')}`}>
+                                    <span className={`${styles.statusBadge} ${getStatusClass(order.status || '')}`}>
                                 {formatStatus(order.status || '')}
                             </span>
-                        </div>
+                                </div>
 
-                        {/* Body: Info Grid */}
-                        <div className={styles.cardBody}>
-                            <div className={styles.infoGrid}>
-                                <div className={styles.infoItem}>
-                                    <span className={styles.infoLabel}>Total Amount</span>
-                                    <span className={`${styles.infoValue} ${styles.infoValueLarge}`}>
+                                {/* Body: Info Grid */}
+                                <div className={styles.cardBody}>
+                                    <div className={styles.infoGrid}>
+                                        <div className={styles.infoItem}>
+                                            <span className={styles.infoLabel}>Total Amount</span>
+                                            <span className={`${styles.infoValue} ${styles.infoValueLarge}`}>
                                         ฿{(order.totalAmount || 0).toFixed(2)}
                                     </span>
-                                </div>
+                                        </div>
 
-                                <div className={styles.infoItem}>
+                                        <div className={styles.infoItem}>
                                     <span className={styles.infoLabel}>
-                                        <Calendar size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: '-1px' }} />
+                                        <Calendar size={11}
+                                                  style={{display: 'inline', marginRight: 4, verticalAlign: '-1px'}}/>
                                         Date & Time
                                     </span>
-                                    <span className={styles.infoValue}>{formatDisplayDate(order.createdAt)}</span>
-                                </div>
+                                            <span
+                                                className={styles.infoValue}>{formatDisplayDate(order.createdAt)}</span>
+                                        </div>
 
-                                <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>
+                                        <div className={styles.infoItem} style={{gridColumn: '1 / -1'}}>
                                     <span className={styles.infoLabel}>
-                                        <MapPin size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: '-1px' }} />
+                                        <MapPin size={11}
+                                                style={{display: 'inline', marginRight: 4, verticalAlign: '-1px'}}/>
                                         Delivery Address
                                     </span>
-                                    <span className={styles.addressValue}>{order.deliveryAddress}</span>
-                                </div>
+                                            <span className={styles.addressValue}>{order.deliveryAddress}</span>
+                                        </div>
 
-                                {['ON_DELIVERY', 'DELIVERED'].includes((order.status || '').toUpperCase().replace(/\s+/g, '_')) && order.staffName && (
-                                    <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>
-                                        <span className={styles.infoLabel}>
-                                            Delivered by
-                                        </span>
-                                        <span className={styles.infoValue}>
-                                            {order.staffName}
-                                        </span>
+                                        {(order.status || '').toUpperCase() !== 'CANCELED' && (
+                                            <div className={styles.infoItem} style={{gridColumn: '1 / -1'}}>
+                                                <span className={styles.infoLabel}>
+                                                    Delivered by
+                                                </span>
+                                                <span className={styles.infoValue}>
+                                                    {['ON_DELIVERY', 'DELIVERED'].includes((order.status || '').toUpperCase().replace(/\s+/g, '_')) && order.staffName ? (
+                                                        order.staffName
+                                                    ) : (
+                                                        <span style={{color: '#94a3b8', fontStyle: 'italic', fontSize: '0.9em'}}>
+                                                            Awaiting rider assignment...
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Items preview */}
-                            {order.items && order.items.length > 0 && (
-                                <div className={styles.itemsPreview}>
-                                    <div className={styles.itemsLabel}>Items ordered</div>
-                                    <div className={styles.itemsList}>
-                                        {order.items.map((item, idx) => (
-                                            <span
-                                                key={idx}
-                                                className={styles.itemChip}
-                                                style={item.isCanceled ? { opacity: 0.55, textDecoration: 'line-through' } : undefined}
-                                                title={item.isCanceled ? 'Removed due to insufficient stock and refunded' : undefined}
-                                            >
+                                    {/* Items preview */}
+                                    {order.items && order.items.length > 0 && (
+                                        <div className={styles.itemsPreview}>
+                                            <div className={styles.itemsLabel}>Items ordered</div>
+                                            <div className={styles.itemsList}>
+                                                {order.items.map((item, idx) => (
+                                                    <span
+                                                        key={idx}
+                                                        className={styles.itemChip}
+                                                        style={item.isCanceled ? {
+                                                            opacity: 0.55,
+                                                            textDecoration: 'line-through'
+                                                        } : undefined}
+                                                        title={item.isCanceled ? 'Removed due to insufficient stock and refunded' : undefined}
+                                                    >
                                                 {item.menuName}
-                                                <span className={styles.itemChipQty}>×{item.quantity}</span>
-                                                {item.isCanceled && (
-                                                    <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 700, color: '#ef4444' }}>
+                                                        <span className={styles.itemChipQty}>×{item.quantity}</span>
+                                                        {item.isCanceled && (
+                                                            <span style={{
+                                                                marginLeft: 4,
+                                                                fontSize: 10,
+                                                                fontWeight: 700,
+                                                                color: '#ef4444'
+                                                            }}>
                                                         Refunded
                                                     </span>
-                                                )}
+                                                        )}
                                             </span>
-                                        ))}
-                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Footer: Action Buttons */}
-                        <div className={styles.cardFooter}>
-                            <button
-                                className={styles.reorderBtn}
-                                style={{ background: '#f8fafc', color: '#3b82f6', border: '1px solid #cbd5e1' }}
-                                onClick={() => navigate(`/track/${order.orderId}`)}
-                            >
-                                <Map size={15} />
-                                Track Order
-                            </button>
-                            {(order.status || '').toUpperCase() === 'DELIVERED' && (
-                                <button
-                                    className={styles.reorderBtn}
-                                    onClick={() => handleReorder(order.orderId)}
-                                    disabled={reorderingId !== null}
-                                >
-                                    <RotateCcw
-                                        size={15}
-                                        style={{
-                                            animation: reorderingId === order.orderId
-                                                ? 'spin 0.8s linear infinite'
-                                                : 'none'
-                                        }}
-                                    />
-                                    {reorderingId === order.orderId ? 'Reordering…' : 'Reorder'}
-                                </button>
-                            )}
-                            {(order.status || '').toUpperCase() === 'CANCELED' && order.canceledBy && (
-                                <span className={styles.canceledByText}>
+                                {/* Footer: Action Buttons */}
+                                <div className={styles.cardFooter}>
+                                    <button
+                                        className={styles.reorderBtn}
+                                        style={{background: '#f8fafc', color: '#3b82f6', border: '1px solid #cbd5e1'}}
+                                        onClick={() => navigate(`/track/${order.orderId}`)}
+                                    >
+                                        <Map size={15}/>
+                                        Track Order
+                                    </button>
+                                    {(order.status || '').toUpperCase() === 'DELIVERED' && (
+                                        <button
+                                            className={styles.reorderBtn}
+                                            onClick={() => handleReorder(order.orderId)}
+                                            disabled={reorderingId !== null}
+                                        >
+                                            <RotateCcw
+                                                size={15}
+                                                style={{
+                                                    animation: reorderingId === order.orderId
+                                                        ? 'spin 0.8s linear infinite'
+                                                        : 'none'
+                                                }}
+                                            />
+                                            {reorderingId === order.orderId ? 'Reordering…' : 'Reorder'}
+                                        </button>
+                                    )}
+                                    {(order.status || '').toUpperCase() === 'CANCELED' && order.canceledBy && (
+                                        <span className={styles.canceledByText}>
                                     Canceled by: {order.canceledBy}
                                 </span>
-                            )}
-                        </div>
-                    </div>
-                    </Fragment>
-                )})}
+                                    )}
+                                </div>
+                            </div>
+                        </Fragment>
+                    )
+                })}
 
                 {/* Pagination */}
                 {!loading && !error && totalPages > 1 && (
@@ -356,7 +387,7 @@ export default function OrderHistory() {
                             onClick={() => goToPage(page - 1)}
                             disabled={page === 0}
                         >
-                            <ChevronLeft size={14} />
+                            <ChevronLeft size={14}/>
                             Previous
                         </button>
 
@@ -370,7 +401,7 @@ export default function OrderHistory() {
                             disabled={page >= totalPages - 1}
                         >
                             Next
-                            <ChevronRight size={14} />
+                            <ChevronRight size={14}/>
                         </button>
                     </div>
                 )}
@@ -384,7 +415,8 @@ export default function OrderHistory() {
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                     }}>
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                            <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round"
+                                  strokeLinejoin="round"/>
                         </svg>
                     </span>
                     {toast}

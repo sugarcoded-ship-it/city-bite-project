@@ -1,7 +1,7 @@
 package com.food.restaurant.controller
 
-import com.food.restaurant.dto.AddressRequest
-import com.food.restaurant.dto.AddressResponse
+import com.food.restaurant.dto.user.customer.AddressRequest
+import com.food.restaurant.dto.user.customer.AddressResponse
 import com.food.restaurant.service.AddressService
 import com.food.restaurant.service.UserSyncService
 import org.springframework.http.ResponseEntity
