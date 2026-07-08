@@ -41,7 +41,7 @@ class ProfileController(
         @RequestBody request: UpdateCustomerProfileRequest
     ): ResponseEntity<CustomerProfileResponse> {
         val user = userSyncService.syncFromToken(jwt)
-        val updated = customerProfileService.updateProfile(user, request.phoneNumber, request.profilePic)
+        val updated = customerProfileService.updateProfile(user, request)
         return ResponseEntity.ok(updated)
     }
 
