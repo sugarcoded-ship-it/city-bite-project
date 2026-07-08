@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
     ArrowDownLeft,
     ArrowUpRight,
@@ -7,8 +8,31 @@ import {
     TrendingUp,
     Wallet,
 } from 'lucide-react';
+import { apiClient } from '../../../../lib/api-client';
 import { OwnerTopNav } from './OwnerTopNav';
 import styles from './OwnerAnalytics.module.css';
+
+interface WeeklyFinancePoint {
+    label: string;
+    inflow: number;
+    outflow: number;
+}
+
+interface RecentTransaction {
+    title: string;
+    amount: number;
+    note: string;
+    type: string;
+}
+
+interface OwnerAnalyticsResponse {
+    totalInflow: number;
+    totalOutflow: number;
+    netProfit: number;
+    cashReserve: number;
+    weeklyFlow: WeeklyFinancePoint[];
+    recentTransactions: RecentTransaction[];
+}
 
 const restaurant = {
     name: 'City Bite',
@@ -17,40 +41,127 @@ const restaurant = {
     status: 'Healthy',
 };
 
-const weeklyFlow = [
-    { label: 'Mon', inflow: 32000, outflow: 14500 },
-    { label: 'Tue', inflow: 28500, outflow: 13800 },
-    { label: 'Wed', inflow: 41000, outflow: 15600 },
-    { label: 'Thu', inflow: 37500, outflow: 14900 },
-    { label: 'Fri', inflow: 52000, outflow: 17200 },
-    { label: 'Sat', inflow: 61000, outflow: 18800 },
-    { label: 'Sun', inflow: 46500, outflow: 16100 },
-];
-
-const incomingItems = [
-    { title: 'Lunch service', amount: 12500, note: 'Today • 13:20', type: 'income' },
-    { title: 'Delivery orders', amount: 8400, note: 'Today • 11:45', type: 'income' },
-    { title: 'Evening dine-in', amount: 16800, note: 'Yesterday • 19:30', type: 'income' },
-];
-
-const outgoingItems = [
-    { title: 'Ingredient restock', amount: 6200, note: 'Today • 09:10', type: 'expense' },
-    { title: 'Staff wages', amount: 15400, note: 'Today • 08:00', type: 'expense' },
-    { title: 'Utilities', amount: 3100, note: 'Yesterday • 22:00', type: 'expense' },
-];
-
-const formatCurrency = (value: number) =>
+const formatCurrency = (value: number | string | null | undefined) =>
     new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: restaurant.currency,
         maximumFractionDigits: 0,
-    }).format(value);
+    }).format(Number(value ?? 0));
 
 export function OwnerAnalytics() {
-    const totalInflow = weeklyFlow.reduce((sum, item) => sum + item.inflow, 0);
-    const totalOutflow = weeklyFlow.reduce((sum, item) => sum + item.outflow, 0);
-    const netProfit = totalInflow - totalOutflow;
-    const reserve = Math.round(netProfit * 0.22);
+    const [analytics, setAnalytics] = useState<OwnerAnalyticsResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [seedOffset, setSeedOffset] = useState(0);
+
+    const loadAnalytics = async () => {
+        setLoading(true);
+        try {
+            const data = await apiClient<OwnerAnalyticsResponse>('/owner/analytics');
+            setAnalytics(data);
+            setError(null);
+        } catch (err) {
+            console.error('Analytics load failed', err);
+            setError(err instanceof Error ? err.message : 'Unable to load analytics right now.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        void loadAnalytics();
+    }, []);
+
+    const buildSeedEntries = () => {
+        const today = new Date();
+        const seedVariant = Date.now() % 1000;
+        const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        let cumulativeIncome = 12000 + seedOffset * 3000;
+        let cumulativeExpense = 7000 + seedOffset * 1800;
+
+        return Array.from({ length: 7 }, (_, index) => {
+            const date = new Date(today);
+            date.setDate(today.getDate() - index);
+            const weekday = weekdayNames[date.getDay()];
+            const incomeStep = 2200 + ((seedVariant + index * 73) % 800);
+            const expenseStep = 1500 + ((seedVariant + index * 43) % 600);
+            const incomeAmount = cumulativeIncome + incomeStep;
+            const expenseAmount = cumulativeExpense + expenseStep;
+            const balance = incomeAmount - expenseAmount;
+
+            cumulativeIncome = incomeAmount;
+            cumulativeExpense = expenseAmount;
+
+            return [
+                {
+                    eventType: 'INCOME',
+                    amount: incomeAmount,
+                    description: `${weekday} sales · balance ${balance}`,
+                    daysAgo: index,
+                    hour: 13 + (index % 3),
+                },
+                {
+                    eventType: 'EXPENSE',
+                    amount: expenseAmount,
+                    description: `${weekday} supplies · balance ${balance}`,
+                    daysAgo: index,
+                    hour: 9 + (index % 2),
+                },
+            ];
+        }).flat();
+    };
+
+    const handleSeedData = async () => {
+        setIsUpdating(true);
+        try {
+            await apiClient('/owner/analytics/seed', {
+                method: 'POST',
+                data: buildSeedEntries(),
+            });
+            setSeedOffset((value) => value + 1);
+            await loadAnalytics();
+        } catch (err) {
+            console.error('Analytics update failed', err);
+            setError(err instanceof Error ? err.message : 'Could not update analytics data.');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className={styles.pageContainer}>
+                <OwnerTopNav />
+                <main className={styles.mainContent}>
+                    <section className={styles.heroCard}>
+                        <p className={styles.eyebrow}>Owner analytics</p>
+                        <h1 className={styles.heroTitle}>Loading financial snapshot...</h1>
+                    </section>
+                </main>
+            </div>
+        );
+    }
+
+    if (error || !analytics) {
+        return (
+            <div className={styles.pageContainer}>
+                <OwnerTopNav />
+                <main className={styles.mainContent}>
+                    <section className={styles.heroCard}>
+                        <p className={styles.eyebrow}>Owner analytics</p>
+                        <h1 className={styles.heroTitle}>Could not load analytics</h1>
+                        <p className={styles.heroText}>{error ?? 'Please sign in again and try refreshing the page.'}</p>
+                    </section>
+                </main>
+            </div>
+        );
+    }
+
+    const { totalInflow, totalOutflow, netProfit, cashReserve, weeklyFlow, recentTransactions } = analytics;
+    const incomingItems = recentTransactions.filter((item) => item.type.toLowerCase() === 'income').slice(0, 3);
+    const outgoingItems = recentTransactions.filter((item) => item.type.toLowerCase() === 'expense').slice(0, 3);
+    const maxChartValue = Math.max(...weeklyFlow.map((item) => Math.max(item.inflow, item.outflow, 1)), 1);
 
     return (
         <div className={styles.pageContainer}>
@@ -72,6 +183,14 @@ export function OwnerAnalytics() {
                             <Building2 size={16} />
                             <span>{restaurant.address}</span>
                         </div>
+                        <button
+                            type="button"
+                            onClick={handleSeedData}
+                            disabled={isUpdating}
+                            style={{ marginTop: '12px', padding: '8px 12px', borderRadius: '999px', border: 'none', background: '#2563eb', color: 'white', cursor: isUpdating ? 'wait' : 'pointer' }}
+                        >
+                            {isUpdating ? 'Updating...' : 'Update'}
+                        </button>
                     </div>
                 </section>
 
@@ -112,7 +231,7 @@ export function OwnerAnalytics() {
                         </div>
                         <div>
                             <p className={styles.summaryLabel}>Cash reserve</p>
-                            <h2 className={styles.summaryValue}>{formatCurrency(reserve)}</h2>
+                            <h2 className={styles.summaryValue}>{formatCurrency(cashReserve)}</h2>
                         </div>
                     </article>
                 </section>
@@ -132,20 +251,19 @@ export function OwnerAnalytics() {
 
                         <div className={styles.chartArea}>
                             {weeklyFlow.map((item) => {
-                                const maxValue = 65000;
-                                const inflowHeight = (item.inflow / maxValue) * 100;
-                                const outflowHeight = (item.outflow / maxValue) * 100;
+                                const inflowHeight = (item.inflow / maxChartValue) * 100;
+                                const outflowHeight = (item.outflow / maxChartValue) * 100;
 
                                 return (
                                     <div key={item.label} className={styles.barColumn}>
                                         <div className={styles.barStack}>
                                             <div
                                                 className={styles.barInflow}
-                                                style={{ height: `${inflowHeight}%` }}
+                                                style={{ height: `${Math.max(inflowHeight, 6)}%` }}
                                             />
                                             <div
                                                 className={styles.barOutflow}
-                                                style={{ height: `${outflowHeight}%` }}
+                                                style={{ height: `${Math.max(outflowHeight, 6)}%` }}
                                             />
                                         </div>
                                         <span className={styles.barLabel}>{item.label}</span>
@@ -193,15 +311,15 @@ export function OwnerAnalytics() {
                             <span>Mock sales feed</span>
                         </div>
                         <div className={styles.transactionList}>
-                            {incomingItems.map((item) => (
-                                <div key={item.title} className={styles.transactionItem}>
+                            {incomingItems.length > 0 ? incomingItems.map((item) => (
+                                <div key={`${item.title}-${item.note}`} className={styles.transactionItem}>
                                     <div>
                                         <p>{item.title}</p>
                                         <span>{item.note}</span>
                                     </div>
                                     <strong>{formatCurrency(item.amount)}</strong>
                                 </div>
-                            ))}
+                            )) : <p className={styles.heroText}>No incoming transactions yet.</p>}
                         </div>
                     </article>
 
@@ -211,15 +329,15 @@ export function OwnerAnalytics() {
                             <span>Mock costs</span>
                         </div>
                         <div className={styles.transactionList}>
-                            {outgoingItems.map((item) => (
-                                <div key={item.title} className={styles.transactionItem}>
+                            {outgoingItems.length > 0 ? outgoingItems.map((item) => (
+                                <div key={`${item.title}-${item.note}`} className={styles.transactionItem}>
                                     <div>
                                         <p>{item.title}</p>
                                         <span>{item.note}</span>
                                     </div>
                                     <strong>{formatCurrency(item.amount)}</strong>
                                 </div>
-                            ))}
+                            )) : <p className={styles.heroText}>No outgoing transactions yet.</p>}
                         </div>
                     </article>
                 </section>
