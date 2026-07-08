@@ -1,73 +1,65 @@
 import styles from './StaffList.module.css';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../../../lib/api-client';
 import { OwnerTopNav } from '../../../dashboard/components/OwnerDashboard/OwnerTopNav';
 import { Users, UserCheck, UserX, Eye, ToggleLeft, ToggleRight, Save, Plus, X } from 'lucide-react';
-interface Staffs {
-    id: string;
-    username: string;
-    fullName: string;
-    status: string;
-}
+import { addMockStaff, getMockStaffs, updateMockStaffStatus, type MockStaff } from '../../mockStaffData';
+
 export const StaffList = () => {
     const navigate = useNavigate();
-    const [data, setData] = useState<Staffs[] | null>(null);
-    const [originalData, setOriginalData] = useState<Staffs[] | null>(null);
+    const [data, setData] = useState<MockStaff[] | null>(null);
+    const [originalData, setOriginalData] = useState<MockStaff[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState<boolean>(false);
-    
-    // Create Staff Modal State
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createForm, setCreateForm] = useState({
-        username: '', email: '', firstName: '', lastName: '', password: '', 
+        username: '', email: '', firstName: '', lastName: '', password: '',
         salary: '', dayOffAmount: '100', address: '', phone: ''
     });
     const [createLoading, setCreateLoading] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
+
     const handleCreateStaffSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setCreateLoading(true);
         setCreateError(null);
-        apiClient<Staffs>(`/owner/staff`, {
-            method: 'POST',
-            data: {
-                ...createForm,
-                salary: parseInt(createForm.salary) || 0,
-                dayOffAmount: parseInt(createForm.dayOffAmount) || 100
-            }
-        }).then((res) => {
-            const newStaff = res;
-            const updatedData = data ? [...data, newStaff] : [newStaff];
-            setData(updatedData);
-            setOriginalData(JSON.parse(JSON.stringify(updatedData)));
-            
-            setIsCreateModalOpen(false);
-            setCreateForm({
-                username: '', email: '', firstName: '', lastName: '', password: '', 
-                salary: '', dayOffAmount: '100', address: '', phone: ''
-            });
-            alert("Staff created successfully!");
-        }).catch((err) => {
-            console.error("Failed to create staff:", err);
-            setCreateError(err.response?.data?.message || "Failed to create staff. Please check inputs.");
-        }).finally(() => {
-            setCreateLoading(false);
+
+        const newStaff = addMockStaff({
+            username: createForm.username,
+            fullName: `${createForm.firstName} ${createForm.lastName}`.trim(),
+            email: createForm.email,
+            phone: createForm.phone || null,
+            address: createForm.address || null,
+            salary: Number(createForm.salary) || 0,
+            leaveDayAmount: Number(createForm.dayOffAmount) || 100,
+            status: 'ACTIVE',
         });
+
+        const updatedData = data ? [...data, newStaff] : [newStaff];
+        setData(updatedData);
+        setOriginalData(JSON.parse(JSON.stringify(updatedData)));
+
+        setIsCreateModalOpen(false);
+        setCreateForm({
+            username: '', email: '', firstName: '', lastName: '', password: '',
+            salary: '', dayOffAmount: '100', address: '', phone: ''
+        });
+        setCreateLoading(false);
+        alert('Staff created successfully!');
     };
+
     useEffect(() => {
-        apiClient<Staffs[]>(`/owner/staff`)
-            .then((res) => {
-                setData(res);
-                setOriginalData(JSON.parse(JSON.stringify(res)));
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("staff loading failed:", err);
-                setError("      Failed to load staff list.");
-                setLoading(false);
-            });
+        try {
+            const mockData = getMockStaffs();
+            setData(mockData);
+            setOriginalData(JSON.parse(JSON.stringify(mockData)));
+        } catch {
+            setError('Failed to load staff list.');
+        } finally {
+            setLoading(false);
+        }
     }, []);
     if (loading) {
         return <div className={styles.loadingContainer}>Loading staff…</div>;
@@ -79,49 +71,36 @@ export const StaffList = () => {
             </div>
         );
     }
-    // Toggle status handler
     const handleToggleStatus = (id: string) => {
-        setData((currentList) => {
-                if (!currentList) return null;
-                return currentList.map((staff) =>
-                    staff.id === id ? {...staff, status: staff.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'} : staff
-                );
-            }
-        );
+        const next = updateMockStaffStatus(id);
+        setData(next);
+        setOriginalData(JSON.parse(JSON.stringify(next)));
     };
     // Detail view handler
     const handleViewDetail = (id: string) => {
         navigate(`/owner/staff/${id}`);
     };
-    // Save changes handler
     const handleSaveChanges = () => {
         if (!data || !originalData) return;
         const updates = data.filter((staff) => {
-            const originalStaff = originalData.find(o => o.id === staff.id);
+            const originalStaff = originalData.find((o) => o.id === staff.id);
             return originalStaff && originalStaff.status !== staff.status;
-        }).map(staff => ({
+        }).map((staff) => ({
             id: staff.id,
-            status: staff.status
+            status: staff.status,
         }));
+
         if (updates.length === 0) {
-            alert("No changes to save.");
+            alert('No changes to save.');
             return;
         }
+
         setIsSaving(true);
-        apiClient(`/owner/staff-update-status`, {
-            method: 'PUT',
-            data: updates
-        }).then(() => {
+        window.setTimeout(() => {
             setOriginalData(JSON.parse(JSON.stringify(data)));
-            alert("Changes saved successfully!");
-        })
-            .catch((err) => {
-                console.error("Save failed:", err);
-                alert("Failed to save changes.");
-            })
-            .finally(() => {
-                setIsSaving(false);
-            });
+            alert('Changes saved successfully!');
+            setIsSaving(false);
+        }, 250);
     };
     const hasChanges = data && originalData
         ? data.some((staff) => {

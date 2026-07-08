@@ -9,6 +9,7 @@ import { StaffList } from './features/staff/components/StaffList/StaffList';
 import { StaffDetail } from './features/staff/components/StaffDetail/StaffDetail'
 import { OwnerDashboard } from './features/dashboard/components/OwnerDashboard/OwnerDashboard.tsx';
 import { OwnerAnalytics } from './features/dashboard/components/OwnerDashboard/OwnerAnalytics';
+import { OwnerDayOff } from './features/dashboard/components/OwnerDashboard/OwnerDayOff';
 import { StoreDetail } from './features/store/components/StoreDetail/StoreDetail';
 
 // Staff pages
@@ -35,7 +36,7 @@ function App() {
                 <Route path="/owner/menu"         element={<MenuConfiguration />} />
                 <Route path="/owner/staff"        element={<StaffList />} />
                 <Route path="/owner/staff/:id"    element={<StaffDetail />} />
-                <Route path="/owner/dayoff"       element={<Placeholder pageName="Day-Off Requests" />} />
+                <Route path="/owner/dayoff"       element={<OwnerDayOff />} />
                 <Route path="/owner/store"        element={<StoreDetail />} />
                 <Route path="/owner/analytics"    element={<OwnerAnalytics />} />
                 <Route path="/owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
