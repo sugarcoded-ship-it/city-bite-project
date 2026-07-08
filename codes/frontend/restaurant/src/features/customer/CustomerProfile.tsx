@@ -15,6 +15,14 @@ interface CustomerProfileResponse {
     phoneNumber: string | null;
 }
 
+interface ProfileUpdateForm {
+    firstName: string;
+    lastName: string;
+    username: string;
+    email: string;
+    phoneNumber: string;
+}
+
 interface CreditHistoryEntry {
     type: 'EARNED' | 'SPENT';
     amount: number;
@@ -27,9 +35,83 @@ interface CreditHistoryPage {
     content: CreditHistoryEntry[];
 }
 
+function PasswordChangeForm() {
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSave = async () => {
+        if (!oldPassword || !newPassword) {
+            setError('Both fields are required.');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            await apiClient('/customer/profile/password', {
+                method: 'PATCH',
+                data: { oldPassword, newPassword }
+            });
+            setOldPassword('');
+            setNewPassword('');
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2200);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to update password.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 md:px-8 py-4 md:py-5 border-b border-gray-50 flex items-center justify-between">
+                <h2 className="text-[#0B1F4D] font-extrabold md:text-lg">Change Password</h2>
+            </div>
+            <div className="px-5 md:px-8 py-4 md:py-5 space-y-4">
+                {error && (
+                    <div className="text-red-500 text-sm font-semibold">{error}</div>
+                )}
+                {saved && (
+                    <div className="text-green-500 text-sm font-semibold">Password updated successfully!</div>
+                )}
+                <div>
+                    <p className="text-gray-400 text-[11px] font-semibold mb-0.5">Current Password</p>
+                    <input
+                        type="password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15"
+                    />
+                </div>
+                <div>
+                    <p className="text-gray-400 text-[11px] font-semibold mb-0.5">New Password</p>
+                    <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15"
+                    />
+                </div>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="mt-2 bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+                >
+                    {saving ? 'Saving...' : 'Update Password'}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function CustomerProfile() {
     const [profile, setProfile] = useState<CustomerProfileResponse | null>(null);
-    const [draftPhone, setDraftPhone] = useState('');
+    const [draftProfile, setDraftProfile] = useState<ProfileUpdateForm>({
+        firstName: '', lastName: '', username: '', email: '', phoneNumber: ''
+    });
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -44,7 +126,13 @@ export default function CustomerProfile() {
         try {
             const profileData = await apiClient<CustomerProfileResponse>('/customer/profile');
             setProfile(profileData);
-            setDraftPhone(profileData.phoneNumber || '');
+            setDraftProfile({
+                firstName: profileData.firstName || '',
+                lastName: profileData.lastName || '',
+                username: profileData.username,
+                email: profileData.email,
+                phoneNumber: profileData.phoneNumber || ''
+            });
         } catch (err) {
             console.error('Failed to load profile:', err);
             setError('Unable to load your profile. Please try again.');
@@ -74,7 +162,7 @@ export default function CustomerProfile() {
         fetchCredit();
     }, [fetchProfile, fetchCredit]);
 
-    const isPhoneValid = draftPhone.length === 0 || draftPhone.length === 10;
+    const isPhoneValid = draftProfile.phoneNumber.length === 0 || draftProfile.phoneNumber.length === 10;
 
     const handleSave = async () => {
         if (!profile) return;
@@ -82,14 +170,29 @@ export default function CustomerProfile() {
             setError('Phone number must be exactly 10 digits.');
             return;
         }
+
+        const usernameChanged = draftProfile.username !== profile.username;
+        const emailChanged = draftProfile.email !== profile.email;
+
+        if (usernameChanged || emailChanged) {
+            const confirmed = window.confirm('Changing your username or email may require you to log in again. Are you sure you want to proceed?');
+            if (!confirmed) return;
+        }
+
         setSaving(true);
         try {
             const updated = await apiClient<CustomerProfileResponse>('/customer/profile', {
                 method: 'PATCH',
-                data: { phoneNumber: draftPhone.trim() || null },
+                data: draftProfile,
             });
             setProfile(updated);
-            setDraftPhone(updated.phoneNumber || '');
+            setDraftProfile({
+                firstName: updated.firstName || '',
+                lastName: updated.lastName || '',
+                username: updated.username,
+                email: updated.email,
+                phoneNumber: updated.phoneNumber || ''
+            });
             setIsEditing(false);
             setSaved(true);
             setTimeout(() => setSaved(false), 2200);
@@ -102,7 +205,15 @@ export default function CustomerProfile() {
     };
 
     const handleCancel = () => {
-        setDraftPhone(profile?.phoneNumber || '');
+        if (profile) {
+            setDraftProfile({
+                firstName: profile.firstName || '',
+                lastName: profile.lastName || '',
+                username: profile.username,
+                email: profile.email,
+                phoneNumber: profile.phoneNumber || ''
+            });
+        }
         setIsEditing(false);
     };
 
@@ -131,18 +242,13 @@ export default function CustomerProfile() {
 
     if (!profile) return null;
 
-    const initials = (
-        (profile.firstName?.[0] || profile.username[0] || '?') +
-        (profile.lastName?.[0] || '')
-    ).toUpperCase();
-
     const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username;
 
-    const READONLY_FIELDS = [
-        { key: 'firstName', label: 'First Name', icon: User, value: profile.firstName || '—' },
-        { key: 'lastName', label: 'Last Name', icon: User, value: profile.lastName || '—' },
-        { key: 'username', label: 'Username', icon: AtSign, value: profile.username },
-        { key: 'email', label: 'Email', icon: Mail, value: profile.email },
+    const PROFILE_FIELDS = [
+        { key: 'firstName', label: 'First Name', icon: User, value: profile.firstName || '—', draftValue: draftProfile.firstName, type: 'text' },
+        { key: 'lastName', label: 'Last Name', icon: User, value: profile.lastName || '—', draftValue: draftProfile.lastName, type: 'text' },
+        { key: 'username', label: 'Username', icon: AtSign, value: profile.username, draftValue: draftProfile.username, type: 'text' },
+        { key: 'email', label: 'Email', icon: Mail, value: profile.email, draftValue: draftProfile.email, type: 'email' },
     ];
 
     return (
@@ -152,9 +258,6 @@ export default function CustomerProfile() {
             <div className="max-w-3xl mx-auto px-5 md:px-8 pt-24 pb-10 space-y-4">
 
                 <div className="flex items-center gap-4 md:gap-5">
-                    <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xl md:text-2xl font-extrabold tracking-tight">{initials}</span>
-                    </div>
                     <div>
                         <h1 className="text-[#0B1F4D] text-xl md:text-3xl font-extrabold leading-tight">{fullName}</h1>
                         <p className="text-gray-400 text-sm md:text-base">@{profile.username}</p>
@@ -198,14 +301,23 @@ export default function CustomerProfile() {
                     </div>
 
                     <div className="divide-y divide-gray-50">
-                        {READONLY_FIELDS.map(({ key, label, icon: Icon, value }) => (
+                        {PROFILE_FIELDS.map(({ key, label, icon: Icon, value, draftValue, type }) => (
                             <div key={key} className="flex items-center gap-4 px-5 md:px-8 py-4 md:py-5">
                                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
                                     <Icon size={14} className="text-gray-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-gray-400 text-[11px] font-semibold mb-0.5">{label}</p>
-                                    <p className="text-[#0B1F4D] text-sm md:text-base font-semibold truncate">{value}</p>
+                                    {isEditing ? (
+                                        <input
+                                            type={type}
+                                            value={draftValue}
+                                            onChange={(e) => setDraftProfile(prev => ({...prev, [key]: e.target.value}))}
+                                            className="w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15"
+                                        />
+                                    ) : (
+                                        <p className="text-[#0B1F4D] text-sm md:text-base font-semibold truncate">{value}</p>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -220,20 +332,19 @@ export default function CustomerProfile() {
                                     <input
                                         type="tel"
                                         inputMode="numeric"
-                                        value={draftPhone}
+                                        value={draftProfile.phoneNumber}
                                         onChange={(e) => {
                                             const cleanValue = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                            setDraftPhone(cleanValue);
+                                            setDraftProfile(prev => ({...prev, phoneNumber: cleanValue}));
                                         }}
                                         placeholder="e.g. 0812345678"
                                         maxLength={10}
                                         pattern="^[0-9]{10}$"
                                         title="Please enter a valid phone number containing exactly 10 digits."
-                                        className={`w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 transition-all ${
-                                            isPhoneValid
+                                        className={`w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 transition-all ${isPhoneValid
                                                 ? 'border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15'
                                                 : 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
-                                        }`}
+                                            }`}
                                     />
                                 ) : null}
                                 {isEditing && !isPhoneValid && (
@@ -295,6 +406,8 @@ export default function CustomerProfile() {
                         </div>
                     )}
                 </div>
+
+                <PasswordChangeForm />
             </div>
 
             {saved && (
