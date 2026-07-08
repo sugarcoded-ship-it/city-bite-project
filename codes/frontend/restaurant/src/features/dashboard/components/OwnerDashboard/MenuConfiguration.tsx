@@ -86,7 +86,12 @@ const STATUS_LABELS: Record<string, string> = {
     DEACTIVATED: 'Disable',
 };
 
-const STATUS_FILTER_OPTIONS = ['All', 'ACTIVE', 'OUT_OF_ORDER', 'DEACTIVATED'];
+const STATUS_FILTER_OPTIONS = [
+    'All', 
+    'ACTIVE', 
+    'OUT_OF_ORDER', 
+    'DEACTIVATED'
+];
 
 interface RecipeFormLine {
     stockId: string;
@@ -138,6 +143,7 @@ export function MenuConfiguration() {
         optionGroups: [] as OptionGroupForm[],
     };
     const [form, setForm] = useState(emptyForm);
+    const [originalForm, setOriginalForm] = useState<typeof emptyForm | null>(null);
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
@@ -205,6 +211,7 @@ export function MenuConfiguration() {
         setIsAdding(false);
         setEditingMenu(null);
         resetForm();
+        setOriginalForm(null);
         setIsStockDropdownOpen(false);
         setStockSearch('');
         setSelectedImage(null);
@@ -213,7 +220,7 @@ export function MenuConfiguration() {
 
     const handleEdit = (item: MenuItem) => {
         setEditingMenu(item);
-        setForm({
+        const initialForm = {
             name: item.name,
             price: String(item.price),
             category: item.category,
@@ -242,7 +249,9 @@ export function MenuConfiguration() {
                     })),
                 }))
                 : [],
-        });
+        };
+        setForm(initialForm);
+        setOriginalForm(JSON.parse(JSON.stringify(initialForm)));
         setSelectedImage(null);
         setImagePreview(item.menuPic || '');
     };
@@ -510,7 +519,14 @@ export function MenuConfiguration() {
             return false;
         });
     });
-    const isValid = form.name && form.category && Number(form.price) > 0 && !hasNoIngredients && !hasInvalidRecipeAmount && !hasInvalidOptionData;
+    const hasChanges = () => {
+        if (isAdding) return true;
+        if (selectedImage !== null) return true;
+        if (!originalForm) return false;
+        return JSON.stringify(form) !== JSON.stringify(originalForm);
+    };
+
+    const isValid = form.name && form.category && Number(form.price) > 0 && !hasNoIngredients && !hasInvalidRecipeAmount && !hasInvalidOptionData && hasChanges();
 
     if (isLoading) return <div style={{ minHeight: '100vh', paddingTop: '100px', textAlign: 'center', fontWeight: 'bold' }}>Loading Menu...</div>;
 
@@ -948,10 +964,6 @@ export function MenuConfiguration() {
                                                         </div>
                                                     );
                                                 })}
-
-                                                {/*{choice.choiceName.trim() && choice.ingredients.filter((i) => i.stockId !== '' && i.amount.trim() !== '').length === 0 && (*/}
-                                                {/*    <span className={styles.optionValidationHint}>Tie at least one stock ingredient</span>*/}
-                                                {/*)}*/}
 
                                                 <button
                                                     type="button"
