@@ -50,7 +50,7 @@ function PasswordChangeForm() {
         setSaving(true);
         setError(null);
         try {
-            await apiClient('/customer/profile/password', {
+            await apiClient<void>('/customer/profile/password', {
                 method: 'PATCH',
                 data: { oldPassword, newPassword }
             });
@@ -58,7 +58,7 @@ function PasswordChangeForm() {
             setNewPassword('');
             setSaved(true);
             setTimeout(() => setSaved(false), 2200);
-        } catch (err: any) {
+        } catch (err) {
             setError(err.response?.data?.message || 'Failed to update password.');
         } finally {
             setSaving(false);
