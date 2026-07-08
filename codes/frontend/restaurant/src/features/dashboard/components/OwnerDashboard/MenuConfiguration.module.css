@@ -861,6 +861,273 @@
 
 .btnDeleteConfirm:hover { background: #dc2626; }
 
+/* Option groups (sizes, toppings, spice level, etc.) */
+.optionGroupsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.optionGroupCard {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.optionGroupHeaderRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.optionGroupNameInput {
+    flex: 1 1 160px;
+    min-width: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0B1F4D;
+    outline: none;
+    box-sizing: border-box;
+    background: white;
+}
+
+.optionGroupNameInput:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.optionGroupRequiredToggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4b5563;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.optionGroupMaxInput {
+    width: 56px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 6px;
+    font-size: 0.8rem;
+    text-align: center;
+    outline: none;
+    box-sizing: border-box;
+    background: white;
+}
+
+.optionGroupMaxInput:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.optionGroupRemoveBtn {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: #fef2f2;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.optionGroupRemoveBtn:hover { background: #ef4444; color: white; }
+
+.optionChoiceRow {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.optionChoiceTopRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.optionChoiceNameInput {
+    flex: 1 1 140px;
+    min-width: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.optionChoiceNameInput:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.optionChoicePriceInput {
+    width: 90px;
+    flex-shrink: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    color: #2D7FF9;
+    font-weight: 700;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.optionChoicePriceInput:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.optionChoicePriceInvalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.optionChoiceRemoveBtn {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.optionChoiceRemoveBtn:hover { background: #ef4444; color: white; }
+
+.optionIngredientRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 8px;
+}
+
+.optionIngredientSelect {
+    flex: 1 1 140px;
+    min-width: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    color: #374151;
+    outline: none;
+    box-sizing: border-box;
+    background: white;
+}
+
+.optionIngredientSelect:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.optionIngredientAmountInput {
+    width: 64px;
+    flex-shrink: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    text-align: center;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.optionIngredientAmountInput:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.2);
+}
+
+.optionIngredientAmountInvalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.optionIngredientUnit {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    flex-shrink: 0;
+    min-width: 24px;
+}
+
+.addIngredientBtn {
+    align-self: flex-start;
+    margin-left: 8px;
+    background: none;
+    border: none;
+    color: #2D7FF9;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.addIngredientBtn:hover { text-decoration: underline; }
+
+.optionValidationHint {
+    align-self: flex-start;
+    color: #dc2626;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.addChoiceBtn {
+    align-self: flex-start;
+    background: none;
+    border: 1px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 6px 12px;
+    color: #2D7FF9;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addChoiceBtn:hover { border-color: #2D7FF9; background: #f0f6ff; }
+
+.addGroupBtn {
+    align-self: flex-start;
+    background: white;
+    border: 1px dashed #9ca3af;
+    border-radius: 12px;
+    padding: 10px 16px;
+    color: #0B1F4D;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addGroupBtn:hover { border-color: #0B1F4D; background: #f0f2f7; }
+
 /* Responsive adjustments */
 @media (min-width: 640px) {
     .searchFilterRow { flex-direction: row; }
