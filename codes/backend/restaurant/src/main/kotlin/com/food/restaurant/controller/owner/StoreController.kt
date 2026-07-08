@@ -44,6 +44,7 @@ class   StoreController(
         @RequestBody request: StoreStatusRequest
     ): ResponseEntity<StoreStatusResponse> {
         val ownerUuid = UUID.fromString(jwt.subject)
+        userSyncService.syncFromToken(jwt)
         val res = storeService.updateStoreStatus(ownerUuid, request)
         return if (res != null) {
             ResponseEntity.ok(res)

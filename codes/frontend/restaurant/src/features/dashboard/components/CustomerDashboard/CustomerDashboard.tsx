@@ -437,10 +437,11 @@ export function CustomerDashboard() {
                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                 {displayedItems.map((item) => {
                                     const isAvailable = item.status === 'ACTIVE';
+                                    const isStoreClosed = storeStatus !== 'OPEN';
                                     return (
                                         <div
                                             key={item.id}
-                                            className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable && storeStatus === 'OPEN' ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'}`}
+                                            className={`bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 group/card ${isAvailable && !isStoreClosed ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'cursor-not-allowed'} ${isStoreClosed ? 'opacity-70' : ''}`}
                                             onClick={() => {
                                                 if (storeStatus !== 'OPEN') {
                                                     showToast('Store is currently closed.');
@@ -472,7 +473,7 @@ export function CustomerDashboard() {
                                             <div className="p-3.5 flex-1 flex flex-col justify-between">
                                                 <div>
                                                     {/* Item Name */}
-                                                    <p className="font-bold text-[#0B1F4D] text-sm leading-snug line-clamp-2 mb-0.5">
+                                                    <p className={`font-bold text-[#0B1F4D] text-sm leading-snug line-clamp-2 mb-0.5 ${isStoreClosed ? 'line-through' : ''}`}>
                                                         {item.name}
                                                     </p>
                                                 </div>

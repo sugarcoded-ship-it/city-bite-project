@@ -9,6 +9,7 @@ import com.food.restaurant.repository.store.StoreRepository
 import com.food.restaurant.repository.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalTime
 import java.util.UUID
 
 @Service
@@ -46,7 +47,30 @@ class StoreService(
 
     @Transactional
     fun updateStoreStatus(id: UUID, req: StoreStatusRequest): StoreStatusResponse? {
-        val store = storeRepository.findByOwnerId(id) ?: return null
+        val owner = userRepository.findById(id).orElseGet {
+            userRepository.save(
+                com.food.restaurant.entity.user.User(
+                    id = id,
+                    username = id.toString(),
+                    email = "${id}@local.invalid"
+                )
+            )
+        }
+
+        val store = storeRepository.findByOwnerId(id)
+            ?: storeRepository.save(
+                Store(
+                    owner = owner,
+                    storeName = "My Restaurant",
+                    storeAddress = "",
+                    logo_url = "",
+                    phone = "",
+                    openTime = LocalTime.parse("09:00:00"),
+                    closeTime = LocalTime.parse("17:00:00"),
+                    isOpen = false
+                )
+            )
+
         store.isOpen = req.isOpen
         storeRepository.save(store)
         return StoreStatusResponse(store.isOpen, store.storeName, store.storeAddress)
