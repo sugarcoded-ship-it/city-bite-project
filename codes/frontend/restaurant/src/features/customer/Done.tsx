@@ -1,8 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CheckCircle, Map } from 'lucide-react';
 
 export function Done() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const orderId = location.state?.orderId;
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -17,10 +19,21 @@ export function Done() {
                         Your order has been placed successfully.
                     </p>
 
+                    {/* Track Order Button */}
+                    {orderId && (
+                        <button
+                            onClick={() => navigate(`/track/${orderId}`)}
+                            className="w-full bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 mb-3 font-bold transition-colors text-center shadow-md flex items-center justify-center gap-2"
+                        >
+                            <Map size={18} />
+                            Track Order
+                        </button>
+                    )}
+
                     {/* Order More Button */}
                     <button
                         onClick={() => navigate('/')}
-                        className="w-full bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 mb-3 font-bold transition-colors text-center shadow-md block"
+                        className={`w-full ${orderId ? 'bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'} py-4 rounded-xl mb-3 font-bold transition-colors text-center block`}
                     >
                         Order More
                     </button>

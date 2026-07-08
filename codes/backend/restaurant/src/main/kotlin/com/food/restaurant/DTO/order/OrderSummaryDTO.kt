@@ -37,5 +37,6 @@ data class CreateOrderRequest(
     val orderStatusId: Int,
     val paymentMethodId: Int,
     val totalPrice: BigDecimal,
-    val items: List<CartItemRequest>
+    val items: List<CartItemRequest>,
+    val creditUsed: BigDecimal = BigDecimal.ZERO
 )

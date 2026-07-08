@@ -4,7 +4,7 @@ import { apiClient } from '../lib/api-client.ts';
 import { CustomerTopNav } from '../features/customer/CustomerTopNav';
 import {
     ClockArrowUp, RotateCcw, ChevronLeft, ChevronRight,
-    MapPin, Calendar, AlertCircle, UtensilsCrossed
+    MapPin, Calendar, AlertCircle, UtensilsCrossed, Map
 } from 'lucide-react';
 import styles from './OrderHistory.module.css';
 
@@ -26,6 +26,7 @@ interface OrderHistoryEntry {
     status: string;
     canceledBy: string | null;
     deliveryAddress: string;
+    staffName: string | null;
     items: OrderDetailItem[];
 }
 
@@ -43,7 +44,9 @@ function getStatusClass(status: string): string {
     const enumStatus = (status || '').toUpperCase().replace(/\s+/g, '_');
     switch (enumStatus) {
         case 'PENDING': return styles.statusPending;
-        case 'IN_PROGRESS': return styles.statusInProgress;
+        case 'IN_PROGRESS':
+        case 'IN_PREPARATION': return styles.statusInProgress;
+        case 'ON_DELIVERY': return styles.statusPending; // Or another class if you prefer
         case 'DELIVERED': return styles.statusDelivered;
         case 'CANCELED': return styles.statusCanceled;
         default: return styles.statusDefault;
@@ -55,6 +58,8 @@ function formatStatus(status: string): string {
     switch (enumStatus) {
         case 'PENDING': return 'Pending';
         case 'IN_PROGRESS': return 'In Progress';
+        case 'IN_PREPARATION': return 'In Preparation';
+        case 'ON_DELIVERY': return 'On Delivery';
         case 'DELIVERED': return 'Delivered';
         case 'CANCELED': return 'Canceled';
         default: return status;
@@ -267,6 +272,17 @@ export default function OrderHistory() {
                                     </span>
                                     <span className={styles.addressValue}>{order.deliveryAddress}</span>
                                 </div>
+
+                                {(order.status || '').toUpperCase().replace(/\s+/g, '_') === 'ON_DELIVERY' && order.staffName && (
+                                    <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>
+                                        <span className={styles.infoLabel}>
+                                            Delivered by
+                                        </span>
+                                        <span className={styles.infoValue}>
+                                            {order.staffName}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Items preview */}
@@ -297,6 +313,14 @@ export default function OrderHistory() {
 
                         {/* Footer: Action Buttons */}
                         <div className={styles.cardFooter}>
+                            <button
+                                className={styles.reorderBtn}
+                                style={{ background: '#f8fafc', color: '#3b82f6', border: '1px solid #cbd5e1' }}
+                                onClick={() => navigate(`/track/${order.orderId}`)}
+                            >
+                                <Map size={15} />
+                                Track Order
+                            </button>
                             {(order.status || '').toUpperCase() === 'DELIVERED' && (
                                 <button
                                     className={styles.reorderBtn}

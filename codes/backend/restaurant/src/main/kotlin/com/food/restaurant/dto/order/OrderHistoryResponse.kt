@@ -8,5 +8,6 @@ data class OrderHistoryResponse(
     val status: String,
     val canceledBy: String?,
     val deliveryAddress: String,
+    val staffName: String?,
     val items: List<OrderDetailItemResponse>
 )
