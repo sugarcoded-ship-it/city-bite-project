@@ -11,10 +11,15 @@ data class MenuItemResponse(
     val menuPic: String?,
     val description: String?,
     val status: String,
-    val recipe: List<MenuRecipeResponse>
+    val recipe: List<MenuRecipeResponse>,
+    val optionGroups: List<OptionGroupResponse> = emptyList()
 ) {
     companion object {
-        fun from(menuItem: MenuItem, recipe: List<MenuRecipeResponse> = emptyList()) = MenuItemResponse(
+        fun from(
+            menuItem: MenuItem,
+            recipe: List<MenuRecipeResponse> = emptyList(),
+            optionGroups: List<OptionGroupResponse> = emptyList()
+        ) = MenuItemResponse(
             id = menuItem.id,
             name = menuItem.name,
             price = menuItem.price,
@@ -22,7 +27,8 @@ data class MenuItemResponse(
             menuPic = menuItem.menu_pic,
             description = menuItem.description,
             status = menuItem.status.name.name,
-            recipe = recipe
+            recipe = recipe,
+            optionGroups = optionGroups
         )
     }
 }
