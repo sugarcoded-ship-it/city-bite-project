@@ -1,9 +1,10 @@
 package com.food.restaurant.controller.customer
 
-import com.food.restaurant.dto.user.customer.CustomerProfileResponse
-import com.food.restaurant.dto.user.customer.UpdateCustomerProfileRequest
+import com.food.restaurant.dto.profile.CustomerProfileResponse
+import com.food.restaurant.dto.profile.UpdateCustomerProfileRequest
+import com.food.restaurant.dto.profile.UpdatePasswordRequest
 import com.food.restaurant.repository.user.UserRepository
-import com.food.restaurant.service.ProfileService
+import com.food.restaurant.service.user.ProfileService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -49,7 +50,7 @@ class ProfileController(
     @PreAuthorize("isAuthenticated()")
     fun updatePassword(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestBody request: com.food.restaurant.dto.user.customer.UpdatePasswordRequest
+        @RequestBody request: UpdatePasswordRequest
     ): ResponseEntity<Void> {
         val user = userRepository.findById(UUID.fromString(jwt.subject))
                                  .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }

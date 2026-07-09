@@ -1,8 +1,8 @@
 package com.food.restaurant.controller.owner
+import com.food.restaurant.dto.leaveday.OwnerLeaveDayListResponse
+import com.food.restaurant.dto.leaveday.LeaveDayResponse
 
-import com.food.restaurant.dto.staff.LeaveDayResponse
-import com.food.restaurant.dto.staff.OwnerLeaveDayListResponse
-import com.food.restaurant.service.LeaveDayService
+import com.food.restaurant.service.leaveday.LeaveDayService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 

@@ -4,8 +4,8 @@ import com.food.restaurant.dto.store.StoreDetailRequest
 import com.food.restaurant.dto.store.StoreDetailResponse
 import com.food.restaurant.dto.store.StoreStatusRequest
 import com.food.restaurant.dto.store.StoreStatusResponse
-import com.food.restaurant.service.StoreService
-import com.food.restaurant.service.UserSyncService
+import com.food.restaurant.service.store.StoreService
+import com.food.restaurant.service.user.UserSyncService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

@@ -5,7 +5,7 @@ import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.entity.order.OrderDetail
 import com.food.restaurant.entity.order.orderStatusEnum
 import com.food.restaurant.repository.menu.MenuRecipeRepository
-import com.food.restaurant.repository.OptionIngredientRepository
+import com.food.restaurant.repository.stock.OptionIngredientRepository
 import com.food.restaurant.repository.order.OrderRepository
 import com.food.restaurant.repository.stock.StockRepository
 import com.food.restaurant.repository.user.UserRepository
@@ -13,7 +13,7 @@ import com.food.restaurant.repository.order.OrderDetailRepository
 import com.food.restaurant.repository.order.OrderItemSelectionRepository
 import com.food.restaurant.repository.order.OrderStatusRepository
 import com.food.restaurant.repository.payment.PaymentTransactionRepository
-import com.food.restaurant.service.RefundCreditService
+import com.food.restaurant.service.payment.RefundCreditService
 import java.math.BigDecimal
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service

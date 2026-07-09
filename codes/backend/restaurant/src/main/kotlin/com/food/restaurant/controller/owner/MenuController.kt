@@ -23,8 +23,8 @@ import com.food.restaurant.repository.menu.OptionChoiceRepository
 import com.food.restaurant.repository.menu.OptionGroupRepository
 import com.food.restaurant.repository.menu.OptionIngredientRepository
 import com.food.restaurant.repository.stock.StockRepository
-import com.food.restaurant.service.MenuAvailabilityService
-import com.food.restaurant.service.MenuService
+import com.food.restaurant.service.menu.MenuAvailabilityService
+import com.food.restaurant.service.menu.MenuService
 import com.food.restaurant.service.StorageService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
