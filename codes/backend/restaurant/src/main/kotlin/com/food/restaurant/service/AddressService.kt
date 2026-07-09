@@ -1,7 +1,7 @@
 package com.food.restaurant.service
 
-import com.food.restaurant.dto.AddressRequest
-import com.food.restaurant.dto.AddressResponse
+import com.food.restaurant.dto.user.customer.AddressResponse
+import com.food.restaurant.dto.user.customer.AddressRequest
 import com.food.restaurant.entity.user.Address
 import com.food.restaurant.repository.user.AddressRepository
 import com.food.restaurant.repository.user.UserRepository
@@ -12,7 +12,8 @@ import java.util.UUID
 @Service
 class AddressService(
     private val addressRepository: AddressRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val geocodingService: GeocodingService
 ) {
 
     fun getCustomerAddresses(customerUuid: UUID): List<AddressResponse> {
@@ -49,6 +50,10 @@ class AddressService(
             postalCode = request.postalCode
         )
 
+        geocodingService.geocode(
+            request.addressInfo, request.subDistrict, request.district, request.province, request.postalCode
+        )?.let { newAddr.latitude = it.lat; newAddr.longitude = it.lng }
+
         val savedAddr = addressRepository.save(newAddr)
 
         return AddressResponse(
@@ -75,6 +80,10 @@ class AddressService(
         existingAddr.district = request.district
         existingAddr.province = request.province
         existingAddr.postalCode = request.postalCode
+
+        geocodingService.geocode(
+            request.addressInfo, request.subDistrict, request.district, request.province, request.postalCode
+        )?.let { existingAddr.latitude = it.lat; existingAddr.longitude = it.lng }
 
         val updatedAddr = addressRepository.save(existingAddr)
 

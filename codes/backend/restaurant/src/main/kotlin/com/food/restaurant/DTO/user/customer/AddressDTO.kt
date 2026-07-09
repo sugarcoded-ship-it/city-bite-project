@@ -1,4 +1,4 @@
-package com.food.restaurant.dto
+package com.food.restaurant.dto.user.customer
 
 data class AddressRequest(
     val addressInfo: String?,

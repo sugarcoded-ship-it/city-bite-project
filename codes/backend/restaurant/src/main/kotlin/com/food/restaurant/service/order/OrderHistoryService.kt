@@ -76,6 +76,9 @@ class OrderHistoryService(
                 )
             }
 
+            val staffName = order.staff?.let { "${it.firstName ?: ""} ${it.lastName ?: ""}".trim() }
+                ?.takeIf { it.isNotBlank() } ?: order.staff?.username
+
             OrderHistoryResponse(
                 orderId = order.id,
                 totalAmount = order.totalPrice.toDouble(),
@@ -84,6 +87,7 @@ class OrderHistoryService(
                 status = order.orderStatus.statusName.name,
                 canceledBy = order.canceledBy,
                 deliveryAddress = addressString,
+                staffName = staffName,
                 items = itemResponses
             )
         }

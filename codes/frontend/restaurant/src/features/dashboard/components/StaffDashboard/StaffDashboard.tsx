@@ -33,6 +33,7 @@ export const StaffDashboard = () => {
     const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
     const [toast, setToast] = useState<{ msg: string; isError: boolean } | null>(null);
     const [cancelModalOrder, setCancelModalOrder] = useState<StaffOrderResponse | null>(null);
+    const [completeModalOrder, setCompleteModalOrder] = useState<StaffOrderResponse | null>(null);
     const [selectedCancelIds, setSelectedCancelIds] = useState<Set<number>>(new Set());
 
     // Function to calculate minutes ago
@@ -68,12 +69,29 @@ export const StaffDashboard = () => {
         setActionLoadingId(orderId);
         try {
             const result = await apiClient<{ message: string; removedItems: string[] }>(`/staff/orders/${orderId}/claim`, { method: 'POST' });
-            showToast(result?.message || 'Order successfully claimed!', (result?.removedItems?.length ?? 0) > 0);
+            showToast(result?.message || 'Order moved to In Preparation!', (result?.removedItems?.length ?? 0) > 0);
             await fetchOrders();
         } catch (error: unknown) {
-            console.error('Failed to claim order:', error);
+            console.error('Failed to accept order:', error);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const msg = (error as any).response?.data?.message || 'Failed to claim order. It might have been claimed by another staff.';
+            const msg = (error as any).response?.data?.message || 'Failed to accept order.';
+            showToast(msg, true);
+            await fetchOrders(); // Refresh
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
+    const handleDeliverOrder = async (orderId: number) => {
+        setActionLoadingId(orderId);
+        try {
+            const result = await apiClient<{ message: string }>(`/staff/orders/${orderId}/deliver`, { method: 'POST' });
+            showToast(result?.message || 'Order is now out for delivery!');
+            await fetchOrders();
+        } catch (error: unknown) {
+            console.error('Failed to deliver order:', error);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const msg = (error as any).response?.data?.message || 'Failed to start delivery. It might have been taken by another staff.';
             showToast(msg, true);
             await fetchOrders(); // Refresh to see if it was claimed
         } finally {
@@ -81,11 +99,14 @@ export const StaffDashboard = () => {
         }
     };
 
-    const handleCompleteOrder = async (orderId: number) => {
+    const handleCompleteOrder = async () => {
+        if (!completeModalOrder) return;
+        const orderId = completeModalOrder.orderId;
         setActionLoadingId(orderId);
         try {
             await apiClient(`/staff/orders/${orderId}/complete`, { method: 'POST' });
             showToast('Order completed!');
+            setCompleteModalOrder(null);
             await fetchOrders();
         } catch (error: unknown) {
             console.error('Failed to complete order:', error);
@@ -146,9 +167,13 @@ export const StaffDashboard = () => {
     };
 
     const pendingOrders = orders.filter(o => (o.status || '').toUpperCase().replace(/\s+/g, '_') === 'PENDING');
-    const inProgressOrders = orders.filter(o => (o.status || '').toUpperCase().replace(/\s+/g, '_') === 'IN_PROGRESS');
+    const inPrepOrders = orders.filter(o => (o.status || '').toUpperCase().replace(/\s+/g, '_') === 'IN_PREPARATION');
+    const inDeliveryOrders = orders.filter(o => (o.status || '').toUpperCase().replace(/\s+/g, '_') === 'ON_DELIVERY');
 
-    const renderOrderCard = (order: StaffOrderResponse, isPending: boolean) => {
+    const renderOrderCard = (order: StaffOrderResponse, section: 'PENDING' | 'IN_PREPARATION' | 'ON_DELIVERY') => {
+        const isPending = section === 'PENDING';
+        const inPrep = section === 'IN_PREPARATION';
+        const inDelivery = section === 'ON_DELIVERY';
         const minutes = getMinutesElapsed(order.createdAt);
         const currentUserUuid = keycloak.tokenParsed?.sub || '';
         const isMine = order.assignedStaffUuid === currentUserUuid;
@@ -200,20 +225,20 @@ export const StaffDashboard = () => {
                         <span className={styles.totalAmount}>฿{order.totalPrice.toFixed(2)}</span>
                     </div>
 
-                    {!isPending && (
+                    {inDelivery && (
                         <div className={styles.assignedStaff}>
                             Assigned to: {order.assignedStaffName}
                         </div>
                     )}
 
-                    {isPending ? (
+                    {isPending && (
                         <div className={styles.buttonGroup}>
                             <button
                                 className={`${styles.actionBtn} ${styles.acceptBtn}`}
                                 onClick={() => handleClaimOrder(order.orderId)}
                                 disabled={actionLoadingId === order.orderId}
                             >
-                                {actionLoadingId === order.orderId ? 'Claiming...' : 'Accept Order'}
+                                {actionLoadingId === order.orderId ? 'Accepting...' : 'Accept Order'}
                             </button>
                             <button
                                 className={`${styles.actionBtn} ${styles.cancelBtn}`}
@@ -223,24 +248,37 @@ export const StaffDashboard = () => {
                                 Cancel Order
                             </button>
                         </div>
-                    ) : (
+                    )}
+
+                    {inPrep && (
+                        <div className={styles.buttonGroup}>
+                            <button
+                                className={`${styles.actionBtn} ${styles.acceptBtn}`}
+                                onClick={() => handleDeliverOrder(order.orderId)}
+                                disabled={actionLoadingId === order.orderId}
+                            >
+                                {actionLoadingId === order.orderId ? 'Processing...' : 'Deliver'}
+                            </button>
+                            <button
+                                className={`${styles.actionBtn} ${styles.cancelBtn}`}
+                                onClick={() => openCancelModal(order)}
+                                disabled={actionLoadingId === order.orderId}
+                            >
+                                Cancel Order
+                            </button>
+                        </div>
+                    )}
+
+                    {inDelivery && (
                         <div className={styles.buttonGroup}>
                             <button
                                 className={`${styles.actionBtn} ${styles.completeBtn}`}
-                                onClick={() => handleCompleteOrder(order.orderId)}
+                                onClick={() => setCompleteModalOrder(order)}
                                 disabled={actionLoadingId === order.orderId || !isMine}
                                 title={!isMine ? 'Only the assigned staff can complete this order' : ''}
                             >
                                 <CheckCircle size={18} />
                                 {actionLoadingId === order.orderId ? 'Processing...' : 'Complete'}
-                            </button>
-                            <button
-                                className={`${styles.actionBtn} ${styles.cancelBtn}`}
-                                onClick={() => openCancelModal(order)}
-                                disabled={actionLoadingId === order.orderId || !isMine}
-                                title={!isMine ? 'Only the assigned staff can cancel this order' : ''}
-                            >
-                                Cancel
                             </button>
                         </div>
                     )}
@@ -270,21 +308,35 @@ export const StaffDashboard = () => {
                     <div className={styles.emptyState}>No incoming orders at the moment.</div>
                 ) : (
                     <div className={styles.scrollContainer}>
-                        {pendingOrders.map(o => renderOrderCard(o, true))}
+                        {pendingOrders.map(o => renderOrderCard(o, 'PENDING'))}
                     </div>
                 )}
 
-                {/* In Progress Section */}
+                {/* In Preparation Section */}
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>In Preparation</h2>
-                    <span className={styles.badge} style={{ background: '#10b981' }}>{inProgressOrders.length}</span>
+                    <span className={styles.badge} style={{ background: '#f59e0b' }}>{inPrepOrders.length}</span>
                 </div>
 
-                {loading ? null : inProgressOrders.length === 0 ? (
+                {loading ? null : inPrepOrders.length === 0 ? (
                     <div className={styles.emptyState}>No orders currently being prepared.</div>
                 ) : (
                     <div className={styles.scrollContainer}>
-                        {inProgressOrders.map(o => renderOrderCard(o, false))}
+                        {inPrepOrders.map(o => renderOrderCard(o, 'IN_PREPARATION'))}
+                    </div>
+                )}
+
+                {/* In Delivery Section */}
+                <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>In Delivery</h2>
+                    <span className={styles.badge} style={{ background: '#10b981' }}>{inDeliveryOrders.length}</span>
+                </div>
+
+                {loading ? null : inDeliveryOrders.length === 0 ? (
+                    <div className={styles.emptyState}>No orders currently in delivery.</div>
+                ) : (
+                    <div className={styles.scrollContainer}>
+                        {inDeliveryOrders.map(o => renderOrderCard(o, 'ON_DELIVERY'))}
                     </div>
                 )}
             </div>
@@ -362,6 +414,48 @@ export const StaffDashboard = () => {
                                         : isWholeOrder
                                             ? 'Cancel Whole Order'
                                             : `Cancel ${selectedCount} Item(s)`}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
+            {completeModalOrder && (() => {
+                const isLoading = actionLoadingId === completeModalOrder.orderId;
+
+                return (
+                    <div
+                        className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+                        onClick={() => !isLoading && setCompleteModalOrder(null)}
+                    >
+                        <div
+                            className="bg-white rounded-2xl w-full max-w-sm flex flex-col overflow-hidden shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-5 border-b border-gray-100">
+                                <h3 className="text-lg font-extrabold text-gray-900">
+                                    Confirm Delivery
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    Are you sure you have delivered Order #ORD-{String(completeModalOrder.orderId).padStart(5, '0')} to {completeModalOrder.customerName}?
+                                </p>
+                            </div>
+
+                            <div className="p-5 flex gap-3">
+                                <button
+                                    onClick={() => setCompleteModalOrder(null)}
+                                    disabled={isLoading}
+                                    className="flex-1 py-3 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    onClick={handleCompleteOrder}
+                                    disabled={isLoading}
+                                    className="flex-1 py-3 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
+                                >
+                                    {isLoading ? 'Completing...' : 'Confirm'}
                                 </button>
                             </div>
                         </div>

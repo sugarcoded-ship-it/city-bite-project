@@ -44,7 +44,7 @@ class Order(
     var totalPrice: BigDecimal,
 
     @Column(name = "Created_at", nullable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now(),
+    var createdAt: LocalDateTime = LocalDateTime.now().plusHours(7),
 
     @Version
     @Column(name = "version")

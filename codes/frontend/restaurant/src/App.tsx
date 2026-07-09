@@ -23,6 +23,7 @@ import OrderSummary from "./features/customer/OrderSummary.tsx";
 import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
 import Done from "./features/customer/Done.tsx";
 import CustomerProfile from "./features/customer/CustomerProfile.tsx";
+import OrderTracking from "./features/customer/OrderTracking.tsx"
 
 import './App.css'
 
@@ -57,6 +58,8 @@ function App() {
                 <Route path="/payment-process" element={<PaymentProcessPage />} />
                 <Route path="/done" element={<Done />} />
                 <Route path="/profile"        element={<CustomerProfile />} />
+                <Route path="/track/:orderId" element={<OrderTracking />} />
+                <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
             </Route>
 
             {/* Wildcard fallback */}

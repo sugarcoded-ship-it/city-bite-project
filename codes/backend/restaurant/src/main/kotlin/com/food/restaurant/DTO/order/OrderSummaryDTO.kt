@@ -1,4 +1,4 @@
-package com.food.restaurant.dto
+package com.food.restaurant.dto.order
 
 import java.math.BigDecimal
 import java.util.UUID

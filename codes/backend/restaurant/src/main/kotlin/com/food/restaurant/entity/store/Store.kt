@@ -43,5 +43,11 @@ class Store (
     var closeTime: LocalTime,
 
     @Column(name = "is_open", nullable = false)
-    var isOpen: Boolean = false
+    var isOpen: Boolean = false,
+
+    @Column(name = "latitude", nullable = true)
+    var latitude: Double? = null,
+
+    @Column(name = "longitude", nullable = true)
+    var longitude: Double? = null
 )
