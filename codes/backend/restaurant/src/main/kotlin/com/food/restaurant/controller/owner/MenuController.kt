@@ -15,13 +15,13 @@ import com.food.restaurant.entity.menu.OptionGroup
 import com.food.restaurant.entity.menu.OptionIngredient
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.entity.menu.menuStatusEnum
-import com.food.restaurant.repository.stock.OptionIngredientRepository
 import com.food.restaurant.repository.menu.MenuCategoryRepository
 import com.food.restaurant.repository.menu.MenuRecipeRepository
 import com.food.restaurant.repository.menu.MenuRepository
 import com.food.restaurant.repository.menu.MenuStatusRepository
 import com.food.restaurant.repository.menu.OptionChoiceRepository
 import com.food.restaurant.repository.menu.OptionGroupRepository
+import com.food.restaurant.repository.menu.OptionIngredientRepository
 import com.food.restaurant.repository.stock.StockRepository
 import com.food.restaurant.service.menu.MenuAvailabilityService
 import com.food.restaurant.service.menu.MenuService
@@ -113,8 +113,7 @@ class MenuController(
         menuRecipeRepository.deleteByMenuItem_Id(id)
         val recipe = saveRecipe(savedItem, request.recipe)
 
-        deleteOptionGroups(id)
-        saveOptionGroups(savedItem, request.optionGroups)
+        updateOptionGroups(savedItem, request.optionGroups)
 
         val resolved = menuAvailabilityService.syncStatus(savedItem)
         val optionGroups = menuService.getMenuItemCustomizations(resolved.id)
@@ -150,14 +149,13 @@ class MenuController(
     @DeleteMapping("/{id}")
     @Transactional
     fun deleteMenuItem(@PathVariable id: Int): ResponseEntity<Void> {
-        return if (menuRepository.existsById(id)) {
-            menuRecipeRepository.deleteByMenuItem_Id(id)
-            deleteOptionGroups(id)
-            menuRepository.deleteById(id)
-            ResponseEntity.ok().build()
-        } else {
-            ResponseEntity.notFound().build()
-        }
+        val item = menuRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        
+        // Soft delete to prevent foreign key constraint violations from historic orders
+        item.status = resolveStatus(menuStatusEnum.DEACTIVATED)
+        menuRepository.save(item)
+        return ResponseEntity.ok().build()
     }
 
     private fun resolveCategory(displayName: String): MenuCategory? {
@@ -187,20 +185,7 @@ class MenuController(
         return saved.map { MenuRecipeResponse.from(it) }
     }
 
-    // Deletes any existing option groups/choices/ingredients for a menu item.
-    // Children must be removed before parents because of FK constraints.
-    private fun deleteOptionGroups(menuId: Int) {
-        val existingGroups = optionGroupRepository.findByMenuItem_Id(menuId)
-        if (existingGroups.isEmpty()) return
 
-        val groupIds = existingGroups.map { it.id }
-        val choiceIds = optionChoiceRepository.findByOptionGroup_IdIn(groupIds).map { it.id }
-        if (choiceIds.isNotEmpty()) {
-            optionIngredientRepository.deleteByOptionChoiceIdIn(choiceIds)
-        }
-        existingGroups.forEach { group -> optionChoiceRepository.deleteByOptionGroup_Id(group.id) }
-        optionGroupRepository.deleteByMenuItem_Id(menuId)
-    }
 
     // Each choice can carry its own extra price and its own ingredient/stock
     // consumption, independent from the base menu item's recipe. A group must offer
@@ -245,6 +230,103 @@ class MenuController(
                         )
                     )
                 }
+            }
+        }
+    }
+    // Merges incoming option groups with existing ones to avoid deleting choices that might
+    // be referenced in order_item_selections, preventing foreign key constraint violations.
+    private fun updateOptionGroups(menuItem: MenuItem, groups: List<OptionGroupRequest>) {
+        val existingGroups = optionGroupRepository.findByMenuItem_Id(menuItem.id).toMutableList()
+
+        groups.forEach { groupReq ->
+            if (groupReq.groupName.isBlank()) badRequest("Option group name is required")
+            if (groupReq.choices.isEmpty()) badRequest("Option group '${groupReq.groupName}' needs at least one choice")
+
+            val existingGroup = existingGroups.find { it.groupName == groupReq.groupName }
+            val savedGroup = if (existingGroup != null) {
+                existingGroups.remove(existingGroup)
+                existingGroup.isRequired = groupReq.isRequired
+                existingGroup.maxChoices = if (groupReq.maxChoices > 0) groupReq.maxChoices else 1
+                optionGroupRepository.save(existingGroup)
+            } else {
+                optionGroupRepository.save(
+                    OptionGroup(
+                        menuItem = menuItem,
+                        groupName = groupReq.groupName,
+                        isRequired = groupReq.isRequired,
+                        maxChoices = if (groupReq.maxChoices > 0) groupReq.maxChoices else 1
+                    )
+                )
+            }
+
+            val existingChoices = optionChoiceRepository.findByOptionGroup_Id(savedGroup.id).toMutableList()
+            groupReq.choices.forEach { choiceReq ->
+                if (choiceReq.choiceName.isBlank()) badRequest("Choice name is required")
+                if (choiceReq.extraPrice < BigDecimal.ZERO) badRequest("Choice price cannot be negative")
+
+                val existingChoice = existingChoices.find { it.choiceName == choiceReq.choiceName }
+                val savedChoice = if (existingChoice != null) {
+                    existingChoices.remove(existingChoice)
+                    existingChoice.extraPrice = choiceReq.extraPrice
+                    optionChoiceRepository.save(existingChoice)
+                } else {
+                    optionChoiceRepository.save(
+                        OptionChoice(
+                            optionGroup = savedGroup,
+                            choiceName = choiceReq.choiceName,
+                            extraPrice = choiceReq.extraPrice
+                        )
+                    )
+                }
+
+                val existingIngredients = optionIngredientRepository.findByOptionChoiceId(savedChoice.id).toMutableList()
+                choiceReq.ingredients.forEach { ingredientReq ->
+                    if (ingredientReq.amount <= BigDecimal.ZERO) badRequest("Ingredient amount must be greater than 0")
+                    
+                    val existingIng = existingIngredients.find { it.stock.id == ingredientReq.stockId }
+                    if (existingIng != null) {
+                        existingIngredients.remove(existingIng)
+                        existingIng.amount = ingredientReq.amount
+                        optionIngredientRepository.save(existingIng)
+                    } else {
+                        val stock = stockRepository.findById(ingredientReq.stockId).orElse(null)
+                            ?: badRequest("Stock ingredient ${ingredientReq.stockId} not found")
+                        optionIngredientRepository.save(
+                            OptionIngredient(
+                                optionChoice = savedChoice,
+                                stock = stock,
+                                amount = ingredientReq.amount,
+                                measureUnit = stock.measureUnit
+                            )
+                        )
+                    }
+                }
+                
+                // Delete removed ingredients for this choice
+                existingIngredients.forEach { ing ->
+                    optionIngredientRepository.delete(ing)
+                }
+            }
+            
+            // Try to delete removed choices (will fail gracefully if ordered)
+            existingChoices.forEach { choice ->
+                try {
+                    optionIngredientRepository.deleteByOptionChoiceId(choice.id)
+                    optionChoiceRepository.delete(choice)
+                } catch (e: Exception) {
+                    // Ignore deletion of choices that are part of historic orders
+                }
+            }
+        }
+
+        // Try to delete removed groups (will fail gracefully if ordered)
+        existingGroups.forEach { group ->
+            try {
+                val choices = optionChoiceRepository.findByOptionGroup_Id(group.id)
+                choices.forEach { optionIngredientRepository.deleteByOptionChoiceId(it.id) }
+                optionChoiceRepository.deleteByOptionGroup_Id(group.id)
+                optionGroupRepository.delete(group)
+            } catch (e: Exception) {
             }
         }
     }
