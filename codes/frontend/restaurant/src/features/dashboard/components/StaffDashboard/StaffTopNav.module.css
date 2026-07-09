@@ -1,0 +1,174 @@
+/* StaffTopNav.module.css */
+
+.navButton {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.navButtonActive {
+    background-color: #2D7FF9;
+    color: white;
+}
+
+.navButtonInactive {
+    color: #bfdbfe;
+}
+.navButtonInactive:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.requestDayOffBtn {
+    margin-left: 8px;
+    color: #bfdbfe;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.requestDayOffBtn:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 16px;
+}
+
+.modalContent {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 28rem;
+    overflow: hidden;
+}
+
+.modalHeader {
+    background-color: #eff6ff;
+    padding: 16px 24px;
+    border-bottom: 1px solid #dbeafe;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalTitle {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0B1F4D;
+    margin: 0;
+}
+
+.closeButton {
+    color: #9ca3af;
+    font-weight: 700;
+    font-size: 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.closeButton:hover {
+    color: #4b5563;
+}
+
+.modalBody {
+    padding: 24px;
+}
+
+.errorAlert {
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    color: #dc2626;
+    background-color: #fef2f2;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.successAlert {
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    color: #16a34a;
+    background-color: #f0fdf4;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.inputLabel {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.dateInput {
+    width: 100%;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    color: #1f2937;
+    outline: none;
+}
+.dateInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.modalFooter {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.cancelBtn {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.cancelBtn:hover {
+    background-color: #f3f4f6;
+}
+
+.submitBtn {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background-color: #2D7FF9;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.submitBtn:hover {
+    background-color: #2563eb;
+}
