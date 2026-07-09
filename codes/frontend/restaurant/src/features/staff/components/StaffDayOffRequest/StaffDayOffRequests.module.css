@@ -1,0 +1,284 @@
+/* StaffDayOffRequests.module.css */
+.page {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    padding-bottom: 60px;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 88px 24px 24px;
+}
+.pageTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0B1F4D;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+}
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 16px;
+}
+.sectionTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+.badge {
+    background: #2D7FF9;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.emptyState {
+    padding: 40px;
+    text-align: center;
+    color: #64748b;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px dashed #cbd5e1;
+}
+
+/* ── Day Off Widget ── */
+.leaveDaysContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding-bottom: 16px;
+}
+.leaveDayCard {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.leaveDayHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.leaveDayDates {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+.statusBadge {
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.statusApproved {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.statusNotApproved {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+.statusPending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+.leaveDayDateInfo {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+.cancelLeaveBtn {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ef4444;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.cancelLeaveBtn:hover {
+    background-color: #fee2e2;
+}
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0B1F4D;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 9999px;
+    box-shadow: 0 8px 32px rgba(11, 31, 77, 0.25);
+    z-index: 60;
+    animation: toastIn 0.3s ease-out;
+}
+.toastError {
+    background: #ef4444;
+}
+@keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.requestBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #2D7FF9;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.requestBtn:hover {
+    background-color: #1e40af;
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    padding: 16px;
+}
+
+.modalContent {
+    background-color: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modalTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.closeButton {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #64748b;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modalBody {
+    padding: 24px;
+}
+
+.errorAlert {
+    background-color: #fef2f2;
+    color: #ef4444;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+    border: 1px solid #fecaca;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.inputLabel {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.dateInput {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #0f172a;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.dateInput:focus {
+    border-color: #2D7FF9;
+    box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.1);
+}
+
+.modalFooter {
+    display: flex;
+    gap: 12px;
+}
+
+.cancelBtn {
+    flex: 1;
+    padding: 12px;
+    background-color: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancelBtn:hover {
+    background-color: #e2e8f0;
+}
+
+.submitBtn {
+    flex: 1;
+    padding: 12px;
+    background-color: #2D7FF9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submitBtn:hover {
+    background-color: #1e40af;
+}

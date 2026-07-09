@@ -251,3 +251,67 @@
     from { opacity: 0; transform: translate(-50%, 20px); }
     to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* ── Day Off Widget ── */
+.leaveDaysContainer {
+    display: flex;
+    overflow-x: auto;
+    gap: 16px;
+    padding-bottom: 16px;
+}
+.leaveDayCard {
+    min-width: 280px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.leaveDayHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.leaveDayDates {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+.statusBadge {
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.statusApproved {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.statusNotApproved {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+.statusPending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+.leaveDayDateInfo {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+.cancelLeaveBtn {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ef4444;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.cancelLeaveBtn:hover {
+    background-color: #fee2e2;
+}

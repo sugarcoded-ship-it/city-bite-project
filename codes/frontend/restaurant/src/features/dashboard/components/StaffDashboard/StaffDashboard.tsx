@@ -35,7 +35,6 @@ export const StaffDashboard = () => {
     const [cancelModalOrder, setCancelModalOrder] = useState<StaffOrderResponse | null>(null);
     const [selectedCancelIds, setSelectedCancelIds] = useState<Set<number>>(new Set());
 
-
     // Function to calculate minutes ago
     const getMinutesElapsed = (dateString: string) => {
         const diffMs = new Date().getTime() - new Date(dateString).getTime();
@@ -288,7 +287,6 @@ export const StaffDashboard = () => {
                         {inProgressOrders.map(o => renderOrderCard(o, false))}
                     </div>
                 )}
-
             </div>
 
             {toast && (
