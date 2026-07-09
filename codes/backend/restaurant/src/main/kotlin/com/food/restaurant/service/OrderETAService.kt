@@ -2,7 +2,6 @@ package com.food.restaurant.service
 
 import com.food.restaurant.dto.EtaResponse
 import com.food.restaurant.repository.order.OrderSummaryRepository
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -12,14 +11,12 @@ import kotlin.math.ceil
 class OrderETAService(
     private val orderRepository: OrderSummaryRepository,
     private val routingService: RoutingService,
+    private val storeService: StoreService
 ) {
     companion object {
-        private const val STORE_LAT = 13.7969
-        private const val STORE_LONG = 100.3232
         private const val PREP_MINUTES = 15
         private const val ETA_BUFFER_MINUTES = 10
     }
-
 
     @Transactional(readOnly = true)
     fun getEta(orderId: Int, requesterUuid: UUID): EtaResponse {
@@ -34,6 +31,15 @@ class OrderETAService(
         val lat = order.address.latitude
         val lng = order.address.longitude
 
+        val store = storeService.getGlobalStore()
+            ?: return EtaResponse(orderId, available = false, message = "No store configured yet.", prepMinutes = PREP_MINUTES, status = status)
+        val storeLat = store.latitude
+        val storeLng = store.longitude
+        if (storeLat == null || storeLng == null) {
+            return EtaResponse(orderId, available = false,
+                message = "The store location hasn't been geocoded yet.", prepMinutes = PREP_MINUTES, status = status)
+        }
+
         if (lat == null || lng == null) {
             return EtaResponse(
                 orderId = orderId,
@@ -44,7 +50,7 @@ class OrderETAService(
             )
         }
 
-        val seconds = routingService.travelSeconds(STORE_LAT, STORE_LONG, lat, lng)
+        val seconds = routingService.travelSeconds(storeLat, storeLng, lat, lng)
             ?: return EtaResponse(
                 orderId = orderId,
                 available = false,

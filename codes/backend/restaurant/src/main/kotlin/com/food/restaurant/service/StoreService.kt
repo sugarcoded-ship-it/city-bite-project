@@ -4,6 +4,7 @@ import com.food.restaurant.dto.store.StoreDetailRequest
 import com.food.restaurant.dto.store.StoreDetailResponse
 import com.food.restaurant.dto.store.StoreStatusRequest
 import com.food.restaurant.dto.store.StoreStatusResponse
+import com.food.restaurant.service.GeocodingService
 import com.food.restaurant.entity.store.Store
 import com.food.restaurant.repository.store.StoreRepository
 import com.food.restaurant.repository.user.UserRepository
@@ -14,7 +15,8 @@ import java.util.UUID
 @Service
 class StoreService(
     private val storeRepository: StoreRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val geocodingService: GeocodingService
 ) {
 
     fun isStoreOpen(): Boolean = storeRepository.findAll().firstOrNull()?.isOpen ?: false
@@ -69,6 +71,10 @@ class StoreService(
             closeTime = req.closeTime,
             isOpen = false
         )
+
+        geocodingService.geocode(store.storeAddress)
+            ?.let { store.latitude = it.lat; store.longitude = it.lng }
+
         storeRepository.save(store)
         return StoreDetailResponse(
             store.storeName,
