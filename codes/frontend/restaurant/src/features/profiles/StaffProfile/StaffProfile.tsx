@@ -89,7 +89,7 @@ function PasswordChangeForm() {
     );
 }
 
-export default function StaffProfile() {
+export function StaffProfile() {
     const [profile, setProfile] = useState<StaffProfileResponse | null>(null);
     const [draftPhone, setDraftPhone] = useState('');
     const [draftFirstName, setDraftFirstName] = useState('');

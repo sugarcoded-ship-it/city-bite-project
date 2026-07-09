@@ -108,7 +108,7 @@ function PasswordChangeForm() {
     );
 }
 
-export default function CustomerProfile() {
+export function CustomerProfile() {
     const [profile, setProfile] = useState<CustomerProfileResponse | null>(null);
     const [draftProfile, setDraftProfile] = useState<ProfileUpdateForm>({
         firstName: '', lastName: '', username: '', email: '', phoneNumber: ''

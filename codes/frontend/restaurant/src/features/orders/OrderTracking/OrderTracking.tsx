@@ -33,7 +33,7 @@ const toHHMM = (iso?: string | null): string => {
 const BLUE = '#3b82f6';
 const GREY = '#e2e8f0';
 
-const OrderTracking = () => {
+export const OrderTracking = () => {
     const { orderId } = useParams<{ orderId: string }>();
     const navigate = useNavigate();
 
@@ -190,4 +190,3 @@ const OrderTracking = () => {
     );
 };
 
-export default OrderTracking;

@@ -111,7 +111,7 @@ function getGroupLabel(dateString: string): string {
     return date.toLocaleDateString('en-US', options);
 }
 
-export default function OrderHistory() {
+export function OrderHistory() {
     const navigate = useNavigate();
 
     const [orders, setOrders] = useState<OrderHistoryEntry[]>([]);

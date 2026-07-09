@@ -85,7 +85,7 @@ const FALLBACK_PAYMENT_UI = { label: 'Payment Method', sub: 'Pay securely', icon
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const OrderSummary: React.FC = () => {
+export const OrderSummary: React.FC = () => {
     const navigate = useNavigate();
 
     // API State
@@ -673,4 +673,3 @@ const OrderSummary: React.FC = () => {
     );
 }
 
-export default OrderSummary;
