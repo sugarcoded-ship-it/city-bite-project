@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, LayoutDashboard, Package, User, LogOut, CalendarPlus } from 'lucide-react';
 import { apiClient } from '../../../../lib/api-client.ts';
@@ -12,11 +12,6 @@ interface StockResponse {
 
 interface StaffOrderResponse {
   status: string;
-}
-
-interface LeaveDayRequest {
-  startDate: string;
-  endDate: string;
 }
 
 const LOW_STOCK_THRESHOLD = 15;
@@ -45,6 +40,7 @@ export function StaffTopNav() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCounts();
     const interval = setInterval(fetchCounts, 30000);
     return () => clearInterval(interval);

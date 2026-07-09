@@ -27,16 +27,6 @@ interface StaffOrderResponse {
     items: StaffOrderItemResponse[];
 }
 
-interface LeaveDayResponse {
-  id: number;
-  staffUuid: string;
-  staffName: string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  date: string;
-}
-
 export const StaffDashboard = () => {
     const [orders, setOrders] = useState<StaffOrderResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -44,7 +34,6 @@ export const StaffDashboard = () => {
     const [toast, setToast] = useState<{ msg: string; isError: boolean } | null>(null);
     const [cancelModalOrder, setCancelModalOrder] = useState<StaffOrderResponse | null>(null);
     const [selectedCancelIds, setSelectedCancelIds] = useState<Set<number>>(new Set());
-
 
     // Function to calculate minutes ago
     const getMinutesElapsed = (dateString: string) => {
@@ -69,6 +58,7 @@ export const StaffDashboard = () => {
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchOrders();
         const interval = setInterval(fetchOrders, 15000); // Poll every 15s
         return () => clearInterval(interval);

@@ -50,6 +50,7 @@ export const StaffDayOffRequests = () => {
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchLeaveDays();
         const interval = setInterval(fetchLeaveDays, 30000);
         return () => clearInterval(interval);
