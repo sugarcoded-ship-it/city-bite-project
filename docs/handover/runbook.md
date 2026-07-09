@@ -149,7 +149,7 @@ docker compose down -v
 
 ### Create a staff or owner account
 
-Staff and owner accounts are managed through the Keycloak Admin Console — there is no self-registration flow.
+Staff and owner accounts are managed through the Keycloak Admin Console — there is no self-registration flow (customers, by contrast, self-register through the Customer Web App's signup form and are assigned the `CUSTOMER` role automatically).
 
 1. Open `http://localhost/auth/admin` and log in
 2. Select the **restaurant-realm** realm
@@ -157,6 +157,8 @@ Staff and owner accounts are managed through the Keycloak Admin Console — ther
 4. Fill in the username and email, then click **Create**
 5. Go to the **Credentials** tab → set a password (disable "Temporary" if you do not want the user to be forced to change it)
 6. Go to the **Role mapping** tab → assign either `STAFF` or `OWNER`
+
+There is no separate rider role or account type: delivery hand-off (Out for Delivery / Delivered, location reporting) is performed by whichever `STAFF` account is assigned to a delivery order, from the same Staff Dashboard login.
 
 ### Reset the database
 

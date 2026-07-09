@@ -116,12 +116,27 @@ Each section corresponds to a sprint. Dates reflect the sprint meeting or review
 
 ---
 
+## Final Delivery — 6–9 July 2026
+
+### Added
+- **Order tracking with reference number (ADR 002-E):** Each `Order` now carries a customer-facing `reference_number` generated at submission, shown as a receipt/lookup label. A new authenticated endpoint `GET /api/customer/orders/{orderId}/track` (same `CUSTOMER`-role login as the rest of the customer app) returns status, ETA, and delivery location for the logged-in customer's own order.
+- **ETA estimation (ADR 002-E):** `EtaEstimationService` computes an estimated-ready time per order from `Menu_Recipe.prep_minutes` across order lines plus current In-Kitchen queue depth; recalculated on every tracking poll.
+- **Delivery hand-off, no new role (ADR 002-E):** New `Delivery_Assignment` entity linking a delivery order to an existing `STAFF`-role employee — no separate rider role or account type was added. Staff assign the delivery to a staff member once the order reaches Ready; that employee advances the order Ready → Out for Delivery → Delivered from their own staff login and their device periodically reports coordinates.
+- **Delivery location on tracking map:** Customer Order Tracking Page renders the delivering employee's last-known position via Leaflet/OpenStreetMap (open-source, no API key) once an order is out for delivery.
+
+### Changed
+- Customer Web App's Order Tracking Page now shows Pending / In Kitchen / Ready / Out for Delivery / Delivered, plus ETA and (for deliveries in progress) a live delivery-location map, instead of surfacing status only via the staff dashboard.
+
+### Documentation
+- Product brief, architecture page, known-issues.md, risk-list.md, and user_stories_team03.md updated to reflect order tracking/ETA/delivery hand-off moving from "in progress / out of scope" to fully in scope and active (ADR 002-E), and to correct an earlier documentation error that described the customer as an unauthenticated guest — customers have always had a self-registered `CUSTOMER` account (ADR 002-C).
+
+---
+
 ## Deferred / Out of Scope (recorded in ADR 002)
 
-The following items were descoped during Sprint 3 to protect delivery of the core order flow:
+The following items remain descoped to protect delivery of the core order flow:
 
 - **Stripe payment integration** — deferred entirely; orders are placed without real payment processing (ADR 002-A)
-- **Automatic stock deduction** — excluded; staff manually toggle menu item availability (ADR 002-B)
-- **Financial records and reporting** — database schema exists but no service or API is connected (ADR 002-B)
-- **Customer accounts and order history persistence** — customers order as guests only
+- **Financial records and reporting** — database schema exists but no service or API is connected, aside from the narrow `RefundCredit` ledger (ADR 002-B, ADR 002-D)
 - **Staff scheduling (LeaveDay)** — schema entity exists but no UI or API planned for this version
+- **Route optimization and delivery batching** — a delivering staff member carries one active delivery at a time; no turn-by-turn navigation or dispatch optimization (ADR 002-E)

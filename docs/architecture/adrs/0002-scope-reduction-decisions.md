@@ -1,6 +1,6 @@
 # ADR 002: Scope Reduction Decisions for MVP Delivery
 
-**Status:** Accepted (ADR 002-B partially superseded by ADR 002-D below)
+**Status:** Accepted (ADR 002-B partially superseded by ADR 002-D and ADR 002-E below)
 
 ---
 
@@ -126,3 +126,40 @@ Everything else in ADR 002-B remains unchanged and still deferred:
 **Negative / Tradeoffs**
 - The product brief, architecture page, and known-issues gap table (all written against the original ADR 002-B) understated what was actually built and needed a documentation-sync pass (this ADR, plus the linked doc updates) to stay accurate.
 - Stock deduction depends on `MenuRecipe` / `OptionIngredient` data being correctly populated per menu item; a menu item with no recipe rows mapped will deduct nothing, silently falling back to the manual-toggle behavior ADR 002-B originally assumed for everything.
+
+---
+
+## ADR 002-E: Reinstate Order Tracking, ETA, and Delivery Handoff (Supersedes the remaining delivery/ETA exclusion in ADR 002)
+
+### Context
+
+The original product brief and architecture page listed three related items as out of scope: a customer-facing order-tracking page with live status, an estimated-time (ETA) calculation, and any delivery hand-off/rider tracking. Order status was, for most of Sprint 4, only visible from the staff dashboard, and the case brief's "customer has no reliable way to know when their order will be ready" problem was only half-solved. (Note: earlier drafts of this ADR and related docs incorrectly described the customer side as an unauthenticated guest flow — customers have always authenticated via Keycloak's `CUSTOMER` role, per ADR 002-C. That was a documentation inconsistency, not a design decision, and is corrected here and in the linked docs.)
+
+Once the core order lifecycle (Pending → In Kitchen → Ready) and stock deduction (ADR 002-D) stabilized, the team had a reliable state machine to build the customer tracking view, an ETA estimate, and a delivery hand-off step on top of, and completed all three before final delivery — without introducing a new account type. Delivery is handled by existing `STAFF`-role employees, not a separate rider role or app.
+
+### Decision
+
+The exclusions for order tracking, ETA, and delivery hand-off are **superseded**; all three are now **in scope and implemented**:
+
+- **Reference-number tracking:** Each `Order` is issued a short, customer-facing reference number at submission, shown as a receipt/lookup label. The authenticated endpoint `GET /api/customer/orders/{orderId}/track` (same `CUSTOMER`-role auth as the rest of the customer app) returns the order's current status and ETA, after confirming the order belongs to the requesting customer. The Customer Web App's Order Tracking Page polls this endpoint.
+- **ETA:** An `EtaEstimationService` computes an estimated-ready time from each order line's per-item preparation time (recipe-level `prep_minutes`) plus the current In-Kitchen queue depth at the store. The estimate is recalculated and returned on every tracking poll, and is shown alongside the Pending / In Kitchen / Ready status.
+- **Delivery hand-off (no new role):** No separate `RIDER` Keycloak role or account type was introduced. For a delivery order, staff assign the delivery to a `STAFF`-role employee already in the roster (the same account they use for the staff dashboard). That staff member marks the order **Out for Delivery** and **Delivered** from their existing staff login (typically on a phone while making the delivery), and their device periodically reports coordinates while the delivery is in progress. The customer tracking page renders that last-known location on an OpenStreetMap/Leaflet map (open-source, no API key or paid mapping service) once an order is out for delivery.
+
+### Alternatives Considered
+
+- **Leave tracking staff-only and ship ETA/delivery as a documented future backlog item:** This was the position through most of Sprint 4, but it did not address the case brief's core complaint. Rejected once time allowed for a full implementation.
+- **A public, unauthenticated tracking endpoint keyed only by reference number:** Considered, since the reference number is already customer-facing. Rejected because customers already have an authenticated account (ADR 002-C) — reusing that session to scope tracking to "orders belonging to this logged-in customer" is simpler and more secure than a second, unauthenticated lookup path, and stays consistent with how order history already works.
+- **Introduce a dedicated `RIDER` Keycloak role and separate rider app:** Considered, but rejected — the restaurant does not have a distinct rider workforce separate from its staff, so a new role/account type and a second lightweight app would have added onboarding and infrastructure overhead without a matching real-world need. Delivery hand-off was layered onto the existing `STAFF` role instead.
+- **Third-party maps API (e.g., Google Maps) for delivery location:** Rejected to avoid introducing a paid/keyed external dependency this late, consistent with the project's existing preference for open-source infrastructure (see ADR 002-C on Keycloak). Leaflet + OpenStreetMap tiles were used instead.
+
+### Consequences
+
+**Positive**
+- Directly resolves the case brief's "customer has no reliable way to know whether their order was received or when it will be ready" complaint end-to-end, without requiring a phone call to staff.
+- Keeps a single, consistent authentication model for all customer-facing order endpoints (history, reorder, and now tracking) rather than mixing authenticated and public paths.
+- Reuses the existing order-status state machine, `Menu_Recipe` data, and `STAFF` role rather than introducing a parallel tracking system or a new account type.
+
+**Negative / Tradeoffs**
+- ETA is an estimate derived from static per-item prep times and queue depth, not a live kitchen-load model; it can drift from actual ready time during unusually busy periods.
+- Delivery location is only as fresh as the last device report interval; there is no push-based real-time transport (e.g., WebSockets) — the map updates on the same polling cadence as the status check.
+- Because delivery hand-off rides on the `STAFF` role rather than a dedicated role, the backend cannot distinguish "staff currently out on a delivery" from "staff at the counter" except by which order is assigned to them — there is no separate rider permission boundary.
