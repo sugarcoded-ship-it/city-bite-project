@@ -1,7 +1,7 @@
 package com.food.restaurant.controller.staff
 
-import com.food.restaurant.service.StaffService
-import com.food.restaurant.service.UserSyncService
+import com.food.restaurant.service.user.StaffService
+import com.food.restaurant.service.user.UserSyncService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.jwt.Jwt // CORRECT IMPORT
 import org.springframework.security.access.prepost.PreAuthorize

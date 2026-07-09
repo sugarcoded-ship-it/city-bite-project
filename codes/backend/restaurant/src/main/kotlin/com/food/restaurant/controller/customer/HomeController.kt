@@ -4,12 +4,12 @@ import com.food.restaurant.dto.cart.AddToCartRequest
 import com.food.restaurant.dto.cart.CartItemResponse
 import com.food.restaurant.dto.menu.MenuItemResponse
 import com.food.restaurant.dto.menu.OptionGroupResponse
-import com.food.restaurant.dto.user.customer.CustomerDashboardResponse
+import com.food.restaurant.dto.store.CustomerDashboardResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
-import com.food.restaurant.service.CartService
-import com.food.restaurant.service.MenuService
-import com.food.restaurant.service.StoreService
-import com.food.restaurant.service.UserSyncService
+import com.food.restaurant.service.cart.CartService
+import com.food.restaurant.service.menu.MenuService
+import com.food.restaurant.service.store.StoreService
+import com.food.restaurant.service.user.UserSyncService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

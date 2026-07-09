@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import com.food.restaurant.dto.staff.OwnerStaffDetailResponse
 import com.food.restaurant.dto.staff.StaffListResponse
 import com.food.restaurant.dto.staff.CreateStaffRequest
-import com.food.restaurant.service.StaffService
+import com.food.restaurant.service.user.StaffService
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

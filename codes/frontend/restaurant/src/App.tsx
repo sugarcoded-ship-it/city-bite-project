@@ -1,29 +1,28 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import HomeDispatcher from './features/dashboard/components/HomeDispatcher.tsx';
-import { Placeholder } from './components/Placeholder.tsx';
+import { HomeDispatcher } from './features/dashboards/HomeDispatcher/HomeDispatcher.tsx';
 import { ProtectedRoute } from './lib/ProtectedRoute'
-import { OwnerDayOffRequest } from './features/owner/components/OwnerDayOffRequest/OwnerDayOffRequest';
+import { OwnerDayOffRequest } from './features/leave-requests/OwnerDayOffRequest/OwnerDayOffRequest';
 
 // Owner pages
-import { MenuConfiguration } from './features/dashboard/components/OwnerDashboard/MenuConfiguration';
-import { StaffList } from './features/staff/components/StaffList/StaffList';
-import { StaffDetail } from './features/staff/components/StaffDetail/StaffDetail'
-import { OwnerDashboard } from './features/dashboard/components/OwnerDashboard/OwnerDashboard.tsx';
-import { StoreDetail } from './features/store/components/StoreDetail/StoreDetail';
+import { MenuConfiguration } from './features/menu/MenuConfiguration/MenuConfiguration';
+import { StaffList } from './features/staff-management/StaffList/StaffList';
+import { StaffDetail } from './features/staff-management/StaffDetail/StaffDetail'
+import { OwnerDashboard } from './features/dashboards/OwnerDashboard/OwnerDashboard.tsx';
+import { StoreDetail } from './features/store/StoreDetail/StoreDetail';
 
 // Staff pages
-import { StaffDashboard } from './features/dashboard/components/StaffDashboard/StaffDashboard.tsx';
-import { StaffStock } from './stock/StaffStock';
-import StaffProfile from './features/dashboard/components/StaffProfile/StaffProfile.tsx';
-import { StaffDayOffRequests } from './features/staff/components/StaffDayOffRequest/StaffDayOffRequests';
+import { StaffDashboard } from './features/dashboards/StaffDashboard/StaffDashboard.tsx';
+import { StaffStock } from './features/stock/StaffStock/StaffStock';
+import { StaffProfile } from './features/profiles/StaffProfile/StaffProfile.tsx';
+import { StaffDayOffRequests } from './features/leave-requests/StaffDayOffRequests/StaffDayOffRequests';
 
 // Customer pages
-import OrderHistory from './order-history/OrderHistory.tsx';
-import OrderSummary from "./features/customer/OrderSummary.tsx";
-import PaymentProcessPage from "./features/customer/PaymentProcess.tsx";
-import Done from "./features/customer/Done.tsx";
-import CustomerProfile from "./features/customer/CustomerProfile.tsx";
-import OrderTracking from "./features/customer/OrderTracking.tsx"
+import { OrderHistory } from './features/orders/OrderHistory/OrderHistory.tsx';
+import { OrderSummary } from "./features/orders/OrderSummary/OrderSummary.tsx";
+import { PaymentProcessPage } from "./features/orders/PaymentProcess/PaymentProcess.tsx";
+import { Done } from "./features/orders/Done/Done.tsx";
+import { CustomerProfile } from "./features/profiles/CustomerProfile/CustomerProfile.tsx";
+import { OrderTracking } from "./features/orders/OrderTracking/OrderTracking.tsx"
 
 import './App.css'
 
@@ -40,8 +39,6 @@ function App() {
                 <Route path="/owner/staff/:id"    element={<StaffDetail />} />
                 <Route path="/owner/dayoff"       element={<OwnerDayOffRequest />} />
                 <Route path="/owner/store"        element={<StoreDetail />} />
-                <Route path="/owner/analytics"    element={<Placeholder pageName="Analytics" />} />
-                <Route path="/owner/profile"      element={<Placeholder pageName="My Profile (Owner)" />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['STAFF', 'OWNER']} />}>
@@ -52,14 +49,12 @@ function App() {
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'STAFF', 'OWNER']} />}>
-                <Route path="/history"        element={<OrderHistory />} />
-                <Route path="/order-summary" element={<OrderSummary />} />
-                <Route path="/payment-method" element={<Placeholder pageName="Payment" />} />
-                <Route path="/payment-process" element={<PaymentProcessPage />} />
-                <Route path="/done" element={<Done />} />
-                <Route path="/profile"        element={<CustomerProfile />} />
-                <Route path="/track/:orderId" element={<OrderTracking />} />
-                <Route path="/profile"        element={<Placeholder pageName="My Profile (Customer)" />} />
+                <Route path="/history"            element={<OrderHistory />} />
+                <Route path="/order-summary"      element={<OrderSummary />} />
+                <Route path="/payment-process"    element={<PaymentProcessPage />} />
+                <Route path="/done"               element={<Done />} />
+                <Route path="/profile"            element={<CustomerProfile />} />
+                <Route path="/track/:orderId"     element={<OrderTracking />} />
             </Route>
 
             {/* Wildcard fallback */}
