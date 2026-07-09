@@ -96,6 +96,10 @@ class StoreService(
         store.phone = req.phone
         store.openTime = req.openTime
         store.closeTime = req.closeTime
+
+        geocodingService.geocode(store.storeAddress)
+            ?.let { store.latitude = it.lat; store.longitude = it.lng }
+
         storeRepository.save(store)
         return StoreDetailResponse(
             store.storeName,

@@ -28,18 +28,28 @@ class OrderETAService(
         }
 
         val status = order.orderStatus.statusName.name
-        val lat = order.address.latitude
-        val lng = order.address.longitude
-
         val store = storeService.getGlobalStore()
-            ?: return EtaResponse(orderId, available = false, message = "No store configured yet.", prepMinutes = PREP_MINUTES, status = status)
+            ?: return EtaResponse(
+                orderId = orderId,
+                available = false,
+                message = "No store is configured yet.",
+                prepMinutes = PREP_MINUTES,
+                status = status
+            )
+
         val storeLat = store.latitude
         val storeLng = store.longitude
         if (storeLat == null || storeLng == null) {
-            return EtaResponse(orderId, available = false,
-                message = "The store location hasn't been geocoded yet.", prepMinutes = PREP_MINUTES, status = status)
+            return EtaResponse(
+                orderId = orderId,
+                available = false,
+                message = "The store location hasn't been geocoded yet. The owner should re-save the store address.",
+                prepMinutes = PREP_MINUTES,
+                status = status
+            )
         }
-
+        val lat = order.address.latitude
+        val lng = order.address.longitude
         if (lat == null || lng == null) {
             return EtaResponse(
                 orderId = orderId,
