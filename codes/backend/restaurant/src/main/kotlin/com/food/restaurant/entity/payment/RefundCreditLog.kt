@@ -47,5 +47,5 @@ class RefundCreditLog(
     var description: String? = null,
 
     @Column(name = "created_at", nullable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now()
+    var createdAt: LocalDateTime = LocalDateTime.now().plusHours(7)
 )

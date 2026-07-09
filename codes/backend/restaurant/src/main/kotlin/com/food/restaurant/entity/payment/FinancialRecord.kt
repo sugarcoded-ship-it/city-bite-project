@@ -25,5 +25,5 @@ class FinancialRecord(
     var store: Store,
 
     @Column(name = "Update_At", nullable = false)
-    var updateAt: LocalDateTime = LocalDateTime.now()
+    var updateAt: LocalDateTime = LocalDateTime.now().plusHours(7)
 )
