@@ -59,7 +59,14 @@ KEYCLOAK_ADMIN_PASSWORD=your_keycloak_admin_password
 # Ports (used by docker-compose-local.yml only)
 BACKEND_PORT=8080
 FRONTEND_PORT=5173
+
+# Google Maps Platform (Geocoding API + Routes API) — used server-side only,
+# for address geocoding and ETA travel-time estimation. No map is rendered to
+# any user. If unset, ETA gracefully degrades to "unavailable".
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
+
+> **Note:** `GOOGLE_MAPS_API_KEY` is currently hardcoded directly in `docker-compose-local.yml` on the `order-tracking` branch rather than sourced from `.env` — a secret-hygiene issue tracked in `docs/handover/known-issues.md`. Once fixed, it should be set here instead.
 
 ### 3. Create the frontend `.env` file
 
@@ -158,7 +165,7 @@ Staff and owner accounts are managed through the Keycloak Admin Console — ther
 5. Go to the **Credentials** tab → set a password (disable "Temporary" if you do not want the user to be forced to change it)
 6. Go to the **Role mapping** tab → assign either `STAFF` or `OWNER`
 
-There is no separate rider role or account type: delivery hand-off (Out for Delivery / Delivered, location reporting) is performed by whichever `STAFF` account is assigned to a delivery order, from the same Staff Dashboard login.
+There is no separate rider role or account type: delivery hand-off is a self-claim — any `STAFF`/`OWNER` account can claim an in-preparation order for delivery (advancing it to On Delivery), and only that same account can later mark it Delivered, from the same Staff Dashboard login. No location is reported by any device.
 
 ### Reset the database
 

@@ -1,8 +1,8 @@
 # Product Brief — Team 03 (Documentation Sync — 2026-07-09)
 
-> **Revision note:** This pass reconciles the brief with the actual implementation as of final delivery (see ADR 002-D and ADR 002-E). Four "out of scope" items — automatic stock deduction, a refund-credit ledger, order tracking with ETA, and delivery hand-off — were built after all and are now marked in scope below. Delivery hand-off is performed by existing `STAFF`-role employees; no separate rider role or account type was introduced.
+> **Revision note:** This pass reconciles the brief with the actual implementation as of final delivery (see ADR 002-D and ADR 002-E). Four "out of scope" items — automatic stock deduction, a refund-credit ledger, order tracking with ETA, and delivery hand-off — were built after all and are now marked in scope below.
 >
-> **Correction:** Earlier versions of this brief described the customer as an unauthenticated guest with no account. That was a documentation error, not an actual scope decision — customers have always had their own Keycloak account (`CUSTOMER` role, self-registered) and log in to use the system, consistent with ADR 002-C. This pass corrects that throughout; no other MVP boundaries changed.
+> **Correction (2026-07-09):** This brief also previously described order tracking as showing the delivering staff member's "live location" on a map, and order status as Pending / In Kitchen / Ready / Out for Delivery / Delivered. Neither matches what shipped: there is no map or location tracking of any kind, the ETA is a prep-time-plus-travel-time window (computed via the Google Geocoding and Routes APIs), and the real status lifecycle is Pending → In Preparation → On Delivery → Delivered (no "Ready" step). This pass corrects both throughout; see ADR 002-E.
 
 ## Problem Statement
 
@@ -14,9 +14,9 @@ A single web-based system where customers submit orders and staff manage them fr
 
 ## Stakeholders and User Roles
 
-- **Customer** — An account holder who logs in via Keycloak with the `CUSTOMER` role (self-registered through a signup form — no admin action needed). The customer browses the CityBite menu, adds items to a cart with optional customizations, submits an order along with their name and contact details, and uses the order reference number and their logged-in session to check the preparation status, estimated ready time (ETA), and — for delivery orders — the delivering staff member's live location. Customers interact with the system entirely through the public-facing web application.
+- **Customer** — An account holder who logs in via Keycloak with the `CUSTOMER` role (self-registered through a signup form — no admin action needed). The customer browses the CityBite menu, adds items to a cart with optional customizations, submits an order along with their name and contact details, and uses their logged-in session to check the order's current status and an estimated ready/arrival time (ETA) — a prep-time-plus-travel-time window, not a live location. Customers interact with the system entirely through the public-facing web application.
 
-- **Staff** — An authenticated CityBite employee who logs in via Keycloak with the `STAFF` role. Staff use a dedicated dashboard to view all incoming orders in a single inbox (ordered by submission time), open individual orders to review full item details and special requests, advance each order through its preparation lifecycle (Pending → In Kitchen → Ready), and toggle individual menu items between available and unavailable when ingredients run out. For delivery orders, a staff member is assigned to deliver it and, using the same staff login, advances it through the hand-off lifecycle (Ready → Out for Delivery → Delivered) while their device reports location — there is no separate rider role or account type.
+- **Staff** — An authenticated CityBite employee who logs in via Keycloak with the `STAFF` role. Staff use a dedicated dashboard to view all incoming orders in a single inbox (ordered by submission time), open individual orders to review full item details and special requests, advance each order through its preparation lifecycle (Pending → In Preparation), and toggle individual menu items between available and unavailable when ingredients run out. For delivery orders, any staff member can claim it once it's in preparation — the same claim pattern used to accept a pending order — and, using the same staff login, advance it directly to On Delivery and then Delivered; there is no separate rider role or account type, and no location is reported.
 
 - **Owner** — An authenticated user with the `OWNER` Keycloak role. In the current MVP scope, the owner can log in and view the order and menu state in a read-only capacity. Advanced owner features — such as financial reporting, staff scheduling, and operational analytics — are out of scope for this version and deferred to a future release.
 
@@ -24,7 +24,7 @@ A single web-based system where customers submit orders and staff manage them fr
 
 ## User Needs
 
-- **Customers** need a single place to see what is currently available, submit an order with any special requests, and check their order status, ETA, and delivery progress without calling the restaurant. The system must make the ordering process self-contained so that a customer requires no assistance from staff to place or track an order.
+- **Customers** need a single place to see what is currently available, submit an order with any special requests, and check their order status and ETA without calling the restaurant. The system must make the ordering process self-contained so that a customer requires no assistance from staff to place or track an order.
 
 - **Staff** need one consolidated inbox that presents all incoming orders in submission order, displays each order's complete contents including item options and customer notes, and allows them to advance an order through preparation stages with minimal steps. Staff should never need to consult a phone or chat app to find out what a customer ordered.
 
@@ -40,15 +40,15 @@ A single web-based system where customers submit orders and staff manage them fr
 - **Basic item customization:** Customers can select from predefined option groups on eligible items (e.g., spice level, add-on toppings). Options are presented as choices — no free-text ingredient editing.
 - **Cart management:** Customers can add, adjust, and remove items before submitting. The cart displays a running total.
 - **Order submission:** A checkout form collects the customer's name, phone number, and any order-level special requests. On submission, the system returns an order reference number.
-- **Order status tracking, ETA, and delivery tracking:** Logged-in customers look up their order by reference number to see the current status (Pending / In Kitchen / Ready / Out for Delivery / Delivered), an estimated ready/arrival time (ETA), and — once a delivery order is out for delivery — the delivering staff member's live location on a map. See ADR 002-E.
+- **Order status tracking and ETA:** Logged-in customers view their order's current status (Pending / In Preparation / On Delivery / Delivered) on a 4-step progress bar, plus an estimated ready/arrival time (ETA) — a prep-time-plus-travel-time window with a prep/travel-minutes breakdown, recalculated on each 30-second poll. There is no map or live location. See ADR 002-E.
 - **Store open/closed state:** When the store is marked closed by staff, customers cannot submit new orders.
 
 ### Staff-facing (authentication required)
 
 - **Order inbox:** A live view of all submitted orders, sorted by submission time (first-come, first-served). Each entry shows the order reference number, submission time, and current status.
 - **Order detail view:** Full breakdown of a selected order — each item, its selected options, quantity, and any special requests from the customer.
-- **Order status updates:** Staff can advance an order through the defined lifecycle: **Pending → In Kitchen → Ready**. Each transition is recorded with a timestamp.
-- **Delivery assignment and hand-off:** For delivery orders, staff assign an available `STAFF`-role employee to deliver it once the order reaches Ready. That employee sees the assigned delivery (pickup details, customer delivery address) from their own staff login, advances it from Ready → **Out for Delivery** → **Delivered**, and their device periodically reports coordinates so the customer tracking page can render live location. No separate rider role or app is used.
+- **Order status updates:** Staff can advance an order through the defined lifecycle: **Pending → In Preparation → On Delivery → Delivered** (there is no separate "Ready" step). Each transition is recorded with a timestamp.
+- **Delivery hand-off (self-claim):** Any `STAFF`/`OWNER` user can claim an in-preparation delivery order by clicking "Deliver" — the same claim pattern used to accept a pending order, not a manager assigning it to a colleague. That employee then sees the delivery details (pickup details, customer delivery address) from their own staff login and advances it to **On Delivery**, then **Delivered** — only that same employee can mark it Delivered; anyone else is rejected. No location is ever reported, and no separate rider role or app is used.
 - **Menu item availability toggle:** Staff can mark individual menu items as available or unavailable. Unavailable items cannot be added to a customer's cart and are displayed separately on the menu page.
 - **Store open/closed control:** Staff can toggle the store's operational state to prevent new orders from being submitted outside of business hours.
 - **Stock/ingredient management:** Staff can view, add, and adjust stock quantities by category. When an order is accepted, the system automatically deducts the ingredients required by each ordered item (and its selected options) from stock, and restores that stock if the order is later canceled. If required stock is insufficient, the order is automatically rejected rather than accepted. See ADR 002-D.
@@ -60,7 +60,7 @@ A single web-based system where customers submit orders and staff manage them fr
 - **Payment processing (Stripe or any gateway):** No financial transaction is initiated or verified by the system. Customers place orders without paying through the application. Payment on pickup or delivery is handled offline. This decision is recorded in ADR 002-A.
 - **Automatic stock management and ingredient deduction:** *(Revised — now in scope; see ADR 002-D.)* Recipe-based ingredient deduction on order acceptance and restoration on cancellation are implemented. Still excluded: low-stock alerts, automatic reordering, and supplier/purchasing workflows.
 - **Financial records and reporting:** No revenue dashboard, accounting export, or Stripe-based refund is built; `FinancialRecord` exists in the schema but is not connected to any service or API. *(A narrow exception is in scope: a `RefundCredit` store-credit ledger that credits a customer when staff cancel an in-progress order, redeemable at a future checkout. This is bookkeeping only — no real money moves. See ADR 002-D.)*
-- **Estimated time of arrival (ETA) and delivery tracking:** *(Revised — now in scope; see ADR 002-E.)* ETA is estimated from per-item preparation times and current kitchen queue depth. Delivery assignment to a staff member and hand-off status (Ready → Out for Delivery → Delivered) with live location tracking are implemented, using the existing `STAFF` role rather than a dedicated rider role. Still excluded: real route optimization/turn-by-turn navigation and batching multiple deliveries to one staff member at once — a staff member handles one active delivery at a time.
+- **Estimated time of arrival (ETA) and delivery hand-off:** *(Revised — now in scope; see ADR 002-E.)* ETA is a flat 15-minute prep-time constant plus a Google Routes API travel-time estimate and a 10-minute buffer — not per-item preparation times or live kitchen queue depth. Delivery hand-off (a staff member self-claiming an in-preparation order, then advancing it On Delivery → Delivered) is implemented, using the existing `STAFF` role rather than a dedicated rider role. Still excluded: any location tracking (there is no map or live position of any kind), real route optimization/turn-by-turn navigation, and batching multiple deliveries to one staff member at once — a staff member handles one active delivery at a time.
 - **Staff scheduling:** A `LeaveDay` entity exists in the database schema but no scheduling UI or API is planned for this version.
 - **Promotions and discount system:** Coupon codes, loyalty points, and promotional pricing are not included.
 - **Owner management features:** Financial dashboards, staff management tools, and analytics are deferred to a future version.
@@ -72,7 +72,7 @@ A single web-based system where customers submit orders and staff manage them fr
 - Customers access the system through a web browser on a smartphone or computer with an internet connection.
 - The shop has at least one dedicated device (tablet or laptop) connected to the internet at the counter from which staff can monitor and manage the dashboard.
 - Staff and the owner authenticate using Keycloak credentials provisioned in advance. There is no self-registration flow for staff or owner accounts; accounts are created by configuring the Keycloak realm. Customers, by contrast, self-register their own account through a signup form.
-- A staff member making a delivery carries a personal smartphone with an internet connection and location services enabled; the staff dashboard reports device coordinates directly from that same login and does not require dedicated GPS hardware or a separate rider app.
+- A staff member making a delivery carries a personal smartphone with an internet connection to update the order's status (On Delivery / Delivered) from the same staff login; no GPS hardware, location reporting, or separate rider app is required or used.
 - Customers are responsible for providing accurate contact information when placing an order. No verification of phone number or name is performed beyond the account's login credentials.
 - Menu items require only single-level option selection (e.g., one choice from a group). Deeply nested or conditional customization is not needed.
 - The menu is small enough that staff can realistically manage item availability by hand. The system does not need to detect low stock automatically.
@@ -107,7 +107,7 @@ A single web-based system where customers submit orders and staff manage them fr
 The MVP is successful if the following outcomes can be demonstrated end-to-end:
 
 - A customer can log in (or self-register), browse the menu organized by category, add items with option selections, submit an order, and receive an order reference number.
-- A customer can use their reference number to view the current status of their order (Pending, In Kitchen, Ready, Out for Delivery, or Delivered), its estimated ready/arrival time, and — for delivery orders in progress — the delivering staff member's live location, without contacting the restaurant.
+- A customer can view the current status of their order (Pending, In Preparation, On Delivery, or Delivered) and its estimated ready/arrival time (ETA), without contacting the restaurant.
 - A staff member can log in, see all submitted orders in a single inbox ordered by submission time, open any order to view its full details and special requests, and advance that order through each status stage.
 - A staff member can mark a menu item as unavailable, and that item immediately becomes unorderable for customers browsing the menu.
 - The same order submitted by a customer appears in the staff inbox without any manual transfer or transcription step.
@@ -133,7 +133,7 @@ Beyond the pass/fail Success Criteria above, the following evidence would show t
 - **Backend:** Kotlin with Spring Boot. RESTful API. JWT validation using Keycloak-issued tokens via `KeycloakRoleConverter`.
 - **Database:** PostgreSQL. Schema is fully implemented and deployed.
 - **Authentication:** Keycloak (open-source identity provider). Manages `CUSTOMER`, `STAFF`, and `OWNER` roles (ADR 002-C). Customers self-register; staff/owner accounts are admin-provisioned. Delivery hand-off reuses the `STAFF` role rather than a separate rider role.
-- **Mapping:** Leaflet with OpenStreetMap tiles for delivery-location display on the customer tracking page. Open-source, no API key required.
+- **Mapping/Location:** No map is rendered anywhere. Google Maps Platform (Geocoding API + Routes API) is called server-side only, to geocode customer addresses and estimate travel time for the ETA calculation — a paid, keyed dependency, unlike the rest of the stack's open-source infrastructure.
 - **Development environment:** Docker Compose with NGINX reverse proxy. Defined in the monorepo (see ADR 001).
 - **Version control:** GitHub monorepo with issues, pull requests, and CI.
 
