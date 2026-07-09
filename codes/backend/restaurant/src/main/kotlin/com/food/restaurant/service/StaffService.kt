@@ -49,7 +49,7 @@ class StaffService(
             leaveDayAmount = staff.dayOffAmount,
             salary = staff.salary,
             address = staff.address,
-            profilePic = user.profilePic
+            profilePic = staff.profilePic
         )
     }
 
