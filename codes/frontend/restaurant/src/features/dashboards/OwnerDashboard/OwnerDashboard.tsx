@@ -6,7 +6,7 @@ import { LogoutButton } from '../../auth/LogoutButton/LogoutButton';
 import styles from './OwnerDashboard.module.css';
 import {
     UtensilsCrossed, Users, CalendarOff, Store,
-    BarChart3, User, Crown, TrendingUp, AlertCircle, ChevronRight, ClipboardList
+    Crown, TrendingUp, AlertCircle, ChevronRight, ClipboardList
 } from 'lucide-react';
 
 interface OwnerDashboardData {
@@ -83,14 +83,6 @@ export function OwnerDashboard() {
             badge: `${data.totalMenuItems} items`,
         },
         {
-            title: 'Analytics',
-            desc: 'Revenue charts, top sellers and performance metrics',
-            icon: BarChart3,
-            url: '/owner/analytics',
-            accent: '#a855f7',
-            badge: 'Live data',
-        },
-        {
             title: "Day-Off Requests",
             desc: 'Review and approve pending staff leave requests',
             icon: CalendarOff,
@@ -122,14 +114,6 @@ export function OwnerDashboard() {
             url: '/owner/store',
             accent: '#f97316',
             badge: data.isStoreOpen ? 'Now Open' : 'Closed',
-        },
-        {
-            title: 'My Profile',
-            desc: 'Edit account info and change your password',
-            icon: User,
-            url: '/owner/profile',
-            accent: '#6b7280',
-            badge: 'Owner',
         },
     ];
 

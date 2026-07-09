@@ -5,7 +5,6 @@ import {
     LogOut,
     UtensilsCrossed,
     Users,
-    BarChart3,
     Store,
     CalendarOff
 } from 'lucide-react';
@@ -22,8 +21,7 @@ export function OwnerTopNav() {
         { label: 'Menu', icon: UtensilsCrossed, path: '/owner/menu' },
         { label: 'Staff', icon: Users, path: '/owner/staff' },
         { label: 'Day-Off', icon: CalendarOff, path: '/owner/dayoff' },
-        { label: 'Store', icon: Store, path: '/owner/store-status' },
-        { label: 'Analytics', icon: BarChart3, path: '/owner/analytics' },
+        { label: 'Store', icon: Store, path: '/owner/store' },
     ];
 
     // Close the dropdown if the user clicks anywhere outside of it
