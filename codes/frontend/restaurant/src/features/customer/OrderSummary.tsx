@@ -234,11 +234,11 @@ const OrderSummary: React.FC = () => {
         try {
             setIsSubmitting(true);
             setSubmitError(null);
-            await apiClient('/customer/orders/create', { method: 'POST', data: orderPayload });
+            const newOrder = await apiClient<{ orderId: number; totalPrice: number; status: string }>('/customer/orders/create', { method: 'POST', data: orderPayload });
             if (selectedMethodCode === 'QR_PROMPTPAY') {
-                navigate('/payment-process');
+                navigate('/payment-process', { state: { orderId: newOrder.orderId } });
             } else {
-                navigate('/done');
+                navigate('/done', { state: { orderId: newOrder.orderId } });
             }
 
         } catch (err) {

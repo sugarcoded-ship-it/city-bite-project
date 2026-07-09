@@ -62,6 +62,17 @@ class OrderController(
         return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Item canceled and refunded"))
     }
 
+    @PostMapping("/{orderId}/deliver")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
+    fun deliverOrder(
+        @PathVariable orderId: Int,
+        @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<Map<String, String>> {
+        val staffUuid = jwt.subject
+        staffOrderService.deliverOrder(orderId, staffUuid)
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Order is now out for delivery"))
+    }
+
     @PostMapping("/{orderId}/complete")
     @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
     fun completeOrder(

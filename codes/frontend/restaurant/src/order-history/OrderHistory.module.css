@@ -201,6 +201,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 12px;
     padding: 14px 24px;
     background: #ffffff;
 }

@@ -122,6 +122,7 @@ Each section corresponds to a sprint. Dates reflect the sprint meeting or review
 - **Order tracking with reference number (ADR 002-E):** Each `Order` now carries a customer-facing `reference_number` generated at submission, shown as a receipt/lookup label. The Customer Web App's Order Tracking Page (`OrderTracking.tsx`, route `/track/:orderId`) polls every 30 seconds for the order's status.
 - **ETA estimation (ADR 002-E):** A new authenticated endpoint `GET /api/customer/orders/{orderId}/eta` (ownership-checked against the requesting customer's JWT subject) returns a prep-time-plus-travel-time window, not a location. `OrderETAService` adds a flat 15-minute prep-time constant to a Google Routes API (`travelMode: TWO_WHEELER`) travel-time estimate from a hardcoded store location to the customer's geocoded address, plus a 10-minute buffer. `GeocodingService` populates that address's latitude/longitude via the Google Geocoding API when it's saved or edited. If geocoding failed or no API key is configured, the endpoint returns "unavailable" instead of erroring.
 - **Delivery hand-off, self-claim, no new role (ADR 002-E):** No new entity or role was added. Any `STAFF`/`OWNER` user can claim an in-preparation order for delivery (the same claim pattern already used to accept a pending order), which advances it straight to On Delivery — there is no "Ready" status in between. Only that same staff member can later mark it Delivered; anyone else is rejected with a 403. No location is reported by any device.
+- **Staff Leave Day Management:** Staff can request days off through their dashboard, and the owner can review, approve, or reject these requests. Both frontend UI and backend API are fully implemented.
 
 ### Changed
 - Customer Web App's Order Tracking Page now shows a 4-step progress bar — Pending / In Preparation / On Delivery / Delivered — plus an ETA card (time range and prep/travel-minutes breakdown), instead of surfacing status only via the staff dashboard. There is no map or live location anywhere in the system.
@@ -137,5 +138,5 @@ The following items remain descoped to protect delivery of the core order flow:
 
 - **Stripe payment integration** — deferred entirely; orders are placed without real payment processing (ADR 002-A)
 - **Financial records and reporting** — database schema exists but no service or API is connected, aside from the narrow `RefundCredit` ledger (ADR 002-B, ADR 002-D)
-- **Staff scheduling (LeaveDay)** — schema entity exists but no UI or API planned for this version
+- **Staff scheduling (LeaveDay)** — schema entity exists but no UI or API planned for this version (Superseded: Staff Leave Day is now fully implemented).
 - **Route optimization and delivery batching** — a delivering staff member carries one active delivery at a time; no turn-by-turn navigation or dispatch optimization (ADR 002-E)

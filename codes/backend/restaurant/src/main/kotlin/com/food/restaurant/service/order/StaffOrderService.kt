@@ -39,7 +39,7 @@ class StaffOrderService(
 ) {
 
     fun getActiveOrders(): List<StaffOrderResponse> {
-        val statuses = listOf(orderStatusEnum.PENDING, orderStatusEnum.IN_PROGRESS)
+        val statuses = listOf(orderStatusEnum.PENDING, orderStatusEnum.IN_PREPARATION, orderStatusEnum.ON_DELIVERY)
         val orders = orderRepository.findByOrderStatusIn(statuses)
 
         val orderIds = orders.map { it.id }
@@ -130,11 +130,11 @@ class StaffOrderService(
             refundCreditService.creditRefund(order.customer, refundAmount, transaction, order, "Order #$orderId: removed due to insufficient stock ($itemNames)")
         }
 
-        val inProgressStatus = orderStatusRepository.findByStatusName(orderStatusEnum.IN_PROGRESS)
-            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IN_PROGRESS status not found in DB")
+        val inPrepStatus = orderStatusRepository.findByStatusName(orderStatusEnum.IN_PREPARATION)
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "IN_PREPARATION status not found in DB")
 
-        order.staff = staff
-        order.orderStatus = inProgressStatus
+        // No longer assigning staff here; staff is assigned when transitioning to ON_DELIVERY
+        order.orderStatus = inPrepStatus
 
         // Optimistic locking will throw OptimisticLockException if someone else updated it concurrently
         orderRepository.save(order)
@@ -143,12 +143,33 @@ class StaffOrderService(
     }
 
     @Transactional
+    fun deliverOrder(orderId: Int, staffUuid: String) {
+        val order = orderRepository.findById(orderId)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found") }
+
+        if (order.orderStatus.statusName != orderStatusEnum.IN_PREPARATION) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not in preparation")
+        }
+
+        val staffUuidObj = UUID.fromString(staffUuid)
+        val staff = userRepository.findById(staffUuidObj)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Staff not found") }
+
+        val onDeliveryStatus = orderStatusRepository.findByStatusName(orderStatusEnum.ON_DELIVERY)
+            ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ON_DELIVERY status not found in DB")
+
+        order.staff = staff
+        order.orderStatus = onDeliveryStatus
+        orderRepository.save(order)
+    }
+
+    @Transactional
     fun completeOrder(orderId: Int, staffUuid: String) {
         val order = orderRepository.findById(orderId)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found") }
 
-        if (order.orderStatus.statusName != orderStatusEnum.IN_PROGRESS) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not in progress")
+        if (order.orderStatus.statusName != orderStatusEnum.ON_DELIVERY) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not on delivery")
         }
 
         val staffUuidObj = UUID.fromString(staffUuid)
@@ -169,23 +190,18 @@ class StaffOrderService(
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found") }
 
         val currentStatus = order.orderStatus.statusName
-        if (currentStatus != orderStatusEnum.PENDING && currentStatus != orderStatusEnum.IN_PROGRESS) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending or in-progress orders can be canceled")
+        if (currentStatus != orderStatusEnum.PENDING && currentStatus != orderStatusEnum.IN_PREPARATION) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending or in-preparation orders can be canceled")
         }
 
         val staffUuidObj = UUID.fromString(staffUuid)
         val staff = userRepository.findById(staffUuidObj)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Staff not found") }
 
-        // Only the assigned staff can cancel an in-progress order
-        if (currentStatus == orderStatusEnum.IN_PROGRESS && order.staff?.id != staffUuidObj) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Only the assigned staff can cancel this order")
-        }
-
-        // Restore stock if it was already deducted (IN_PROGRESS). Items that were already
+        // Restore stock if it was already deducted (IN_PREPARATION). Items that were already
         // individually canceled (e.g. due to insufficient stock at claim time) never had
         // stock deducted, so they're excluded here to avoid over-crediting stock.
-        if (currentStatus == orderStatusEnum.IN_PROGRESS) {
+        if (currentStatus == orderStatusEnum.IN_PREPARATION) {
             restoreStock(orderId)
         }
 
@@ -207,15 +223,8 @@ class StaffOrderService(
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found") }
 
         val currentStatus = order.orderStatus.statusName
-        if (currentStatus != orderStatusEnum.PENDING && currentStatus != orderStatusEnum.IN_PROGRESS) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending or in-progress orders support canceling individual items")
-        }
-
-        // A pending order has no staff assigned yet, so any staff may trim its items.
-        // Once claimed (IN_PROGRESS), only the assigned staff may modify it.
-        val staffUuidObj = UUID.fromString(staffUuid)
-        if (currentStatus == orderStatusEnum.IN_PROGRESS && order.staff?.id != staffUuidObj) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Only the assigned staff can modify this order")
+        if (currentStatus != orderStatusEnum.PENDING && currentStatus != orderStatusEnum.IN_PREPARATION) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending or in-preparation orders support canceling individual items")
         }
 
         val detail = orderDetailRepository.findById(detailId)
@@ -234,8 +243,8 @@ class StaffOrderService(
         }
 
         // A pending order's stock hasn't been deducted yet (that happens at claim time),
-        // so only restore stock for an item that was already deducted (IN_PROGRESS).
-        if (currentStatus == orderStatusEnum.IN_PROGRESS) {
+        // so only restore stock for an item that was already deducted (IN_PREPARATION).
+        if (currentStatus == orderStatusEnum.IN_PREPARATION) {
             val requirements = computeStockRequirements(listOf(detail))
             if (requirements.isNotEmpty()) {
                 val stocks = stockRepository.findAllById(requirements.keys.toList())
