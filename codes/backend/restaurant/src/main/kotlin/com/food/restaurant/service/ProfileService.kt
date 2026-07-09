@@ -1,8 +1,11 @@
 package com.food.restaurant.service
 
+import com.food.restaurant.dto.staff.StaffProfileResponse
+import com.food.restaurant.dto.staff.UpdateStaffProfileRequest
 import com.food.restaurant.dto.user.customer.CustomerProfileResponse
 import com.food.restaurant.dto.user.customer.UpdateCustomerProfileRequest
 import com.food.restaurant.dto.user.customer.UpdatePasswordRequest
+import com.food.restaurant.repository.user.StaffRepository
 import com.food.restaurant.entity.user.User
 import com.food.restaurant.repository.user.UserRepository
 import org.keycloak.OAuth2Constants
@@ -15,8 +18,9 @@ import org.springframework.transaction.annotation.Transactional
 import java.lang.Exception
 
 @Service
-class CustomerProfileService(
+class ProfileService(
     private val userRepository: UserRepository,
+    private val staffRepository: StaffRepository,
     private val keycloak: Keycloak,
     @Value("\${keycloak.realm:restaurant-realm}")
     private val realm: String,
@@ -65,6 +69,60 @@ class CustomerProfileService(
         
         val saved = userRepository.save(user)
         return toResponse(saved)
+    }
+
+    fun toStaffProfileResponse(user: User): StaffProfileResponse {
+        return StaffProfileResponse(
+            firstName = user.firstName,
+            lastName = user.lastName,
+            username = user.username,
+            email = user.email,
+            phoneNumber = user.phoneNumber,
+            profilePic = user.staff?.profilePic
+        )
+    }
+
+    @Transactional
+    fun updateProfile(user: User, request: UpdateStaffProfileRequest): StaffProfileResponse {
+        val userResource = keycloak.realm(realm)
+                                   .users()
+                                   .get(user.id.toString())
+        val userRep = userResource.toRepresentation()
+
+        var hasKeycloakChanges = false
+        request.username?.takeIf { it.isNotBlank() && it != user.username }?.let { 
+            val realmResource = keycloak.realm(realm)
+            val realmRep = realmResource.toRepresentation()
+            if (realmRep.isEditUsernameAllowed != true) {
+                realmRep.isEditUsernameAllowed = true
+                realmResource.update(realmRep)
+            }
+            userRep.username = it; user.username = it; hasKeycloakChanges = true 
+        }
+        request.email?.takeIf { it.isNotBlank() && it != user.email }?.let { 
+            userRep.email = it; user.email = it; hasKeycloakChanges = true 
+        }
+        request.firstName?.takeIf { it != user.firstName }?.let { 
+            userRep.firstName = it; user.firstName = it; hasKeycloakChanges = true 
+        }
+        request.lastName?.takeIf { it != user.lastName }?.let { 
+            userRep.lastName = it; user.lastName = it; hasKeycloakChanges = true 
+        }
+
+        if (hasKeycloakChanges) {
+            userResource.update(userRep)
+        }
+
+        user.phoneNumber = request.phoneNumber?.trim()?.ifEmpty { null }
+        
+        val staff = user.staff
+        if (staff != null && request.profilePic != null) {
+            staff.profilePic = request.profilePic
+            staffRepository.save(staff)
+        }
+        
+        val saved = userRepository.save(user)
+        return toStaffProfileResponse(saved)
     }
 
     fun updatePassword(user: User, request: UpdatePasswordRequest) {

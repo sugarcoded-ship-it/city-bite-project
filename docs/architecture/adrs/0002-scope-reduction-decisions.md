@@ -1,6 +1,6 @@
 # ADR 002: Scope Reduction Decisions for MVP Delivery
 
-**Status:** Accepted (ADR 002-B partially superseded by ADR 002-D below)
+**Status:** Accepted (ADR 002-B partially superseded by ADR 002-D and ADR 002-E below; ADR 002-E's technical description corrected 2026-07-09 — see note under that section)
 
 ---
 
@@ -126,3 +126,46 @@ Everything else in ADR 002-B remains unchanged and still deferred:
 **Negative / Tradeoffs**
 - The product brief, architecture page, and known-issues gap table (all written against the original ADR 002-B) understated what was actually built and needed a documentation-sync pass (this ADR, plus the linked doc updates) to stay accurate.
 - Stock deduction depends on `MenuRecipe` / `OptionIngredient` data being correctly populated per menu item; a menu item with no recipe rows mapped will deduct nothing, silently falling back to the manual-toggle behavior ADR 002-B originally assumed for everything.
+
+---
+
+## ADR 002-E: Reinstate Order Tracking, ETA, and Delivery Handoff (Supersedes the remaining delivery/ETA exclusion in ADR 002)
+
+### Context
+
+The original product brief and architecture page listed three related items as out of scope: a customer-facing order-tracking page with live status, an estimated-time (ETA) calculation, and any delivery hand-off/rider tracking. Order status was, for most of Sprint 4, only visible from the staff dashboard, and the case brief's "customer has no reliable way to know when their order will be ready" problem was only half-solved. (Note: earlier drafts of this ADR and related docs incorrectly described the customer side as an unauthenticated guest flow — customers have always authenticated via Keycloak's `CUSTOMER` role, per ADR 002-C. That was a documentation inconsistency, not a design decision, and is corrected here and in the linked docs.)
+
+Once the core order lifecycle (Pending → In Preparation → On Delivery → Delivered, with no intermediate "Ready" step) and stock deduction (ADR 002-D) stabilized, the team had a reliable state machine to build an ETA estimate and a delivery hand-off step on top of, and completed both before final delivery — without introducing a new account type and without building any location-tracking infrastructure. Delivery is handled by existing `STAFF`-role employees claiming an order, not a separate rider role, app, or manager-assignment flow.
+
+### Decision
+
+The exclusions for order tracking, ETA, and delivery hand-off are **superseded**; all three are now **in scope and implemented**, in a simpler form than originally planned:
+
+- **Reference-number tracking:** Each `Order` is issued a short, customer-facing reference number at submission, shown as a receipt/lookup label. The Customer Web App's Order Tracking Page (`OrderTracking.tsx`, route `/track/:orderId`, gated behind `ProtectedRoute` for `CUSTOMER`/`STAFF`/`OWNER`) polls for the order's current status every 30 seconds and renders it as a 4-step progress bar: Pending / In Preparation / On Delivery / Delivered.
+- **ETA (prep time + travel time, not live tracking):** The authenticated endpoint `GET /api/customer/orders/{orderId}/eta` (ownership-checked against the requesting customer's JWT subject) returns a time window, not a location. `OrderETAService` starts from a hardcoded store latitude/longitude, adds a **flat 15-minute prep-time constant** (not per-item or recipe-based), calls the **Google Routes API** (`travelMode: TWO_WHEELER`) for travel time from the store to the customer's address, and adds a 10-minute buffer. The tracking page shows this as a time range plus a prep/travel-minutes breakdown.
+- **Geocoding (Google):** `GeocodingService` calls the **Google Geocoding API** when a customer address is saved or edited (`AddressService`), storing latitude/longitude on the `Address` entity. If geocoding failed, or no Google Maps API key is configured, the ETA endpoint degrades gracefully to an "unavailable" response with an explanatory message rather than erroring.
+- **Delivery hand-off (self-claim, no new role, no location reporting):** No `RIDER` Keycloak role, no `Delivery_Assignment` entity, and no location-reporting mechanism were built. Instead, any `STAFF`/`OWNER` user can click "Deliver" on an in-preparation order — the same claim pattern already used to accept a pending order — which sets that order's assigned staff member and advances it directly to **On Delivery** (there is no "Ready" status in between). Only that same staff member can later mark the order **Delivered**; the backend checks the caller's UUID against the order's assigned staff and returns 403 otherwise. No coordinates are ever collected, stored, or displayed.
+
+### Alternatives Considered
+
+- **Leave tracking staff-only and ship ETA/delivery as a documented future backlog item:** This was the position through most of Sprint 4, but it did not address the case brief's core complaint. Rejected once time allowed for a full implementation.
+- **A public, unauthenticated tracking endpoint keyed only by reference number:** Considered, since the reference number is already customer-facing. Rejected because customers already have an authenticated account (ADR 002-C) — reusing that session to scope the ETA lookup to "orders belonging to this logged-in customer" is simpler and more secure than a second, unauthenticated lookup path, and stays consistent with how order history already works.
+- **Introduce a dedicated `RIDER` Keycloak role and separate rider app:** Considered, but rejected — the restaurant does not have a distinct rider workforce separate from its staff, so a new role/account type and a second lightweight app would have added onboarding and infrastructure overhead without a matching real-world need. Delivery hand-off was layered onto the existing `STAFF` role as a self-claim instead.
+- **Manager assigns a specific staff member to a delivery:** Considered, but rejected in favor of a simpler self-claim model (whichever `STAFF`/`OWNER` user is available claims the delivery themselves) — consistent with how pending orders are already claimed, and avoiding the need for a manager-facing assignment UI.
+- **Live GPS-based rider location on a map:** Considered, but rejected — it would require building a location-reporting mechanism on staff devices (none exists) and a map-rendering surface on the customer side, for a workforce that is just staff carrying their own phone, not a dedicated delivery fleet. An ETA window was judged sufficient for the case brief's actual complaint ("when will my order be ready"), without that additional infrastructure.
+- **Recipe-based per-item ETA with live kitchen queue depth:** Considered, matching how stock deduction already uses `Menu_Recipe` data, but rejected for this first ETA implementation in favor of a simpler flat 15-minute prep constant plus Google-estimated travel time — a possible future refinement, not what was built.
+- **Free/open-source mapping (Leaflet + OpenStreetMap tiles):** Considered for consistency with the project's general preference for open-source infrastructure (see ADR 002-C on Keycloak), but rejected because no map is rendered at all — ETA needed a travel-time *number* from the Google Routes API, not map tiles, so an open-source tile provider wouldn't have replaced the actual dependency being used.
+
+### Consequences
+
+**Positive**
+- Directly resolves the case brief's "customer has no reliable way to know whether their order was received or when it will be ready" complaint end-to-end, without requiring a phone call to staff.
+- Keeps a single, consistent authentication model for all customer-facing order endpoints (history, reorder, and now ETA) rather than mixing authenticated and public paths.
+- Reuses the existing order-status state machine and `STAFF` role rather than introducing a parallel tracking system, a new account type, or new location-reporting infrastructure.
+- Simpler to operate than the originally-planned design: no location-reporting client code, no map-rendering surface, and no assignment UI to build or maintain.
+
+**Negative / Tradeoffs**
+- ETA is a flat 15-minute prep constant plus a Google-estimated travel time and a 10-minute buffer — not a recipe-based per-item estimate and not a live-kitchen-load model — so it can drift from actual ready time, especially for large or unusually complex orders.
+- Introduces a paid, keyed external dependency (Google Maps Platform: Geocoding + Routes APIs) where the rest of the stack favors free/open-source infrastructure (Keycloak). The `GOOGLE_MAPS_API_KEY` is currently hardcoded in `docker-compose-local.yml` — a secret-hygiene issue tracked separately in `docs/handover/known-issues.md`.
+- Delivery hand-off is a claim, not an assignment: any `STAFF`/`OWNER` user can claim any in-preparation order for delivery, so the system cannot express "a manager chose this specific employee" — it can only show who currently holds the claim.
+- There is no location tracking of any kind — not live GPS, not even a static delivery-address map — so the customer sees a status and an ETA window, but never "where is my order right now."
