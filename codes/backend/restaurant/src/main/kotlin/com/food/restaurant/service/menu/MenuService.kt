@@ -5,7 +5,7 @@ import com.food.restaurant.dto.menu.OptionGroupResponse
 import com.food.restaurant.dto.menu.OptionChoiceResponse
 import com.food.restaurant.dto.menu.OptionIngredientResponse
 import com.food.restaurant.entity.menu.menuCategoryEnum
-import com.food.restaurant.repository.stock.OptionIngredientRepository
+import com.food.restaurant.repository.menu.OptionIngredientRepository
 import com.food.restaurant.repository.menu.MenuRepository
 import com.food.restaurant.repository.menu.OptionGroupRepository
 import com.food.restaurant.repository.menu.OptionChoiceRepository

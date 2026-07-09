@@ -5,7 +5,7 @@ import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.entity.order.OrderDetail
 import com.food.restaurant.entity.order.orderStatusEnum
 import com.food.restaurant.repository.menu.MenuRecipeRepository
-import com.food.restaurant.repository.stock.OptionIngredientRepository
+import com.food.restaurant.repository.menu.OptionIngredientRepository
 import com.food.restaurant.repository.order.OrderRepository
 import com.food.restaurant.repository.stock.StockRepository
 import com.food.restaurant.repository.user.UserRepository
