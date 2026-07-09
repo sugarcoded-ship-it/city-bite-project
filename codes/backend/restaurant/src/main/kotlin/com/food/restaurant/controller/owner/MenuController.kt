@@ -15,7 +15,7 @@ import com.food.restaurant.entity.menu.OptionGroup
 import com.food.restaurant.entity.menu.OptionIngredient
 import com.food.restaurant.entity.menu.menuCategoryEnum
 import com.food.restaurant.entity.menu.menuStatusEnum
-import com.food.restaurant.repository.OptionIngredientRepository
+import com.food.restaurant.repository.stock.OptionIngredientRepository
 import com.food.restaurant.repository.menu.MenuCategoryRepository
 import com.food.restaurant.repository.menu.MenuRecipeRepository
 import com.food.restaurant.repository.menu.MenuRepository
@@ -23,8 +23,8 @@ import com.food.restaurant.repository.menu.MenuStatusRepository
 import com.food.restaurant.repository.menu.OptionChoiceRepository
 import com.food.restaurant.repository.menu.OptionGroupRepository
 import com.food.restaurant.repository.stock.StockRepository
-import com.food.restaurant.service.MenuAvailabilityService
-import com.food.restaurant.service.MenuService
+import com.food.restaurant.service.menu.MenuAvailabilityService
+import com.food.restaurant.service.menu.MenuService
 import com.food.restaurant.service.StorageService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

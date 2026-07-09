@@ -5,7 +5,7 @@ import com.food.restaurant.dto.order.OrderHistoryResponse
 import com.food.restaurant.repository.order.OrderDetailRepository
 import com.food.restaurant.repository.order.OrderItemSelectionRepository
 import com.food.restaurant.repository.order.OrderRepository
-import com.food.restaurant.service.CartService
+import com.food.restaurant.service.cart.CartService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus

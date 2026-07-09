@@ -4,7 +4,7 @@ import com.food.restaurant.dto.stock.AdjustStockRequest
 import com.food.restaurant.dto.stock.StockCategoryResponse
 import com.food.restaurant.dto.stock.StockResponse
 import com.food.restaurant.dto.stock.BatchAdjustRequest
-import com.food.restaurant.service.StockService
+import com.food.restaurant.service.stock.StockService
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import com.food.restaurant.dto.stock.CreateStockItem

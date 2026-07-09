@@ -7,7 +7,6 @@ import styles from './StoreDetail.module.css';
 interface StoreDetail {
     storeName: string;
     storeAddress: string;
-    logoUrl: string;
     phone: string;
     openTime: string;
     closeTime: string;
@@ -31,7 +30,6 @@ export const StoreDetail = () => {
                     const emptyStore = {
                         storeName: '',
                         storeAddress: '',
-                        logoUrl: '',
                         phone: '',
                         openTime: '09:00:00',
                         closeTime: '17:00:00',
@@ -83,7 +81,6 @@ export const StoreDetail = () => {
                 data: JSON.stringify({
                     storeName: data.storeName,
                     storeAddress: data.storeAddress,
-                    logoUrl: data.logoUrl,
                     phone: data.phone,
                     openTime: data.openTime,
                     closeTime: data.closeTime
@@ -107,7 +104,6 @@ export const StoreDetail = () => {
         return (
             data.storeName !== originalData.storeName ||
             data.storeAddress !== originalData.storeAddress ||
-            data.logoUrl !== originalData.logoUrl ||
             data.phone !== originalData.phone ||
             data.openTime !== originalData.openTime ||
             data.closeTime !== originalData.closeTime
@@ -215,16 +211,6 @@ export const StoreDetail = () => {
                                 className={styles.input}
                                 value={data.phone}
                                 onChange={e => setData({ ...data, phone: e.target.value })}
-                            />
-                        </div>
-
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Logo URL:</label>
-                            <input
-                                type="text"
-                                className={styles.input}
-                                value={data.logoUrl}
-                                onChange={e => setData({ ...data, logoUrl: e.target.value })}
                             />
                         </div>
 

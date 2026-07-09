@@ -1,7 +1,7 @@
 package com.food.restaurant.entity.order
 
 import com.food.restaurant.entity.user.User
-import com.food.restaurant.entity.user.Address
+import com.food.restaurant.entity.address.Address
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType

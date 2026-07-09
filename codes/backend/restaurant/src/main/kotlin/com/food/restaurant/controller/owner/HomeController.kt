@@ -1,8 +1,8 @@
 package com.food.restaurant.controller.owner
 
-import com.food.restaurant.dto.user.owner.OwnerDashboardDto
-import com.food.restaurant.service.UserSyncService
-import com.food.restaurant.service.OwnerService
+import com.food.restaurant.dto.store.OwnerDashboardDto
+import com.food.restaurant.service.user.UserSyncService
+import com.food.restaurant.service.user.OwnerService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.access.prepost.PreAuthorize

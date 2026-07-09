@@ -2,7 +2,7 @@ package com.food.restaurant.controller.staff
 
 import com.food.restaurant.dto.order.StaffOrderResponse
 import com.food.restaurant.service.order.StaffOrderService
-import com.food.restaurant.service.StaffService
+import com.food.restaurant.service.user.StaffService
 import java.util.UUID
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
