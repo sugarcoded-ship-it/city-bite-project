@@ -3,7 +3,7 @@ package com.food.restaurant.controller.customer
 import com.food.restaurant.dto.user.customer.CustomerProfileResponse
 import com.food.restaurant.dto.user.customer.UpdateCustomerProfileRequest
 import com.food.restaurant.repository.user.UserRepository
-import com.food.restaurant.service.CustomerProfileService
+import com.food.restaurant.service.ProfileService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -21,7 +21,7 @@ import java.util.UUID
 @RestController("customerProfileController")
 @RequestMapping("/api/customer/profile")
 class ProfileController(
-    private val customerProfileService: CustomerProfileService,
+    private val profileService: ProfileService,
     private val userRepository: UserRepository
 ) {
 
@@ -30,7 +30,7 @@ class ProfileController(
     fun getProfile(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<CustomerProfileResponse> {
         val user = userRepository.findById(UUID.fromString(jwt.subject))
                                  .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
-        return ResponseEntity.ok(customerProfileService.toResponse(user))
+        return ResponseEntity.ok(profileService.toResponse(user))
     }
 
     @PatchMapping
@@ -41,7 +41,7 @@ class ProfileController(
     ): ResponseEntity<CustomerProfileResponse> {
         val user = userRepository.findById(UUID.fromString(jwt.subject))
                                  .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
-        val updated = customerProfileService.updateProfile(user, request)
+        val updated = profileService.updateProfile(user, request)
         return ResponseEntity.ok(updated)
     }
 
@@ -53,7 +53,7 @@ class ProfileController(
     ): ResponseEntity<Void> {
         val user = userRepository.findById(UUID.fromString(jwt.subject))
                                  .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
-        customerProfileService.updatePassword(user, request)
+        profileService.updatePassword(user, request)
         return ResponseEntity.ok().build()
     }
 

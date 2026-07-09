@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '../../../../lib/api-client';
 import { StaffTopNav } from '../StaffDashboard/StaffTopNav.tsx';
+import styles from './StaffProfile.module.css';
 
 interface StaffProfileResponse {
     firstName: string | null;
@@ -15,16 +16,93 @@ interface StaffProfileResponse {
     profilePic: string | null;
 }
 
+function PasswordChangeForm() {
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSave = async () => {
+        if (!oldPassword || !newPassword) {
+            setError('Both fields are required.');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            await apiClient<void>('/staff/profile/password', {
+                method: 'PATCH',
+                data: { oldPassword, newPassword }
+            });
+            setOldPassword('');
+            setNewPassword('');
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2200);
+        } catch (err) {
+            const apiError = err as { response?: { data?: { message?: string } } };
+            setError(apiError.response?.data?.message || 'Failed to update password.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className={styles.passwordCard}>
+            <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Change Password</h2>
+            </div>
+            <div className={styles.passwordContent}>
+                {error && (
+                    <div className={styles.fieldError}>{error}</div>
+                )}
+                {saved && (
+                    <div className={styles.successText}>Password updated successfully!</div>
+                )}
+                <div>
+                    <p className={styles.fieldLabel}>Current Password</p>
+                    <input
+                        type="password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className={`${styles.fieldInput} ${styles.fieldInputValid}`}
+                    />
+                </div>
+                <div>
+                    <p className={styles.fieldLabel}>New Password</p>
+                    <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className={`${styles.fieldInput} ${styles.fieldInputValid}`}
+                    />
+                </div>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className={styles.btnUpdatePassword}
+                >
+                    {saving ? 'Saving...' : 'Update Password'}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function StaffProfile() {
     const [profile, setProfile] = useState<StaffProfileResponse | null>(null);
     const [draftPhone, setDraftPhone] = useState('');
+    const [draftFirstName, setDraftFirstName] = useState('');
+    const [draftLastName, setDraftLastName] = useState('');
+    const [draftUsername, setDraftUsername] = useState('');
+    const [draftEmail, setDraftEmail] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
     const fetchProfile = useCallback(async () => {
@@ -32,6 +110,10 @@ export default function StaffProfile() {
             const profileData = await apiClient<StaffProfileResponse>('/staff/profile');
             setProfile(profileData);
             setDraftPhone(profileData.phoneNumber || '');
+            setDraftFirstName(profileData.firstName || '');
+            setDraftLastName(profileData.lastName || '');
+            setDraftUsername(profileData.username || '');
+            setDraftEmail(profileData.email || '');
         } catch (err) {
             console.error('Failed to load profile:', err);
             setError('Unable to load your profile. Please try again.');
@@ -47,11 +129,31 @@ export default function StaffProfile() {
 
     const isPhoneValid = draftPhone.length === 0 || draftPhone.length === 10;
 
-    const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
+    const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0] && profile) {
             const file = e.target.files[0];
-            setSelectedAvatar(file);
             setAvatarPreview(URL.createObjectURL(file));
+            setUploadingAvatar(true);
+            setError(null);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                const result = await apiClient<{ url: string }>('/staff/profile/upload-avatar', {
+                    method: 'POST',
+                    data: formData
+                });
+                const updated = await apiClient<StaffProfileResponse>('/staff/profile', {
+                    method: 'PATCH',
+                    data: { profilePic: result.url }
+                });
+                setProfile(updated);
+            } catch (err) {
+                console.error('Failed to upload avatar:', err);
+                setError('Unable to upload avatar. Please try again.');
+                setAvatarPreview(null);
+            } finally {
+                setUploadingAvatar(false);
+            }
         }
     };
 
@@ -63,29 +165,22 @@ export default function StaffProfile() {
         }
         setSaving(true);
         try {
-            let profilePicUrl = profile.profilePic || null;
-            if (selectedAvatar) {
-                const formData = new FormData();
-                formData.append('file', selectedAvatar);
-                const result = await apiClient<{ url: string }>('/staff/profile/upload-avatar', {
-                    method: 'POST',
-                    data: formData,
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                profilePicUrl = result.url;
-            }
-
             const updated = await apiClient<StaffProfileResponse>('/staff/profile', {
                 method: 'PATCH',
                 data: { 
-                    phoneNumber: draftPhone.trim() || null,
-                    profilePic: profilePicUrl
+                    firstName: draftFirstName.trim() || null,
+                    lastName: draftLastName.trim() || null,
+                    username: draftUsername.trim() || null,
+                    email: draftEmail.trim() || null,
+                    phoneNumber: draftPhone.trim() || null
                 },
             });
             setProfile(updated);
             setDraftPhone(updated.phoneNumber || '');
-            setSelectedAvatar(null);
-            setAvatarPreview(null);
+            setDraftFirstName(updated.firstName || '');
+            setDraftLastName(updated.lastName || '');
+            setDraftUsername(updated.username || '');
+            setDraftEmail(updated.email || '');
             setIsEditing(false);
             setSaved(true);
             setTimeout(() => setSaved(false), 2200);
@@ -99,26 +194,31 @@ export default function StaffProfile() {
 
     const handleCancel = () => {
         setDraftPhone(profile?.phoneNumber || '');
-        setSelectedAvatar(null);
+        setDraftFirstName(profile?.firstName || '');
+        setDraftLastName(profile?.lastName || '');
+        setDraftUsername(profile?.username || '');
+        setDraftEmail(profile?.email || '');
         setAvatarPreview(null);
         setIsEditing(false);
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div className={styles.pageContainer}>
                 <StaffTopNav />
-                <div className="max-w-3xl mx-auto px-5 pt-20 pb-10 text-center text-gray-400">Loading profile...</div>
+                <div className={styles.contentWrapper}>
+                    <div className={styles.loadingText}>Loading profile...</div>
+                </div>
             </div>
         );
     }
 
     if (error && !profile) {
         return (
-            <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div className={styles.pageContainer}>
                 <StaffTopNav />
-                <div className="max-w-3xl mx-auto px-5 pt-20 pb-10">
-                    <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm font-semibold px-4 py-3 rounded-2xl">
+                <div className={styles.contentWrapper}>
+                    <div className={styles.errorBox}>
                         <AlertCircle size={18} />
                         <span>{error}</span>
                     </div>
@@ -136,71 +236,69 @@ export default function StaffProfile() {
 
     const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || profile.username;
 
-    const READONLY_FIELDS = [
-        { key: 'firstName', label: 'First Name', icon: User, value: profile.firstName || '—' },
-        { key: 'lastName', label: 'Last Name', icon: User, value: profile.lastName || '—' },
-        { key: 'username', label: 'Username', icon: AtSign, value: profile.username },
-        { key: 'email', label: 'Email', icon: Mail, value: profile.email },
+    const PROFILE_FIELDS = [
+        { key: 'firstName', label: 'First Name', icon: User, val: draftFirstName, setVal: setDraftFirstName, readVal: profile.firstName || '—' },
+        { key: 'lastName', label: 'Last Name', icon: User, val: draftLastName, setVal: setDraftLastName, readVal: profile.lastName || '—' },
+        { key: 'username', label: 'Username', icon: AtSign, val: draftUsername, setVal: setDraftUsername, readVal: profile.username },
+        { key: 'email', label: 'Email', icon: Mail, val: draftEmail, setVal: setDraftEmail, readVal: profile.email, type: 'email' },
     ];
 
     return (
-        <div className="min-h-screen bg-[#f0f2f7]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className={styles.pageContainer}>
             <StaffTopNav />
 
-            <div className="max-w-3xl mx-auto px-5 md:px-8 pt-20 pb-10 space-y-4">
+            <div className={styles.contentWrapper}>
 
-                <div className="flex items-center gap-4 md:gap-5">
+                <div className={styles.headerRow}>
                     <div 
-                        className={`relative w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-[#0B1F4D] flex items-center justify-center flex-shrink-0 overflow-hidden ${isEditing ? 'cursor-pointer group' : ''}`}
-                        onClick={() => isEditing && document.getElementById('avatar-upload')?.click()}
+                        className={styles.avatarContainer}
+                        onClick={() => document.getElementById('avatar-upload')?.click()}
                     >
                         {avatarPreview || profile.profilePic ? (
-                            <img src={avatarPreview || profile.profilePic || ''} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={avatarPreview || profile.profilePic || ''} alt="Profile" className={`${styles.avatarImage} ${uploadingAvatar ? styles.avatarUploading : ''}`} />
                         ) : (
-                            <span className="text-white text-xl md:text-2xl font-extrabold tracking-tight">{initials}</span>
+                            <span className={styles.avatarInitials}>{initials}</span>
                         )}
-                        {isEditing && (
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
-                                <span className="text-white text-xs font-bold mt-1">Upload</span>
-                            </div>
-                        )}
-                        <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} />
+                        <div className={styles.avatarOverlay}>
+                            <span className={styles.avatarOverlayText}>{uploadingAvatar ? '...' : 'Upload'}</span>
+                        </div>
+                        <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingAvatar} />
                     </div>
                     <div>
-                        <h1 className="text-[#0B1F4D] text-xl md:text-3xl font-extrabold leading-tight">{fullName}</h1>
-                        <p className="text-gray-400 text-sm md:text-base">@{profile.username}</p>
+                        <h1 className={styles.nameTitle}>{fullName}</h1>
+                        <p className={styles.usernameText}>@{profile.username}</p>
                     </div>
                 </div>
 
                 {error && (
-                    <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm font-semibold px-4 py-3 rounded-2xl">
+                    <div className={styles.errorBox}>
                         <AlertCircle size={16} />
                         <span>{error}</span>
                     </div>
                 )}
 
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-5 md:px-8 py-4 md:py-5 border-b border-gray-50">
-                        <h2 className="text-[#0B1F4D] font-extrabold md:text-lg">Account Info</h2>
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>Account Info</h2>
                         {!isEditing ? (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-1.5 bg-[#f0f2f7] hover:bg-gray-200 text-[#0B1F4D] text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
+                                className={styles.btnEdit}
                             >
                                 <Edit2 size={12} /> Edit
                             </button>
                         ) : (
-                            <div className="flex gap-2">
+                            <div className={styles.btnActionGroup}>
                                 <button
                                     onClick={handleCancel}
-                                    className="flex items-center gap-1 text-gray-400 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+                                    className={styles.btnCancel}
                                 >
                                     <X size={12} /> Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={saving || !isPhoneValid}
-                                    className="flex items-center gap-1 bg-[#0B1F4D] hover:bg-[#2D7FF9] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
+                                    className={styles.btnSave}
                                 >
                                     <Save size={12} /> {saving ? 'Saving...' : 'Save'}
                                 </button>
@@ -208,25 +306,34 @@ export default function StaffProfile() {
                         )}
                     </div>
 
-                    <div className="divide-y divide-gray-50">
-                        {READONLY_FIELDS.map(({ key, label, icon: Icon, value }) => (
-                            <div key={key} className="flex items-center gap-4 px-5 md:px-8 py-4 md:py-5">
-                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
-                                    <Icon size={14} className="text-gray-400" />
+                    <div className={styles.fieldList}>
+                        {PROFILE_FIELDS.map(({ key, label, icon: Icon, val, setVal, readVal, type = 'text' }) => (
+                            <div key={key} className={styles.fieldRow}>
+                                <div className={styles.fieldIconBox}>
+                                    <Icon size={14} className={styles.fieldIcon} />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-gray-400 text-[11px] font-semibold mb-0.5">{label}</p>
-                                    <p className="text-[#0B1F4D] text-sm md:text-base font-semibold truncate">{value}</p>
+                                <div className={styles.fieldContent}>
+                                    <p className={styles.fieldLabel}>{label}</p>
+                                    {isEditing ? (
+                                        <input
+                                            type={type}
+                                            value={val}
+                                            onChange={(e) => setVal(e.target.value)}
+                                            className={`${styles.fieldInput} ${styles.fieldInputValid}`}
+                                        />
+                                    ) : (
+                                        <p className={styles.fieldValue}>{readVal}</p>
+                                    )}
                                 </div>
                             </div>
                         ))}
 
-                        <div className="flex items-center gap-4 px-5 md:px-8 py-4 md:py-5">
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f0f2f7] flex items-center justify-center flex-shrink-0">
-                                <Phone size={14} className="text-gray-400" />
+                        <div className={styles.fieldRow}>
+                            <div className={styles.fieldIconBox}>
+                                <Phone size={14} className={styles.fieldIcon} />
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-gray-400 text-[11px] font-semibold mb-0.5">Phone</p>
+                            <div className={styles.fieldContent}>
+                                <p className={styles.fieldLabel}>Phone</p>
                                 {isEditing ? (
                                     <input
                                         type="tel"
@@ -240,45 +347,33 @@ export default function StaffProfile() {
                                         maxLength={10}
                                         pattern="^[0-9]{10}$"
                                         title="Please enter a valid phone number containing exactly 10 digits."
-                                        className={`w-full md:max-w-xs border rounded-xl px-3 py-1.5 md:py-2 text-sm md:text-base text-[#0B1F4D] font-semibold focus:outline-none focus:ring-2 transition-all ${
-                                            isPhoneValid
-                                                ? 'border-gray-200 focus:border-[#2D7FF9] focus:ring-[#2D7FF9]/15'
-                                                : 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
-                                        }`}
+                                        className={`${styles.fieldInput} ${isPhoneValid ? styles.fieldInputValid : styles.fieldInputInvalid}`}
                                     />
                                 ) : null}
                                 {isEditing && !isPhoneValid && (
-                                    <p className="text-red-500 text-[11px] font-semibold mt-1">
+                                    <p className={styles.fieldError}>
                                         Enter exactly 10 digits.
                                     </p>
                                 )}
                                 {!isEditing && (
-                                    <p className="text-[#0B1F4D] text-sm font-semibold truncate">{profile.phoneNumber || '—'}</p>
+                                    <p className={styles.fieldValue}>{profile.phoneNumber || '—'}</p>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <PasswordChangeForm />
             </div>
 
             {saved && (
-                <div
-                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#0B1F4D] text-white text-sm font-semibold px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 whitespace-nowrap"
-                    style={{ animation: 'fadeUp 0.3s ease' }}
-                >
-                    <span className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className={styles.toastMessage}>
+                    <span className={styles.toastIcon}>
                         <Check size={10} strokeWidth={3} className="text-white" />
                     </span>
                     Profile saved
                 </div>
             )}
-
-            <style>{`
-                @keyframes fadeUp {
-                    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-                    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-                }
-            `}</style>
         </div>
     );
 }
