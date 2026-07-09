@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
+import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 
 @RestController
@@ -49,8 +50,10 @@ class MenuController(
     private val optionIngredientRepository: OptionIngredientRepository,
     private val menuAvailabilityService: MenuAvailabilityService,
     private val menuService: MenuService,
-    private val storageService: StorageService
+    private val storageService: StorageService,
 ) {
+    private val logger = LoggerFactory.getLogger(MenuController::class.java)
+
     @GetMapping
     fun getAllMenuItems(): ResponseEntity<List<MenuItemResponse>> {
         val items = menuRepository.findAll().map { item ->
@@ -327,6 +330,7 @@ class MenuController(
                 optionChoiceRepository.deleteByOptionGroup_Id(group.id)
                 optionGroupRepository.delete(group)
             } catch (e: Exception) {
+                logger.error("Failed to delete group with ID: ${group.id}", e)
             }
         }
     }
