@@ -1,8 +1,8 @@
-# Individual Contribution Log — Sprint 2 (Week 6)
+# Individual Contribution Log — Sprint 2 (Week 5-7)
 
 **Name:** Suppapoo Ekpipattana
 **Team:** 3
-**Week / Date Range:** Week 6 / May 15, 2026 – May 28, 2026
+**Week / Date Range:** 5-7 / 5/20/2026 - 6/5/2026
 
 ## 1. What I planned to do this week
 - Finishing ER Diagrams design for our system architecture documentation. I planned to create detailed ER Diagrams that accurately represent the relationships between different entities in our system.

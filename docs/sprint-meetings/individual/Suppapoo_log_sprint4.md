@@ -1,8 +1,8 @@
-# Individual Contribution Log — Sprint 4 (Week 10)
+# Individual Contribution Log — Sprint 4 (Week 9-11)
 
 **Name:** Suppapoo Ekpipattana
 **Team:** 3
-**Week / Date Range:** Week 10 / June 12, 2026 – June 25, 2026
+**Week / Date Range:** 9-11 / 6/20/2026 - 7/2/2026
 
 ## 1. What I planned to do this week
 - Finalize the integration of the Customer Order History feature, ensuring seamless routing and integration into the main application layout.

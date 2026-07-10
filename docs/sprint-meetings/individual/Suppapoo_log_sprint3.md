@@ -1,8 +1,8 @@
-# Individual Contribution Log — Sprint 3 (Week 8)
+# Individual Contribution Log — Sprint 3 (Week 7-9)
 
 **Name:** Suppapoo Ekpipattana
 **Team:** 3
-**Week / Date Range:** Week 8 / May 29, 2026 – June 11, 2026
+**Week / Date Range:** 7-9 / 6/6/2026 - 6/19/2026
 
 ## 1. What I planned to do this week
 - Design and develop the Customer Order History feature to allow customers to view their past and active orders. (currently using mock data in frontend)

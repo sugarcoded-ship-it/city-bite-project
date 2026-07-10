@@ -1,8 +1,8 @@
-# Individual Contribution Log — Sprint 5 (Week 12)
+# Individual Contribution Log — Sprint 5 (Week 11-12)
 
 **Name:** Suppapoo Ekpipattana
 **Team:** 3
-**Week / Date Range:** Week 12 / June 26, 2026 – July 9, 2026
+**Week / Date Range:** 11-12 / 7/3/2026 - 7/10/2026
 
 ## 1. What I planned to do this week
 - Setup and integrate Cloudflare R2 for decentralized image hosting (menu items, user profiles).
