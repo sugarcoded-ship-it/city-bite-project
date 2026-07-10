@@ -1,8 +1,8 @@
-# Individual Contribution Log — Week 4
+# Individual Contribution Log — Sprint 1 (Week 4)
 
-Name: Suppapoo Ekpipattana \
-Team: 3 \
-Week / Date Range: 4, 1-3
+**Name:** Suppapoo Ekpipattana
+**Team:** 3
+**Week / Date Range:** Week 4 / May 1, 2026 – May 14, 2026
 
 ## 1. What I planned to do this week
 - I started to plan the database design, including the database technology we will use, how data will flow into the database, and how the tables will be structured.
